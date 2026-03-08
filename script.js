@@ -281,8 +281,16 @@ const initAuth = () => {
             const data = await response.json();
             
             if (response.ok) {
-                login(data.user, data.token);
+                if (data.user) {
+                    login(data.user, data.token);
+                } else {
+                    // Email confirmation is pending
+                    signupError.style.color = "#10b981"; // Success green
+                    signupError.textContent = "Account created! Please check your email to verify.";
+                    signupForm.reset();
+                }
             } else {
+                signupError.style.color = "#ef4444"; // Error red
                 signupError.textContent = data.error || "Signup failed.";
             }
         } catch (error) {
