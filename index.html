@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinCalc - Financial Calculators</title>
+    <meta name="description" content="Premium Day-to-Day Financial Calculators including SIP, EMI, Compound Interest, and Budgeting.">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Authentication Overlay -->
+    <div id="auth-overlay" class="auth-overlay active">
+        <div class="auth-card glass-card">
+            <div class="logo auth-logo">
+                <ion-icon name="wallet"></ion-icon>
+                <span>FinCalc</span>
+            </div>
+            
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-form="login">Login</button>
+                <button class="auth-tab" data-form="signup">Sign Up</button>
+            </div>
+            
+            <div class="auth-forms">
+                <!-- Login Form -->
+                <form id="login-form" class="auth-form active">
+                    <p class="auth-error" id="login-error"></p>
+                    <div class="input-group">
+                        <label for="login-email">Email</label>
+                        <div class="input-wrapper">
+                            <ion-icon name="mail-outline"></ion-icon>
+                            <input type="email" id="login-email" placeholder="user@example.com" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="login-password">Password</label>
+                        <div class="input-wrapper">
+                            <ion-icon name="lock-closed-outline"></ion-icon>
+                            <input type="password" id="login-password" placeholder="••••••••" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary">Sign In</button>
+                </form>
+                
+                <!-- Signup Form -->
+                <form id="signup-form" class="auth-form">
+                    <p class="auth-error" id="signup-error"></p>
+                    <div class="input-group">
+                        <label for="signup-name">Full Name</label>
+                        <div class="input-wrapper">
+                            <ion-icon name="person-outline"></ion-icon>
+                            <input type="text" id="signup-name" placeholder="John Doe" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="signup-email">Email</label>
+                        <div class="input-wrapper">
+                            <ion-icon name="mail-outline"></ion-icon>
+                            <input type="email" id="signup-email" placeholder="user@example.com" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="signup-password">Password</label>
+                        <div class="input-wrapper">
+                            <ion-icon name="lock-closed-outline"></ion-icon>
+                            <input type="password" id="signup-password" placeholder="••••••••" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary">Create Account</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App UI -->
+    <div class="app-container" id="app-container" style="display: none;">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="logo">
+                <ion-icon name="wallet"></ion-icon>
+                <span>FinCalc</span>
+            </div>
+            <nav class="nav-menu">
+                <button class="nav-item active" data-target="sip-calculator">
+                    <ion-icon name="trending-up"></ion-icon>
+                    <span>SIP Calculator</span>
+                </button>
+                <button class="nav-item" data-target="emi-calculator">
+                    <ion-icon name="home"></ion-icon>
+                    <span>EMI Calculator</span>
+                </button>
+                <button class="nav-item" data-target="ci-calculator">
+                    <ion-icon name="stats-chart"></ion-icon>
+                    <span>Compound Interest</span>
+                </button>
+                <button class="nav-item" data-target="budget-planner">
+                    <ion-icon name="pie-chart"></ion-icon>
+                    <span>Budget Planner</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="menu-toggle" id="menu-toggle">
+                        <ion-icon name="menu"></ion-icon>
+                    </button>
+                    <h1 id="page-title">SIP Calculator</h1>
+                </div>
+                <div class="user-profile">
+                    <span id="user-display-name">Guest</span>
+                    <button id="logout-btn" class="btn-icon" title="Logout">
+                        <ion-icon name="log-out-outline"></ion-icon>
+                    </button>
+                </div>
+            </header>
+
+            <div class="view-container">
+                <!-- SIP Calculator View -->
+                <section class="calculator-view active" id="sip-calculator">
+                    <div class="calc-grid">
+                        <div class="input-panel glass-card">
+                            <h2>Estimation Details</h2>
+                            <div class="input-group">
+                                <label for="sip-amount">Monthly Investment</label>
+                                <div class="input-wrapper">
+                                    <span class="currency">₹</span>
+                                    <input type="number" id="sip-amount" value="10000" min="500" step="500">
+                                </div>
+                                <input type="range" id="sip-amount-range" min="500" max="100000" step="500" value="10000">
+                            </div>
+                            <div class="input-group">
+                                <label for="sip-rate">Expected Return Rate (p.a)</label>
+                                <div class="input-wrapper">
+                                    <input type="number" id="sip-rate" value="12" min="1" max="30" step="0.1">
+                                    <span class="unit">%</span>
+                                </div>
+                                <input type="range" id="sip-rate-range" min="1" max="30" step="0.5" value="12">
+                            </div>
+                            <div class="input-group">
+                                <label for="sip-time">Time Period</label>
+                                <div class="input-wrapper">
+                                    <input type="number" id="sip-time" value="10" min="1" max="40" step="1">
+                                    <span class="unit">Yr</span>
+                                </div>
+                                <input type="range" id="sip-time-range" min="1" max="40" step="1" value="10">
+                            </div>
+                        </div>
+                        <div class="result-panel glass-card">
+                            <h2>Results</h2>
+                            <div class="chart-container">
+                                <canvas id="sipChart"></canvas>
+                            </div>
+                            <div class="summary">
+                                <div class="summary-item">
+                                    <span>Invested Amount</span>
+                                    <strong id="sip-invested">₹12,00,000</strong>
+                                </div>
+                                <div class="summary-item">
+                                    <span>Est. Returns</span>
+                                    <strong id="sip-returns" class="text-success">₹11,62,479</strong>
+                                </div>
+                                <div class="summary-item total">
+                                    <span>Total Value</span>
+                                    <strong id="sip-total">₹23,62,479</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- EMI Calculator View -->
+                <section class="calculator-view" id="emi-calculator">
+                    <div class="calc-grid">
+                        <div class="input-panel glass-card">
+                            <h2>Loan Details</h2>
+                            <div class="input-group">
+                                <label for="emi-amount">Loan Amount</label>
+                                <div class="input-wrapper">
+                                    <span class="currency">₹</span>
+                                    <input type="number" id="emi-amount" value="5000000" min="100000" step="10000">
+                                </div>
+                                <input type="range" id="emi-amount-range" min="100000" max="20000000" step="50000" value="5000000">
+                            </div>
+                            <div class="input-group">
+                                <label for="emi-rate">Interest Rate (p.a)</label>
+                                <div class="input-wrapper">
+                                    <input type="number" id="emi-rate" value="8.5" min="1" max="20" step="0.1">
+                                    <span class="unit">%</span>
+                                </div>
+                                <input type="range" id="emi-rate-range" min="1" max="20" step="0.1" value="8.5">
+                            </div>
+                            <div class="input-group">
+                                <label for="emi-time">Loan Tenure</label>
+                                <div class="input-wrapper">
+                                    <input type="number" id="emi-time" value="20" min="1" max="30" step="1">
+                                    <span class="unit">Yr</span>
+                                </div>
+                                <input type="range" id="emi-time-range" min="1" max="30" step="1" value="20">
+                            </div>
+                        </div>
+                        <div class="result-panel glass-card">
+                            <h2>Repayment Summary</h2>
+                            <div class="chart-container">
+                                <canvas id="emiChart"></canvas>
+                            </div>
+                            <div class="summary">
+                                <div class="summary-item total">
+                                    <span>Monthly EMI</span>
+                                    <strong id="emi-monthly" class="text-accent">₹43,391</strong>
+                                </div>
+                                <div class="summary-item">
+                                    <span>Principal Amount</span>
+                                    <strong id="emi-principal">₹50,00,000</strong>
+                                </div>
+                                <div class="summary-item">
+                                    <span>Total Interest</span>
+                                    <strong id="emi-interest" class="text-warning">₹54,13,879</strong>
+                                </div>
+                                <div class="summary-item">
+                                    <span>Total Amount Payable</span>
+                                    <strong id="emi-total">₹1,04,13,879</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Compound Interest View -->
+                <section class="calculator-view" id="ci-calculator">
+                    <div class="calc-grid">
+                        <div class="input-panel glass-card">
+                            <h2>Investment Details</h2>
+                            <div class="input-group">
+                                <label for="ci-principal">Principal Amount</label>
+                                <div class="input-wrapper">
+                                    <span class="currency">₹</span>
+                                    <input type="number" id="ci-principal" value="100000" min="1000" step="1000">
+                                </div>
+                                <input type="range" id="ci-principal-range" min="1000" max="10000000" step="5000" value="100000">
+                            </div>
+                            <div class="input-group">
+                                <label for="ci-rate">Interest Rate (p.a)</label>
+                                <div class="input-wrapper">
+                                    <input type="number" id="ci-rate" value="7" min="1" max="20" step="0.1">
+                                    <span class="unit">%</span>
+                                </div>
+                                <input type="range" id="ci-rate-range" min="1" max="20" step="0.1" value="7">
+                            </div>
+                            <div class="input-group">
+                                <label for="ci-time">Time Period</label>
+                                <div class="input-wrapper">
+                                    <input type="number" id="ci-time" value="5" min="1" max="40" step="1">
+                                    <span class="unit">Yr</span>
+                                </div>
+                                <input type="range" id="ci-time-range" min="1" max="40" step="1" value="5">
+                            </div>
+                            <div class="input-group">
+                                <label for="ci-compounding">Compounding Frequency</label>
+                                <select id="ci-compounding" class="custom-select">
+                                    <option value="1">Annually</option>
+                                    <option value="2">Semi-Annually</option>
+                                    <option value="4">Quarterly</option>
+                                    <option value="12" selected>Monthly</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="result-panel glass-card">
+                            <h2>Growth Summary</h2>
+                            <div class="chart-container">
+                                <canvas id="ciChart"></canvas>
+                            </div>
+                            <div class="summary">
+                                <div class="summary-item">
+                                    <span>Principal Amount</span>
+                                    <strong id="ci-principal-res">₹1,00,000</strong>
+                                </div>
+                                <div class="summary-item">
+                                    <span>Total Interest</span>
+                                    <strong id="ci-interest" class="text-success">₹41,762</strong>
+                                </div>
+                                <div class="summary-item total">
+                                    <span>Total Value</span>
+                                    <strong id="ci-total">₹1,41,762</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Budget Planner View -->
+                <section class="calculator-view" id="budget-planner">
+                    <div class="calc-grid single-col-lg">
+                        <div class="input-panel glass-card">
+                            <h2>Monthly Income</h2>
+                            <p class="subtitle">Enter your take-home pay to plan using the popular 50/30/20 rule.</p>
+                            <div class="input-group large-input">
+                                <div class="input-wrapper">
+                                    <span class="currency">₹</span>
+                                    <input type="number" id="budget-income" value="50000" min="1000" step="1000">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="budget-results glass-card">
+                            <div class="budget-cards">
+                                <div class="budget-card needs">
+                                    <div class="card-icon"><ion-icon name="cart"></ion-icon></div>
+                                    <h3>Needs (50%)</h3>
+                                    <p class="amount" id="budget-needs">₹25,000</p>
+                                    <p class="desc">Groceries, housing, basic utilities, transportation, insurance.</p>
+                                </div>
+                                <div class="budget-card wants">
+                                    <div class="card-icon"><ion-icon name="heart"></ion-icon></div>
+                                    <h3>Wants (30%)</h3>
+                                    <p class="amount" id="budget-wants">₹15,000</p>
+                                    <p class="desc">Entertainment, dining out, hobbies, vacations, shopping.</p>
+                                </div>
+                                <div class="budget-card savings">
+                                    <div class="card-icon"><ion-icon name="shield"></ion-icon></div>
+                                    <h3>Savings (20%)</h3>
+                                    <p class="amount" id="budget-savings">₹10,000</p>
+                                    <p class="desc">Emergency fund, investments, debt repayment, retirement.</p>
+                                </div>
+                            </div>
+                            <div class="chart-container budget-chart-container">
+                                <canvas id="budgetChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

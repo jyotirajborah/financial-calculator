@@ -1,0 +1,4 @@
+node_modules/
+fincalc.db
+.env
+.DS_Store
