@@ -457,6 +457,22 @@ input[type=range]::-webkit-slider-thumb:hover {
     .view-container {
         padding: 0 1.5rem 1.5rem;
     }
+
+    .auth-card-wrapper {
+        flex-direction: column;
+        max-width: 450px;
+    }
+    
+    .auth-features {
+        padding: 2rem !important;
+        border-right: none !important;
+        border-bottom: 1px solid var(--border-color);
+        display: none !important; /* Hide features on very small screens to save space */
+    }
+    
+    .auth-card {
+        padding: 2rem !important;
+    }
 }
 
 /* --- Authentication UI --- */
@@ -481,15 +497,88 @@ input[type=range]::-webkit-slider-thumb:hover {
     animation: fadeIn 0.4s ease-out;
 }
 
-.auth-card {
-    width: 100%;
-    max-width: 420px;
-    padding: 2.5rem;
-    position: relative;
+.auth-card-wrapper {
+    display: flex;
+    max-width: 900px;
+    width: 90%;
+    padding: 0;
     overflow: hidden;
+    position: relative;
 }
 
-.auth-card::before {
+.auth-features {
+    flex: 1;
+    background: rgba(15, 23, 42, 0.4);
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-right: 1px solid var(--border-color);
+}
+
+.auth-features h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.auth-features p {
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    margin-bottom: 2rem;
+    line-height: 1.5;
+}
+
+.feature-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.feature-list li {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.feature-list ion-icon {
+    font-size: 2rem;
+    color: var(--accent-color);
+    background: rgba(99, 102, 241, 0.1);
+    padding: 0.75rem;
+    border-radius: 12px;
+}
+
+.feature-list div {
+    display: flex;
+    flex-direction: column;
+}
+
+.feature-list strong {
+    font-size: 1.1rem;
+    color: var(--text-main);
+}
+
+.feature-list span {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.auth-card {
+    flex: 1;
+    max-width: 450px;
+    padding: 3rem;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+}
+
+.auth-card-wrapper::before {
     content: '';
     position: absolute;
     top: -50%;
