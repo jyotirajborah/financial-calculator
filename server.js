@@ -6,7 +6,7 @@ const cors = require('cors');
 const path = require('path');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const SECRET_KEY = 'super_secret_fincalc_key_123'; // In production, use env variables
 
 // Middleware
