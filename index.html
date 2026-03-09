@@ -10,6 +10,8 @@
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- SheetJS for client-side Excel export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 </head>
 <body>
     <!-- Authentication Overlay -->
@@ -237,6 +239,9 @@
                                 <button class="btn-secondary btn-export" onclick="serverExport('sip-calculator')" title="Server-rendered PDF" style="margin-left:6px;">
                                     <ion-icon name="cloud-download-outline"></ion-icon>
                                 </button>
+                                <button class="btn-secondary btn-export" onclick="exportToExcel('sip-calculator')" title="Export to Excel" style="margin-left:6px;">
+                                    <ion-icon name="document-text-outline"></ion-icon>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -302,6 +307,9 @@
                                 </button>
                                 <button class="btn-secondary btn-export" onclick="serverExport('emi-calculator')" title="Server-rendered PDF" style="margin-left:6px;">
                                     <ion-icon name="cloud-download-outline"></ion-icon>
+                                </button>
+                                <button class="btn-secondary btn-export" onclick="exportToExcel('emi-calculator')" title="Export to Excel" style="margin-left:6px;">
+                                    <ion-icon name="document-text-outline"></ion-icon>
                                 </button>
                             </div>
                         </div>
@@ -374,6 +382,9 @@
                                 <button class="btn-secondary btn-export" onclick="serverExport('ci-calculator')" title="Server-rendered PDF" style="margin-left:6px;">
                                     <ion-icon name="cloud-download-outline"></ion-icon>
                                 </button>
+                                <button class="btn-secondary btn-export" onclick="exportToExcel('ci-calculator')" title="Export to Excel" style="margin-left:6px;">
+                                    <ion-icon name="document-text-outline"></ion-icon>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -424,6 +435,9 @@
                             </button>
                             <button class="btn-secondary btn-export" onclick="serverExport('budget-planner')" title="Server-rendered PDF" style="margin-top:0.5rem;margin-left:6px;">
                                 <ion-icon name="cloud-download-outline"></ion-icon>
+                            </button>
+                            <button class="btn-secondary btn-export" onclick="exportToExcel('budget-planner')" title="Export to Excel" style="margin-top:0.5rem;margin-left:6px;">
+                                <ion-icon name="document-text-outline"></ion-icon>
                             </button>
                         </div>
                     </div>
@@ -482,6 +496,9 @@
                                 </button>
                                 <button class="btn-secondary btn-export" onclick="serverExport('tax-calculator')" title="Server-rendered PDF" style="margin-left:6px;">
                                     <ion-icon name="cloud-download-outline"></ion-icon>
+                                </button>
+                                <button class="btn-secondary btn-export" onclick="exportToExcel('tax-calculator')" title="Export to Excel" style="margin-left:6px;">
+                                    <ion-icon name="document-text-outline"></ion-icon>
                                 </button>
                             </div>
                         </div>

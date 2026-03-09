@@ -49,6 +49,69 @@ async function serverExport(elementId) {
     }
 }
 
+// Export current view data to Excel using SheetJS
+function exportToExcel(elementId) {
+    const rowsInputs = [];
+    const rowsResults = [];
+
+    const pushRow = (label, value) => rowsInputs.push([label, value]);
+    const pushRes = (label, value) => rowsResults.push([label, value]);
+
+    if (elementId === 'sip-calculator') {
+        pushRow('Monthly Investment', document.getElementById('sip-amount').value);
+        pushRow('Expected Return (p.a)', document.getElementById('sip-rate').value + '%');
+        pushRow('Time (yr)', document.getElementById('sip-time').value);
+
+        pushRes('Invested Amount', document.getElementById('sip-invested').textContent);
+        pushRes('Estimated Returns', document.getElementById('sip-returns').textContent);
+        pushRes('Total Value', document.getElementById('sip-total').textContent);
+    } else if (elementId === 'emi-calculator') {
+        pushRow('Loan Amount', document.getElementById('emi-amount').value);
+        pushRow('Interest Rate (p.a)', document.getElementById('emi-rate').value + '%');
+        pushRow('Tenure (yr)', document.getElementById('emi-time').value);
+
+        pushRes('Monthly EMI', document.getElementById('emi-monthly').textContent);
+        pushRes('Principal Amount', document.getElementById('emi-principal').textContent);
+        pushRes('Total Interest', document.getElementById('emi-interest').textContent);
+        pushRes('Total Payable', document.getElementById('emi-total').textContent);
+    } else if (elementId === 'ci-calculator') {
+        pushRow('Principal', document.getElementById('ci-principal').value);
+        pushRow('Rate (p.a)', document.getElementById('ci-rate').value + '%');
+        pushRow('Time (yr)', document.getElementById('ci-time').value);
+        pushRow('Compounding', document.getElementById('ci-compounding').value);
+
+        pushRes('Principal', document.getElementById('ci-principal-res').textContent);
+        pushRes('Interest', document.getElementById('ci-interest').textContent);
+        pushRes('Total', document.getElementById('ci-total').textContent);
+    } else if (elementId === 'budget-planner') {
+        pushRow('Monthly Income', document.getElementById('budget-income').value);
+
+        pushRes('Needs (50%)', document.getElementById('budget-needs').textContent);
+        pushRes('Wants (30%)', document.getElementById('budget-wants').textContent);
+        pushRes('Savings (20%)', document.getElementById('budget-savings').textContent);
+    } else if (elementId === 'tax-calculator') {
+        pushRow('Annual Gross Salary', document.getElementById('tax-income').value);
+
+        pushRes('Taxable Income', document.getElementById('tax-taxable').textContent);
+        pushRes('Total Tax Payable', document.getElementById('tax-payable').textContent);
+        pushRes('Annual In-Hand', document.getElementById('tax-inhand').textContent);
+        pushRes('Monthly In-Hand', document.getElementById('tax-monthly').textContent);
+    } else {
+        alert('Excel export: unknown view');
+        return;
+    }
+
+    // Build workbook
+    const wb = XLSX.utils.book_new();
+    const wsInputs = XLSX.utils.aoa_to_sheet([['Input', 'Value'], ...rowsInputs]);
+    const wsResults = XLSX.utils.aoa_to_sheet([['Result', 'Value'], ...rowsResults]);
+    XLSX.utils.book_append_sheet(wb, wsInputs, 'Inputs');
+    XLSX.utils.book_append_sheet(wb, wsResults, 'Results');
+
+    const filename = `FinCalc-${elementId}-${Date.now()}.xlsx`;
+    XLSX.writeFile(wb, filename);
+}
+
 // On load, allow '?view=emi-calculator' style deep links to open a specific view
 function openViewFromQuery() {
     const params = new URLSearchParams(window.location.search);
