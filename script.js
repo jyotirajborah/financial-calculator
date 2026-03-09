@@ -423,8 +423,8 @@ const deleteCalculation = async (id) => {
 
 // --- Export Logic ---
 const exportToPDF = async (elementId, options = {}) => {
-    // options: { preserveColors: true|false, marginMm: number, paper: 'a4'|'letter', scale: number }
-    const opts = Object.assign({ preserveColors: true, marginMm: 10, paper: 'a4', scale: 2 }, options);
+    // options: { marginMm: number, paper: 'a4'|'letter', scale: number }
+    const opts = Object.assign({ marginMm: 10, paper: 'a4', scale: 2 }, options);
     const element = document.getElementById(elementId);
     if (!element) return alert('Export failed: element not found');
 
@@ -438,39 +438,6 @@ const exportToPDF = async (elementId, options = {}) => {
     const interactiveNodes = Array.from(element.querySelectorAll('button, input, select, textarea'));
     interactiveNodes.forEach(n => n.style.visibility = 'hidden');
 
-    // Replace Chart.js canvases with their base64 images (more reliable than canvas.toDataURL in some browsers)
-    const canvasReplacements = [];
-    try {
-        const chartMappings = [
-            { chartObj: window.sipChartObj, canvasId: 'sipChart' },
-            { chartObj: window.emiChartObj, canvasId: 'emiChart' },
-            { chartObj: window.ciChartObj, canvasId: 'ciChart' },
-            { chartObj: window.budgetChartObj, canvasId: 'budgetChart' },
-            { chartObj: window.taxChartObj, canvasId: 'taxChart' }
-        ];
-
-        chartMappings.forEach(mapping => {
-            try {
-                if (mapping.chartObj && typeof mapping.chartObj.toBase64Image === 'function') {
-                    const canvas = element.querySelector(`#${mapping.canvasId}`);
-                    if (!canvas) return;
-                    const img = document.createElement('img');
-                    img.src = mapping.chartObj.toBase64Image();
-                    img.style.width = canvas.style.width || (canvas.width + 'px');
-                    img.style.height = canvas.style.height || (canvas.height + 'px');
-                    img.className = 'pdf-canvas-replacement';
-                    canvas.parentNode.insertBefore(img, canvas.nextSibling);
-                    canvas.style.display = 'none';
-                    canvasReplacements.push({ canvas, img });
-                }
-            } catch (e) {
-                console.warn('Could not replace chart canvas with base64 image:', e);
-            }
-        });
-    } catch (e) {
-        console.warn('Chart replacement routine failed:', e);
-    }
-
     // Ensure element is in viewport for html2canvas
     const prevScrollY = window.scrollY;
     element.scrollIntoView({ behavior: 'auto', block: 'start' });
@@ -478,7 +445,7 @@ const exportToPDF = async (elementId, options = {}) => {
     // Prevent page scroll while exporting
     document.body.style.overflow = 'hidden';
 
-    // Compute printable width in px and scale to fit margins
+    // Compute printable width in px and scale to fit margins (so content doesn't overflow)
     const pxPerMm = 96 / 25.4; // CSS px per mm at 96dpi
     const paperWidthMm = opts.paper === 'letter' ? 215.9 : 210;
     const printableMm = paperWidthMm - (2 * opts.marginMm);
@@ -486,27 +453,19 @@ const exportToPDF = async (elementId, options = {}) => {
     const origWidth = element.getBoundingClientRect().width || element.offsetWidth || 800;
     const scaleFactor = Math.min(1, printablePx / origWidth);
 
-    // Apply scale transform so content fits within margins (keeps original colors if preserveColors is true)
+    // Apply scale transform so content fits within margins. We preserve colors and styles as-is.
     element.style.transformOrigin = 'top left';
     element.style.transform = `scale(${scaleFactor})`;
 
-    // If preserveColors is false, force light background and readable text for export
-    if (!opts.preserveColors) {
-        element.style.background = '#ffffff';
-        element.style.color = '#000000';
-    }
-
-    // Build html2canvas options, omit backgroundColor when preserving colors
     const html2canvasOpts = {
         scale: Math.max(1, opts.scale * (window.devicePixelRatio || 1)),
         useCORS: true
     };
-    if (!opts.preserveColors) html2canvasOpts.backgroundColor = '#ffffff';
 
     const pdfOptions = {
         margin: opts.marginMm,
         filename: `FinCalc-${elementId}-${new Date().getTime()}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
+        image: { type: 'png' },
         html2canvas: html2canvasOpts,
         jsPDF: { unit: 'mm', format: opts.paper, orientation: 'portrait' }
     };
@@ -517,21 +476,15 @@ const exportToPDF = async (elementId, options = {}) => {
         console.error('PDF export error:', err);
         alert('Could not export PDF. Check console for details.');
     } finally {
-        // Restore canvases
-        canvasReplacements.forEach(({ canvas, img }) => {
-            if (img && img.parentNode) img.parentNode.removeChild(img);
-            canvas.style.display = '';
-        });
-
         // Restore interactive elements
         interactiveNodes.forEach(n => n.style.visibility = '');
 
-    // Restore styles, transforms and scroll
-    element.style.background = origElementBg;
-    element.style.color = origElementColor;
-    element.style.transform = origTransform || '';
-    document.body.style.overflow = origBodyOverflow;
-    window.scrollTo(0, prevScrollY || 0);
+        // Restore styles, transforms and scroll
+        element.style.background = origElementBg;
+        element.style.color = origElementColor;
+        element.style.transform = origTransform || '';
+        document.body.style.overflow = origBodyOverflow;
+        window.scrollTo(0, prevScrollY || 0);
     }
 };
 
