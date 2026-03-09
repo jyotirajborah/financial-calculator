@@ -108,11 +108,14 @@ app.post('/api/history', async (req, res) => {
 
     const { calc_type, input_data, result_data } = req.body;
 
-    const { data, error } = await supabase
+    // Use a user-scoped client so auth.uid() resolves correctly and RLS passes
+    const userSupabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+        global: { headers: { Authorization: `Bearer ${token}` } }
+    });
+
+    const { data, error } = await userSupabase
         .from('calculations')
-        .insert([
-            { user_id: user.id, calc_type, input_data, result_data }
-        ])
+        .insert([{ user_id: user.id, calc_type, input_data, result_data }])
         .select();
 
     if (error) return res.status(400).json({ error: error.message });
@@ -129,7 +132,12 @@ app.get('/api/history', async (req, res) => {
     
     if (authError || !user) return res.status(401).json({ error: 'Invalid token' });
 
-    const { data, error } = await supabase
+    // Use a user-scoped client so auth.uid() resolves correctly and RLS passes
+    const userSupabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+        global: { headers: { Authorization: `Bearer ${token}` } }
+    });
+
+    const { data, error } = await userSupabase
         .from('calculations')
         .select('*')
         .eq('user_id', user.id)
