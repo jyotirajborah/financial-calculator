@@ -432,6 +432,23 @@ const saveCalculation = async (type, e) => {
                     btn.style.color = '';
                 }, 2000);
             }
+            // After successful save, automatically export the calculation to Excel
+            try {
+                const typeToView = {
+                    'SIP': 'sip-calculator',
+                    'EMI': 'emi-calculator',
+                    'CI': 'ci-calculator',
+                    'TAX': 'tax-calculator',
+                    'BUDGET': 'budget-planner'
+                };
+                const viewId = typeToView[type];
+                if (viewId && typeof exportToExcel === 'function') {
+                    // small delay to ensure UI updated values (if any)
+                    setTimeout(() => exportToExcel(viewId), 300);
+                }
+            } catch (e) {
+                console.warn('Auto-export to Excel failed:', e);
+            }
         } else {
             const errData = await response.json();
             console.error("Save failed:", errData);
