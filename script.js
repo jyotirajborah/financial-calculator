@@ -422,7 +422,9 @@ const deleteCalculation = async (id) => {
 };
 
 // --- Export Logic ---
-const exportToPDF = async (elementId) => {
+const exportToPDF = async (elementId, options = {}) => {
+    // options: { preserveColors: true|false, marginMm: number, paper: 'a4'|'letter', scale: number }
+    const opts = Object.assign({ preserveColors: true, marginMm: 10, paper: 'a4', scale: 2 }, options);
     const element = document.getElementById(elementId);
     if (!element) return alert('Export failed: element not found');
 
@@ -430,6 +432,7 @@ const exportToPDF = async (elementId) => {
     const origBodyOverflow = document.body.style.overflow;
     const origElementBg = element.style.background;
     const origElementColor = element.style.color;
+    const origTransform = element.style.transform;
 
     // Hide interactive controls but preserve layout (use visibility:hidden)
     const interactiveNodes = Array.from(element.querySelectorAll('button, input, select, textarea'));
@@ -468,10 +471,6 @@ const exportToPDF = async (elementId) => {
         console.warn('Chart replacement routine failed:', e);
     }
 
-    // Force light background and readable text for export
-    element.style.background = '#ffffff';
-    element.style.color = '#000000';
-
     // Ensure element is in viewport for html2canvas
     const prevScrollY = window.scrollY;
     element.scrollIntoView({ behavior: 'auto', block: 'start' });
@@ -479,16 +478,41 @@ const exportToPDF = async (elementId) => {
     // Prevent page scroll while exporting
     document.body.style.overflow = 'hidden';
 
-    const options = {
-        margin: 10,
+    // Compute printable width in px and scale to fit margins
+    const pxPerMm = 96 / 25.4; // CSS px per mm at 96dpi
+    const paperWidthMm = opts.paper === 'letter' ? 215.9 : 210;
+    const printableMm = paperWidthMm - (2 * opts.marginMm);
+    const printablePx = printableMm * pxPerMm;
+    const origWidth = element.getBoundingClientRect().width || element.offsetWidth || 800;
+    const scaleFactor = Math.min(1, printablePx / origWidth);
+
+    // Apply scale transform so content fits within margins (keeps original colors if preserveColors is true)
+    element.style.transformOrigin = 'top left';
+    element.style.transform = `scale(${scaleFactor})`;
+
+    // If preserveColors is false, force light background and readable text for export
+    if (!opts.preserveColors) {
+        element.style.background = '#ffffff';
+        element.style.color = '#000000';
+    }
+
+    // Build html2canvas options, omit backgroundColor when preserving colors
+    const html2canvasOpts = {
+        scale: Math.max(1, opts.scale * (window.devicePixelRatio || 1)),
+        useCORS: true
+    };
+    if (!opts.preserveColors) html2canvasOpts.backgroundColor = '#ffffff';
+
+    const pdfOptions = {
+        margin: opts.marginMm,
         filename: `FinCalc-${elementId}-${new Date().getTime()}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        html2canvas: html2canvasOpts,
+        jsPDF: { unit: 'mm', format: opts.paper, orientation: 'portrait' }
     };
 
     try {
-        await html2pdf().from(element).set(options).save();
+        await html2pdf().from(element).set(pdfOptions).save();
     } catch (err) {
         console.error('PDF export error:', err);
         alert('Could not export PDF. Check console for details.');
@@ -502,11 +526,12 @@ const exportToPDF = async (elementId) => {
         // Restore interactive elements
         interactiveNodes.forEach(n => n.style.visibility = '');
 
-        // Restore styles and scroll
-        element.style.background = origElementBg;
-        element.style.color = origElementColor;
-        document.body.style.overflow = origBodyOverflow;
-        window.scrollTo(0, prevScrollY || 0);
+    // Restore styles, transforms and scroll
+    element.style.background = origElementBg;
+    element.style.color = origElementColor;
+    element.style.transform = origTransform || '';
+    document.body.style.overflow = origBodyOverflow;
+    window.scrollTo(0, prevScrollY || 0);
     }
 };
 
