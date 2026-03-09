@@ -181,61 +181,8 @@ app.get('/*path', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Server-side PDF rendering endpoint (secure: requires X-PDF-SECRET header matching PDF_SECRET)
-app.post('/api/render-pdf', async (req, res) => {
-    const secret = req.headers['x-pdf-secret'] || req.query.secret;
-    const authHeader = req.headers.authorization;
-
-    // Allow either a valid service secret OR a logged-in user (via Bearer token)
-    let authorized = false;
-    if (PDF_SECRET && secret && secret === PDF_SECRET) {
-        authorized = true;
-    }
-    let renderAsUser = false;
-    if (!authorized && authHeader && authHeader.startsWith('Bearer ')) {
-        const token = authHeader.split(' ')[1];
-        try {
-            const { data: { user }, error } = await supabase.auth.getUser(token);
-            if (!error && user) {
-                authorized = true;
-                renderAsUser = true;
-            }
-        } catch (e) {
-            // ignore
-        }
-    }
-
-    if (!authorized) return res.status(401).json({ error: 'Unauthorized' });
-
-    const { path: renderPath } = req.body || {};
-    // Only allow rendering internal paths
-    const safePath = renderPath && typeof renderPath === 'string' ? renderPath : '/';
-    const url = `http://localhost:${PORT}${safePath.startsWith('/') ? safePath : '/' + safePath}`;
-
-    const puppeteer = require('puppeteer');
-    let browser;
-    try {
-        browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
-        const page = await browser.newPage();
-        // Set a reasonable viewport so the rendered page matches typical desktop layout
-        await page.setViewport({ width: 1200, height: 800 });
-        await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 });
-
-        const pdfBuffer = await page.pdf({
-            format: 'A4',
-            printBackground: true,
-            margin: { top: '10mm', bottom: '10mm', left: '10mm', right: '10mm' }
-        });
-
-        res.set({ 'Content-Type': 'application/pdf', 'Content-Length': pdfBuffer.length });
-        return res.send(pdfBuffer);
-    } catch (err) {
-        console.error('Server-side PDF render failed:', err);
-        return res.status(500).json({ error: 'PDF generation failed' });
-    } finally {
-        if (browser) await browser.close();
-    }
-});
+// [DEPRECATED] Server-side PDF rendering endpoint removed - Puppeteer dependency removed to speed up builds
+// The /api/render-pdf endpoint is no longer available. Use client-side Excel export (exportToExcel) instead.
 
 // Start Server
 app.listen(PORT, () => {
