@@ -294,6 +294,8 @@ const saveCalculation = async (type, e) => {
     const token = localStorage.getItem('auth_token');
     if (!token) return alert("Please login to save calculations.");
 
+    const btn = e ? e.target.closest('.btn-save') : null;
+
     try {
         const response = await fetch('/api/history', {
             method: 'POST',
@@ -305,19 +307,23 @@ const saveCalculation = async (type, e) => {
         });
         
         if (response.ok) {
-            const btn = e ? e.target.closest('.btn-save') : null;
             if (btn) {
                 const originalHtml = btn.innerHTML;
-            btn.innerHTML = '<ion-icon name="checkmark-outline"></ion-icon> Saved!';
-            btn.style.color = 'var(--success)';
-            setTimeout(() => {
-                btn.innerHTML = originalHtml;
-                btn.style.color = '';
-            }, 2000);
+                btn.innerHTML = '<ion-icon name="checkmark-outline"></ion-icon> Saved!';
+                btn.style.color = 'var(--success)';
+                setTimeout(() => {
+                    btn.innerHTML = originalHtml;
+                    btn.style.color = '';
+                }, 2000);
             }
+        } else {
+            const errData = await response.json();
+            console.error("Save failed:", errData);
+            alert(`Could not save: ${errData.error || 'Server error. Please check Supabase table setup.'}`);
         }
     } catch (error) {
-        console.error("Error saving history:", error);
+        console.error("Network error saving history:", error);
+        alert("Network error. Make sure the server is running.");
     }
 };
 
