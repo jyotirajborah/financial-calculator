@@ -536,7 +536,35 @@ const exportToPDF = async (elementId, options = {}) => {
             }
         });
 
-        await html2pdf().from(clone).set(pdfOptions).save();
+        // Pre-capture test: render the clone to a canvas first so we can detect blank/tainted captures
+        let captureCanvas = null;
+        try {
+            captureCanvas = await html2canvas(clone, html2canvasOpts);
+        } catch (e) {
+            console.warn('html2canvas initial capture failed, will retry without scale:', e);
+        }
+
+        // If the capture produced a very small canvas (likely blank/tainted), retry with scale=1 and without transform
+        if (!captureCanvas || (captureCanvas.width < 50 || captureCanvas.height < 50)) {
+            try {
+                // Temporarily remove transform on clone and capture again
+                const prevTransform = clone.style.transform;
+                clone.style.transform = '';
+                const retryOpts = Object.assign({}, html2canvasOpts, { scale: 1 });
+                captureCanvas = await html2canvas(clone, retryOpts);
+                clone.style.transform = prevTransform || '';
+            } catch (e) {
+                console.warn('html2canvas retry failed:', e);
+            }
+        }
+
+        if (captureCanvas && captureCanvas.width > 10 && captureCanvas.height > 10) {
+            // Pass the canvas to html2pdf which will embed it into the PDF (handles paging)
+            await html2pdf().from(captureCanvas).set(pdfOptions).save();
+        } else {
+            // As a last-resort, attempt direct element export (original approach)
+            await html2pdf().from(clone).set(pdfOptions).save();
+        }
     } catch (err) {
         console.error('PDF export error:', err);
         alert('Could not export PDF. Check console for details.');
