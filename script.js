@@ -1,3 +1,12 @@
+
+// [DEPRECATED] PDF export functions removed - use Excel export only
+// The following functions are kept for backwards compatibility but are no longer used in the UI:
+// - exportFromButton(elementId) - reads export settings and calls exportToPDF
+// - serverExport(elementId) - server-side Puppeteer rendering (endpoint still available for legacy callers)
+// - exportToPDF(elementId, options) - client-side html2pdf export
+// 
+// Please use exportToExcel(elementId) for data export instead.
+
 // State Management
 let currentUser = null;
 
@@ -5,49 +14,6 @@ let currentUser = null;
 const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-IN').format(Math.round(amount));
 };
-
-// Helper to read UI export settings and call exportToPDF
-function exportFromButton(elementId) {
-    const paperEl = document.getElementById('export-paper');
-    const marginEl = document.getElementById('export-margin');
-    const paper = paperEl ? paperEl.value : 'a4';
-    const marginMm = marginEl ? Number(marginEl.value) || 10 : 10;
-    exportToPDF(elementId, { paper, marginMm, scale: 2 });
-}
-
-// Server-side export: requests the server to render the page using Puppeteer and returns the PDF
-async function serverExport(elementId) {
-    try {
-        const token = localStorage.getItem('auth_token');
-        const body = { path: `/?view=${encodeURIComponent(elementId)}` };
-        const headers = { 'Content-Type': 'application/json' };
-        if (token) headers['Authorization'] = `Bearer ${token}`;
-
-        const resp = await fetch('/api/render-pdf', {
-            method: 'POST',
-            headers,
-            body: JSON.stringify(body)
-        });
-
-        if (!resp.ok) {
-            const err = await resp.json().catch(() => ({}));
-            return alert('Server PDF failed: ' + (err.error || resp.statusText));
-        }
-
-        const blob = await resp.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `FinCalc-server-${elementId}-${Date.now()}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-    } catch (e) {
-        console.error('serverExport error:', e);
-        alert('Server export failed. Check console for details.');
-    }
-}
 
 // Export current view data to Excel using SheetJS
 function exportToExcel(elementId) {
