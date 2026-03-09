@@ -161,6 +161,15 @@
                         <ion-icon name="menu"></ion-icon>
                     </button>
                     <h1 id="page-title">SIP Calculator</h1>
+                    <div class="export-settings" style="display:flex;align-items:center;gap:0.5rem;margin-left:1rem;">
+                        <label for="export-paper" style="font-size:0.85rem;color:var(--muted);">Paper</label>
+                        <select id="export-paper" style="padding:0.25rem 0.4rem;border-radius:6px;">
+                            <option value="a4" selected>A4</option>
+                            <option value="letter">Letter</option>
+                        </select>
+                        <label for="export-margin" style="font-size:0.85rem;color:var(--muted);">Margin (mm)</label>
+                        <input id="export-margin" type="number" min="0" max="50" value="10" style="width:4rem;padding:0.2rem;border-radius:6px;">
+                    </div>
                 </div>
                 <div class="user-profile">
                     <span id="user-display-name">Guest</span>
@@ -222,7 +231,7 @@
                                 <button class="btn-secondary btn-save" onclick="saveCalculation('SIP', event)">
                                     <ion-icon name="bookmark-outline"></ion-icon> Save to History
                                 </button>
-                                <button class="btn-secondary btn-export" onclick="exportToPDF('sip-calculator')">
+                                <button class="btn-secondary btn-export" onclick="exportFromButton('sip-calculator')">
                                     <ion-icon name="download-outline"></ion-icon> Export PDF
                                 </button>
                             </div>
@@ -285,7 +294,7 @@
                                 <button class="btn-secondary btn-save" onclick="saveCalculation('EMI', event)">
                                     <ion-icon name="bookmark-outline"></ion-icon> Save to History
                                 </button>
-                                <button class="btn-secondary btn-export" onclick="exportToPDF('emi-calculator')">
+                                <button class="btn-secondary btn-export" onclick="exportFromButton('emi-calculator')">
                                     <ion-icon name="download-outline"></ion-icon> Export PDF
                                 </button>
                             </div>
@@ -353,7 +362,7 @@
                                 <button class="btn-secondary btn-save" onclick="saveCalculation('CI', event)">
                                     <ion-icon name="bookmark-outline"></ion-icon> Save to History
                                 </button>
-                                <button class="btn-secondary btn-export" onclick="exportToPDF('ci-calculator')">
+                                <button class="btn-secondary btn-export" onclick="exportFromButton('ci-calculator')">
                                     <ion-icon name="download-outline"></ion-icon> Export PDF
                                 </button>
                             </div>
@@ -401,7 +410,7 @@
                             <button class="btn-secondary btn-save" onclick="saveCalculation('BUDGET', event)" style="margin-top: 2rem;">
                                 <ion-icon name="bookmark-outline"></ion-icon> Save to History
                             </button>
-                            <button class="btn-secondary btn-export" onclick="exportToPDF('budget-planner')" style="margin-top: 0.5rem;">
+                            <button class="btn-secondary btn-export" onclick="exportFromButton('budget-planner')" style="margin-top: 0.5rem;">
                                 <ion-icon name="download-outline"></ion-icon> Export PDF
                             </button>
                         </div>
@@ -456,7 +465,7 @@
                                 <button class="btn-secondary btn-save" onclick="saveCalculation('TAX', event)">
                                     <ion-icon name="bookmark-outline"></ion-icon> Save to History
                                 </button>
-                                <button class="btn-secondary btn-export" onclick="exportToPDF('tax-calculator')">
+                                <button class="btn-secondary btn-export" onclick="exportFromButton('tax-calculator')">
                                     <ion-icon name="download-outline"></ion-icon> Export PDF
                                 </button>
                             </div>

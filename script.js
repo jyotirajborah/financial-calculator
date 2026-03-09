@@ -6,6 +6,15 @@ const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-IN').format(Math.round(amount));
 };
 
+// Helper to read UI export settings and call exportToPDF
+function exportFromButton(elementId) {
+    const paperEl = document.getElementById('export-paper');
+    const marginEl = document.getElementById('export-margin');
+    const paper = paperEl ? paperEl.value : 'a4';
+    const marginMm = marginEl ? Number(marginEl.value) || 10 : 10;
+    exportToPDF(elementId, { paper, marginMm, scale: 2 });
+}
+
 // Global Chart Objects
 let sipChartObj = null;
 let emiChartObj = null;
@@ -484,7 +493,49 @@ const exportToPDF = async (elementId, options = {}) => {
         jsPDF: { unit: 'mm', format: opts.paper, orientation: 'portrait' }
     };
 
+    // Lightweight fallback: if canvases are tainted/blank for html2canvas, replace those canvases in the clone
     try {
+        const chartMappings = {
+            sipChart: 'sipChartObj',
+            emiChart: 'emiChartObj',
+            ciChart: 'ciChartObj',
+            budgetChart: 'budgetChartObj',
+            taxChart: 'taxChartObj'
+        };
+
+        const canvases = Array.from(clone.querySelectorAll('canvas'));
+        canvases.forEach(canvas => {
+            const id = canvas.id;
+            try {
+                const orig = document.getElementById(id);
+                let ok = false;
+                if (orig && typeof orig.toDataURL === 'function') {
+                    try {
+                        const data = orig.toDataURL('image/png');
+                        if (data && data.length > 1000) ok = true;
+                    } catch (e) {
+                        ok = false;
+                    }
+                }
+
+                if (!ok) {
+                    const chartVar = chartMappings[id];
+                    const chartObj = chartVar && window[chartVar];
+                    if (chartObj && typeof chartObj.toBase64Image === 'function') {
+                        const img = document.createElement('img');
+                        img.src = chartObj.toBase64Image();
+                        img.style.width = canvas.style.width || (canvas.width + 'px');
+                        img.style.height = canvas.style.height || (canvas.height + 'px');
+                        img.className = 'pdf-canvas-replacement';
+                        canvas.parentNode.insertBefore(img, canvas.nextSibling);
+                        canvas.style.display = 'none';
+                    }
+                }
+            } catch (e) {
+                // ignore per-canvas fallback errors
+            }
+        });
+
         await html2pdf().from(clone).set(pdfOptions).save();
     } catch (err) {
         console.error('PDF export error:', err);
