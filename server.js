@@ -184,9 +184,28 @@ app.get('/*path', (req, res) => {
 // Server-side PDF rendering endpoint (secure: requires X-PDF-SECRET header matching PDF_SECRET)
 app.post('/api/render-pdf', async (req, res) => {
     const secret = req.headers['x-pdf-secret'] || req.query.secret;
-    if (!PDF_SECRET || secret !== PDF_SECRET) {
-        return res.status(401).json({ error: 'Unauthorized' });
+    const authHeader = req.headers.authorization;
+
+    // Allow either a valid service secret OR a logged-in user (via Bearer token)
+    let authorized = false;
+    if (PDF_SECRET && secret && secret === PDF_SECRET) {
+        authorized = true;
     }
+    let renderAsUser = false;
+    if (!authorized && authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.split(' ')[1];
+        try {
+            const { data: { user }, error } = await supabase.auth.getUser(token);
+            if (!error && user) {
+                authorized = true;
+                renderAsUser = true;
+            }
+        } catch (e) {
+            // ignore
+        }
+    }
+
+    if (!authorized) return res.status(401).json({ error: 'Unauthorized' });
 
     const { path: renderPath } = req.body || {};
     // Only allow rendering internal paths

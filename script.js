@@ -15,6 +15,50 @@ function exportFromButton(elementId) {
     exportToPDF(elementId, { paper, marginMm, scale: 2 });
 }
 
+// Server-side export: requests the server to render the page using Puppeteer and returns the PDF
+async function serverExport(elementId) {
+    try {
+        const token = localStorage.getItem('auth_token');
+        const body = { path: `/?view=${encodeURIComponent(elementId)}` };
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const resp = await fetch('/api/render-pdf', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(body)
+        });
+
+        if (!resp.ok) {
+            const err = await resp.json().catch(() => ({}));
+            return alert('Server PDF failed: ' + (err.error || resp.statusText));
+        }
+
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `FinCalc-server-${elementId}-${Date.now()}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+    } catch (e) {
+        console.error('serverExport error:', e);
+        alert('Server export failed. Check console for details.');
+    }
+}
+
+// On load, allow '?view=emi-calculator' style deep links to open a specific view
+function openViewFromQuery() {
+    const params = new URLSearchParams(window.location.search);
+    const view = params.get('view');
+    if (view) {
+        const navBtn = Array.from(document.querySelectorAll('.nav-item')).find(b => b.getAttribute('data-target') === view);
+        if (navBtn) navBtn.click();
+    }
+}
+
 // Global Chart Objects
 let sipChartObj = null;
 let emiChartObj = null;
@@ -762,4 +806,5 @@ window.addEventListener('DOMContentLoaded', () => {
     Chart.defaults.font.family = "'Outfit', sans-serif";
     
     initAuth();
+    openViewFromQuery();
 });
