@@ -438,7 +438,7 @@ const exportToPDF = async (elementId, options = {}) => {
     const interactiveNodes = Array.from(element.querySelectorAll('button, input, select, textarea'));
     interactiveNodes.forEach(n => n.style.visibility = 'hidden');
 
-    // Ensure element is in viewport for html2canvas
+    // Ensure element is in viewport and create a visible clone to capture
     const prevScrollY = window.scrollY;
     element.scrollIntoView({ behavior: 'auto', block: 'start' });
 
@@ -453,9 +453,23 @@ const exportToPDF = async (elementId, options = {}) => {
     const origWidth = element.getBoundingClientRect().width || element.offsetWidth || 800;
     const scaleFactor = Math.min(1, printablePx / origWidth);
 
-    // Apply scale transform so content fits within margins. We preserve colors and styles as-is.
-    element.style.transformOrigin = 'top left';
-    element.style.transform = `scale(${scaleFactor})`;
+    // Create a clone and position it in the viewport (visible) so html2canvas can capture reliably
+    const clone = element.cloneNode(true);
+    // Hide interactive controls in clone
+    Array.from(clone.querySelectorAll('button, input, select, textarea')).forEach(n => n.style.visibility = 'hidden');
+
+    // Inline styles to make clone visible and non-intrusive
+    clone.style.position = 'absolute';
+    clone.style.left = '0px';
+    clone.style.top = `${window.scrollY}px`;
+    clone.style.margin = '0';
+    clone.style.zIndex = 2147483647; // bring to front
+    clone.style.transformOrigin = 'top left';
+    clone.style.transform = `scale(${scaleFactor})`;
+    // Ensure width is the original width so scaling matches layout
+    clone.style.width = `${origWidth}px`;
+
+    document.body.appendChild(clone);
 
     const html2canvasOpts = {
         scale: Math.max(1, opts.scale * (window.devicePixelRatio || 1)),
@@ -471,12 +485,15 @@ const exportToPDF = async (elementId, options = {}) => {
     };
 
     try {
-        await html2pdf().from(element).set(pdfOptions).save();
+        await html2pdf().from(clone).set(pdfOptions).save();
     } catch (err) {
         console.error('PDF export error:', err);
         alert('Could not export PDF. Check console for details.');
     } finally {
-        // Restore interactive elements
+        // Remove the clone
+        if (clone && clone.parentNode) clone.parentNode.removeChild(clone);
+
+        // Restore interactive elements on original
         interactiveNodes.forEach(n => n.style.visibility = '');
 
         // Restore styles, transforms and scroll
