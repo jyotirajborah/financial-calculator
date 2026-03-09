@@ -422,65 +422,92 @@ const deleteCalculation = async (id) => {
 };
 
 // --- Export Logic ---
-const exportToPDF = (elementId) => {
-    // Clone the element and adjust styles for clean PDF rendering
+const exportToPDF = async (elementId) => {
     const element = document.getElementById(elementId);
     if (!element) return alert('Export failed: element not found');
 
-    // Create a clone so we don't mutate the live UI
-    const clone = element.cloneNode(true);
+    // Save original styles/visibility to restore later
+    const origBodyOverflow = document.body.style.overflow;
+    const origElementBg = element.style.background;
+    const origElementColor = element.style.color;
 
-    // Replace canvas (Chart.js) elements in the clone with images copied from originals
-    const originalCanvases = element.querySelectorAll('canvas');
-    const cloneCanvases = clone.querySelectorAll('canvas');
-    originalCanvases.forEach((origCanvas, idx) => {
-        try {
-            const dataURL = origCanvas.toDataURL('image/png');
-            const img = document.createElement('img');
-            img.src = dataURL;
-            // Preserve sizing
-            img.style.width = (origCanvas.style.width || origCanvas.width + 'px');
-            img.style.height = (origCanvas.style.height || origCanvas.height + 'px');
-            const target = cloneCanvases[idx];
-            if (target && target.parentNode) target.parentNode.replaceChild(img, target);
-        } catch (e) {
-            console.warn('Could not export canvas to image for PDF:', e);
-        }
-    });
+    // Hide interactive controls but preserve layout (use visibility:hidden)
+    const interactiveNodes = Array.from(element.querySelectorAll('button, input, select, textarea'));
+    interactiveNodes.forEach(n => n.style.visibility = 'hidden');
 
-    // Remove interactive elements from clone
-    clone.querySelectorAll('button, input, select, textarea').forEach(n => n.remove());
+    // Replace Chart.js canvases with their base64 images (more reliable than canvas.toDataURL in some browsers)
+    const canvasReplacements = [];
+    try {
+        const chartMappings = [
+            { chartObj: window.sipChartObj, canvasId: 'sipChart' },
+            { chartObj: window.emiChartObj, canvasId: 'emiChart' },
+            { chartObj: window.ciChartObj, canvasId: 'ciChart' },
+            { chartObj: window.budgetChartObj, canvasId: 'budgetChart' },
+            { chartObj: window.taxChartObj, canvasId: 'taxChart' }
+        ];
 
-    // Force a light background and readable text for the PDF (overrides dark themes)
-    clone.style.background = '#ffffff';
-    clone.style.color = '#000000';
-    clone.style.width = getComputedStyle(element).width || '100%';
-    clone.style.boxSizing = 'border-box';
+        chartMappings.forEach(mapping => {
+            try {
+                if (mapping.chartObj && typeof mapping.chartObj.toBase64Image === 'function') {
+                    const canvas = element.querySelector(`#${mapping.canvasId}`);
+                    if (!canvas) return;
+                    const img = document.createElement('img');
+                    img.src = mapping.chartObj.toBase64Image();
+                    img.style.width = canvas.style.width || (canvas.width + 'px');
+                    img.style.height = canvas.style.height || (canvas.height + 'px');
+                    img.className = 'pdf-canvas-replacement';
+                    canvas.parentNode.insertBefore(img, canvas.nextSibling);
+                    canvas.style.display = 'none';
+                    canvasReplacements.push({ canvas, img });
+                }
+            } catch (e) {
+                console.warn('Could not replace chart canvas with base64 image:', e);
+            }
+        });
+    } catch (e) {
+        console.warn('Chart replacement routine failed:', e);
+    }
 
-    // Keep the clone in the viewport but invisible (opacity:0) so html2canvas can render it
-    clone.style.position = 'fixed';
-    clone.style.left = '0';
-    clone.style.top = '0';
-    clone.style.opacity = '0';
-    clone.style.pointerEvents = 'none';
-    clone.style.zIndex = '9999';
-    document.body.appendChild(clone);
+    // Force light background and readable text for export
+    element.style.background = '#ffffff';
+    element.style.color = '#000000';
+
+    // Ensure element is in viewport for html2canvas
+    const prevScrollY = window.scrollY;
+    element.scrollIntoView({ behavior: 'auto', block: 'start' });
+
+    // Prevent page scroll while exporting
+    document.body.style.overflow = 'hidden';
 
     const options = {
-        margin: 10, // in mm when jsPDF unit is 'mm'
+        margin: 10,
         filename: `FinCalc-${elementId}-${new Date().getTime()}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    html2pdf().from(clone).set(options).save().then(() => {
-        document.body.removeChild(clone);
-    }).catch(err => {
+    try {
+        await html2pdf().from(element).set(options).save();
+    } catch (err) {
         console.error('PDF export error:', err);
-        document.body.removeChild(clone);
         alert('Could not export PDF. Check console for details.');
-    });
+    } finally {
+        // Restore canvases
+        canvasReplacements.forEach(({ canvas, img }) => {
+            if (img && img.parentNode) img.parentNode.removeChild(img);
+            canvas.style.display = '';
+        });
+
+        // Restore interactive elements
+        interactiveNodes.forEach(n => n.style.visibility = '');
+
+        // Restore styles and scroll
+        element.style.background = origElementBg;
+        element.style.color = origElementColor;
+        document.body.style.overflow = origBodyOverflow;
+        window.scrollTo(0, prevScrollY || 0);
+    }
 };
 
 
