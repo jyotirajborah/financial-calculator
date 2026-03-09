@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="style.css">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
     <!-- Authentication Overlay -->
@@ -141,6 +142,14 @@
                     <ion-icon name="pie-chart"></ion-icon>
                     <span>Budget Planner</span>
                 </button>
+                <button class="nav-item" data-target="tax-calculator">
+                    <ion-icon name="calculator"></ion-icon>
+                    <span>Tax Calculator</span>
+                </button>
+                <button class="nav-item" data-target="calc-history">
+                    <ion-icon name="time"></ion-icon>
+                    <span>History</span>
+                </button>
             </nav>
         </aside>
 
@@ -210,6 +219,13 @@
                                     <span>Total Value</span>
                                     <strong id="sip-total">₹23,62,479</strong>
                                 </div>
+                                <button class="btn-secondary btn-save" onclick="saveCalculation('SIP', event)">
+                                    <ion-icon name="bookmark-outline"></ion-icon> Save to History
+                                </button>
+                                <button class="btn-secondary btn-export" onclick="exportToPDF('sip-calculator')">
+                                    <ion-icon name="download-outline"></ion-icon> Export PDF
+                                </button>
+                            </div>
                             </div>
                         </div>
                     </div>
@@ -267,6 +283,13 @@
                                     <span>Total Amount Payable</span>
                                     <strong id="emi-total">₹1,04,13,879</strong>
                                 </div>
+                                <button class="btn-secondary btn-save" onclick="saveCalculation('EMI', event)">
+                                    <ion-icon name="bookmark-outline"></ion-icon> Save to History
+                                </button>
+                                <button class="btn-secondary btn-export" onclick="exportToPDF('emi-calculator')">
+                                    <ion-icon name="download-outline"></ion-icon> Export PDF
+                                </button>
+                            </div>
                             </div>
                         </div>
                     </div>
@@ -329,6 +352,13 @@
                                     <span>Total Value</span>
                                     <strong id="ci-total">₹1,41,762</strong>
                                 </div>
+                                <button class="btn-secondary btn-save" onclick="saveCalculation('CI', event)">
+                                    <ion-icon name="bookmark-outline"></ion-icon> Save to History
+                                </button>
+                                <button class="btn-secondary btn-export" onclick="exportToPDF('ci-calculator')">
+                                    <ion-icon name="download-outline"></ion-icon> Export PDF
+                                </button>
+                            </div>
                             </div>
                         </div>
                     </div>
@@ -371,6 +401,83 @@
                             <div class="chart-container budget-chart-container">
                                 <canvas id="budgetChart"></canvas>
                             </div>
+                            <button class="btn-secondary btn-save" onclick="saveCalculation('BUDGET', event)" style="margin-top: 2rem;">
+                                <ion-icon name="bookmark-outline"></ion-icon> Save to History
+                            </button>
+                            <button class="btn-secondary btn-export" onclick="exportToPDF('budget-planner')" style="margin-top: 0.5rem;">
+                                <ion-icon name="download-outline"></ion-icon> Export PDF
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Income Tax Calculator View -->
+                <section class="calculator-view" id="tax-calculator">
+                    <div class="calc-grid">
+                        <div class="input-panel glass-card">
+                            <h2>Tax Details (FY 24-25)</h2>
+                            <p class="subtitle">Calculate your tax liability under the New Tax Regime.</p>
+                            <div class="input-group">
+                                <label for="tax-income">Annual Gross Salary</label>
+                                <div class="input-wrapper">
+                                    <span class="currency">₹</span>
+                                    <input type="number" id="tax-income" value="1200000" min="0" step="10000">
+                                </div>
+                                <input type="range" id="tax-income-range" min="0" max="10000000" step="50000" value="1200000">
+                            </div>
+                            <div class="input-group">
+                                <label for="tax-investments">Other Income / Deductions (Standard ₹75k incl.)</label>
+                                <div class="input-wrapper">
+                                    <span class="currency">₹</span>
+                                    <input type="number" id="tax-deductions" value="75000" min="0" step="5000" readonly disabled>
+                                </div>
+                                <p class="helper-text">Standard deduction of ₹75,000 is automatically applied in New Regime.</p>
+                            </div>
+                        </div>
+                        <div class="result-panel glass-card">
+                            <h2>Tax Liability Breakdown</h2>
+                            <div class="chart-container">
+                                <canvas id="taxChart"></canvas>
+                            </div>
+                            <div class="summary">
+                                <div class="summary-item total">
+                                    <span>Total Tax Payable</span>
+                                    <strong id="tax-payable" class="text-danger">₹0</strong>
+                                </div>
+                                <div class="summary-item">
+                                    <span>Taxable Income</span>
+                                    <strong id="tax-taxable">₹11,25,000</strong>
+                                </div>
+                                <div class="summary-item">
+                                    <span>In-Hand (Annual)</span>
+                                    <strong id="tax-inhand">₹12,00,000</strong>
+                                </div>
+                                <div class="summary-item">
+                                    <span>Monthly In-Hand</span>
+                                    <strong id="tax-monthly" class="text-success">₹1,00,000</strong>
+                                </div>
+                                <button class="btn-secondary btn-save" onclick="saveCalculation('TAX', event)">
+                                    <ion-icon name="bookmark-outline"></ion-icon> Save to History
+                                </button>
+                                <button class="btn-secondary btn-export" onclick="exportToPDF('tax-calculator')">
+                                    <ion-icon name="download-outline"></ion-icon> Export PDF
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- History View -->
+                <section class="calculator-view" id="calc-history">
+                    <div class="history-container glass-card">
+                        <div class="history-header">
+                            <h2>Your Saved Calculations</h2>
+                            <button class="btn-icon-text" onclick="loadHistory()">
+                                <ion-icon name="refresh"></ion-icon> Refresh
+                            </button>
+                        </div>
+                        <div id="history-list" class="history-list">
+                            <p class="empty-msg">No history found. Save a calculation to see it here!</p>
                         </div>
                     </div>
                 </section>

@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const { createClient } = require('@supabase/supabase-js');
 const cors = require('cors');
@@ -7,8 +8,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Initialize Supabase Client
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://oefxtqzwgkyzwycfoure.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lZnh0cXp3Z2t5end5Y2ZvdXJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Njg3NzQsImV4cCI6MjA4ODU0NDc3NH0.EqfmwjYCBE78KJL1idOQIdyDwZbKi9QxFpVmRBjvf3Y';
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_KEY;
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Middleware
@@ -91,6 +92,51 @@ app.get('/api/verify', async (req, res) => {
     }
     
     res.json({ user: { name: user.user_metadata.name, email: user.email } });
+});
+
+// Calculation History Endpoints
+
+// 1. Save Calculation
+app.post('/api/history', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: 'No token provided' });
+
+    const token = authHeader.split(' ')[1];
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) return res.status(401).json({ error: 'Invalid token' });
+
+    const { calc_type, input_data, result_data } = req.body;
+
+    const { data, error } = await supabase
+        .from('calculations')
+        .insert([
+            { user_id: user.id, calc_type, input_data, result_data }
+        ])
+        .select();
+
+    if (error) return res.status(400).json({ error: error.message });
+    res.status(201).json(data[0]);
+});
+
+// 2. Get History
+app.get('/api/history', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: 'No token provided' });
+
+    const token = authHeader.split(' ')[1];
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) return res.status(401).json({ error: 'Invalid token' });
+
+    const { data, error } = await supabase
+        .from('calculations')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+    if (error) return res.status(400).json({ error: error.message });
+    res.json(data);
 });
 
 // Fallback to serve index.html for root path

@@ -11,6 +11,7 @@ let sipChartObj = null;
 let emiChartObj = null;
 let ciChartObj = null;
 let budgetChartObj = null;
+let taxChartObj = null;
 
 // Common chart options
 const chartOptions = {
@@ -55,6 +56,11 @@ document.querySelectorAll('.nav-item').forEach(btn => {
         // Update Title
         document.getElementById('page-title').textContent = targetBtn.querySelector('span').textContent;
         
+        // Load history if target is history
+        if (targetId === 'calc-history') {
+            loadHistory();
+        }
+
         // Close sidebar on mobile
         if(window.innerWidth <= 768) {
             document.getElementById('sidebar').classList.remove('open');
@@ -187,6 +193,226 @@ const calculateBudget = () => {
 document.getElementById('budget-income').addEventListener('input', calculateBudget);
 
 
+// --- Income Tax Calculator (New Regime FY 24-25) ---
+const calculateTax = () => {
+    const income = parseFloat(document.getElementById('tax-income').value) || 0;
+    const stdDeduction = 75000;
+    const taxableIncome = Math.max(0, income - stdDeduction);
+    
+    let tax = 0;
+    
+    // New Tax Regime Slabs (FY 2024-25)
+    // 0 - 3L: Nil
+    // 3L - 7L: 5% (on amount > 3L)
+    // 7L - 10L: 10% (on amount > 7L)
+    // 10L - 12L: 15% (on amount > 10L)
+    // 12L - 15L: 20% (on amount > 12L)
+    // > 15L: 30% (on amount > 15L)
+    
+    // Rebate under 87A: If taxable income <= 7L, tax is NIL (Standard deduction extra)
+    // Actually in New Regime, if taxable income <= 7L (after std deduction), tax is NIL.
+    
+    if (taxableIncome <= 700000) {
+        tax = 0;
+    } else {
+        if (taxableIncome > 1500000) {
+            tax += (taxableIncome - 1500000) * 0.30;
+            tax += (1500000 - 1200000) * 0.20;
+            tax += (1200000 - 1000000) * 0.15;
+            tax += (1000000 - 700000) * 0.10;
+            tax += (700000 - 300000) * 0.05;
+        } else if (taxableIncome > 1200000) {
+            tax += (taxableIncome - 1200000) * 0.20;
+            tax += (1200000 - 1000000) * 0.15;
+            tax += (1000000 - 700000) * 0.10;
+            tax += (700000 - 300000) * 0.05;
+        } else if (taxableIncome > 1000000) {
+            tax += (taxableIncome - 1000000) * 0.15;
+            tax += (1000000 - 700000) * 0.10;
+            tax += (700000 - 300000) * 0.05;
+        } else if (taxableIncome > 700000) {
+            tax += (taxableIncome - 700000) * 0.10;
+            tax += (700000 - 300000) * 0.05;
+        } else if (taxableIncome > 300000) {
+            tax += (taxableIncome - 300000) * 0.05;
+        }
+    }
+    
+    // Health and Education Cess @ 4%
+    const cess = tax * 0.04;
+    const totalTax = tax + cess;
+    
+    const annualInHand = income - totalTax;
+    const monthlyInHand = annualInHand / 12;
+    
+    document.getElementById('tax-payable').textContent = '₹' + formatCurrency(totalTax);
+    document.getElementById('tax-taxable').textContent = '₹' + formatCurrency(taxableIncome);
+    document.getElementById('tax-inhand').textContent = '₹' + formatCurrency(annualInHand);
+    document.getElementById('tax-monthly').textContent = '₹' + formatCurrency(monthlyInHand);
+    
+    updateChart('taxChart', taxChartObj, ['In-Hand Salary', 'Total Tax'], [annualInHand, totalTax], ['#10b981', '#ef4444'], 'taxChartObj', 'doughnut');
+};
+
+syncInputs('tax-income', 'tax-income-range', calculateTax);
+
+
+// --- History Logic ---
+const saveCalculation = async (type, e) => {
+    if (e) e.preventDefault();
+    let input_data = {};
+    let result_data = {};
+    
+    if (type === 'SIP') {
+        input_data = {
+            amount: document.getElementById('sip-amount').value,
+            rate: document.getElementById('sip-rate').value,
+            time: document.getElementById('sip-time').value
+        };
+        result_data = { total: document.getElementById('sip-total').textContent };
+    } else if (type === 'EMI') {
+        input_data = {
+            amount: document.getElementById('emi-amount').value,
+            rate: document.getElementById('emi-rate').value,
+            time: document.getElementById('emi-time').value
+        };
+        result_data = { monthly: document.getElementById('emi-monthly').textContent };
+    } else if (type === 'CI') {
+        input_data = {
+            principal: document.getElementById('ci-principal').value,
+            rate: document.getElementById('ci-rate').value,
+            time: document.getElementById('ci-time').value
+        };
+        result_data = { total: document.getElementById('ci-total').textContent };
+    } else if (type === 'TAX') {
+        input_data = { income: document.getElementById('tax-income').value };
+        result_data = { tax: document.getElementById('tax-payable').textContent };
+    } else if (type === 'BUDGET') {
+        input_data = { income: document.getElementById('budget-income').value };
+        result_data = { savings: document.getElementById('budget-savings').textContent };
+    }
+
+    const token = localStorage.getItem('auth_token');
+    if (!token) return alert("Please login to save calculations.");
+
+    try {
+        const response = await fetch('/api/history', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ calc_type: type, input_data, result_data })
+        });
+        
+        if (response.ok) {
+            const btn = e ? e.target.closest('.btn-save') : null;
+            if (btn) {
+                const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<ion-icon name="checkmark-outline"></ion-icon> Saved!';
+            btn.style.color = 'var(--success)';
+            setTimeout(() => {
+                btn.innerHTML = originalHtml;
+                btn.style.color = '';
+            }, 2000);
+            }
+        }
+    } catch (error) {
+        console.error("Error saving history:", error);
+    }
+};
+
+const loadHistory = async () => {
+    const list = document.getElementById('history-list');
+    const token = localStorage.getItem('auth_token');
+    if (!token) return;
+
+    list.innerHTML = '<div class="empty-msg">Loading history...</div>';
+
+    try {
+        const response = await fetch('/api/history', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        
+        if (data.length === 0) {
+            list.innerHTML = '<p class="empty-msg">No history found. Save a calculation to see it here!</p>';
+            return;
+        }
+
+        list.innerHTML = '';
+        data.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'history-item';
+            
+            let label = "";
+            let subtext = "";
+            let mainVal = "";
+            
+            if (item.calc_type === 'SIP') {
+                label = "SIP Plan";
+                subtext = `₹${item.input_data.amount}/mo @ ${item.input_data.rate}% for ${item.input_data.time}yr`;
+                mainVal = item.result_data.total;
+            } else if (item.calc_type === 'EMI') {
+                label = "Loan EMI";
+                subtext = `₹${item.input_data.amount} @ ${item.input_data.rate}% for ${item.input_data.time}yr`;
+                mainVal = item.result_data.monthly;
+            } else if (item.calc_type === 'TAX') {
+                label = "Tax Estimate";
+                subtext = `Income: ₹${formatCurrency(item.input_data.income)}`;
+                mainVal = item.result_data.tax;
+            } else if (item.calc_type === 'CI') {
+                label = "Growth Plan";
+                subtext = `Principal: ₹${item.input_data.principal} @ ${item.input_data.rate}%`;
+                mainVal = item.result_data.total;
+            } else if (item.calc_type === 'BUDGET') {
+                label = "Budget Rule";
+                subtext = `Monthly Income: ₹${item.input_data.income}`;
+                mainVal = item.result_data.savings;
+            }
+
+            const date = new Date(item.created_at).toLocaleDateString('en-IN', {
+                day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+
+            div.innerHTML = `
+                <div class="history-info">
+                    <h4>${label}</h4>
+                    <p>${subtext}</p>
+                </div>
+                <div class="history-value">
+                    <span class="main-val">${mainVal}</span>
+                    <span class="date">${date}</span>
+                </div>
+            `;
+            list.appendChild(div);
+        });
+    } catch (error) {
+        list.innerHTML = '<p class="empty-msg">Something went wrong while loading history.</p>';
+    }
+};
+
+// --- Export Logic ---
+const exportToPDF = (elementId) => {
+    const element = document.getElementById(elementId);
+    const options = {
+        margin: 0.5,
+        filename: `FinCalc-${elementId}-${new Date().getTime()}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, backgroundColor: '#0f172a' },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+    
+    // Hide buttons temporarily during export
+    const buttons = element.querySelectorAll('button');
+    buttons.forEach(btn => btn.style.display = 'none');
+    
+    html2pdf().from(element).set(options).save().then(() => {
+        // Show buttons again
+        buttons.forEach(btn => btn.style.display = '');
+    });
+};
+
+
 // --- Chart Helper Function ---
 function updateChart(canvasId, chartObjInstance, labels, data, colors, varName, type = 'pie') {
     const ctx = document.getElementById(canvasId).getContext('2d');
@@ -217,6 +443,7 @@ function updateChart(canvasId, chartObjInstance, labels, data, colors, varName, 
     if (varName === 'emiChartObj') emiChartObj = newChart;
     if (varName === 'ciChartObj') ciChartObj = newChart;
     if (varName === 'budgetChartObj') budgetChartObj = newChart;
+    if (varName === 'taxChartObj') taxChartObj = newChart;
 }
 
 
@@ -328,6 +555,7 @@ const initAuth = () => {
         calculateEMI();
         calculateCI();
         calculateBudget();
+        calculateTax();
     };
 
     const logout = () => {
