@@ -7,6 +7,9 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// For server-side PDF rendering fallback
+const PDF_SECRET = process.env.PDF_SECRET || null;
+
 // Initialize Supabase Client
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_KEY;
@@ -176,6 +179,43 @@ app.delete('/api/history/:id', async (req, res) => {
 // Fallback to serve index.html for root path
 app.get('/*path', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Server-side PDF rendering endpoint (secure: requires X-PDF-SECRET header matching PDF_SECRET)
+app.post('/api/render-pdf', async (req, res) => {
+    const secret = req.headers['x-pdf-secret'] || req.query.secret;
+    if (!PDF_SECRET || secret !== PDF_SECRET) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { path: renderPath } = req.body || {};
+    // Only allow rendering internal paths
+    const safePath = renderPath && typeof renderPath === 'string' ? renderPath : '/';
+    const url = `http://localhost:${PORT}${safePath.startsWith('/') ? safePath : '/' + safePath}`;
+
+    const puppeteer = require('puppeteer');
+    let browser;
+    try {
+        browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+        const page = await browser.newPage();
+        // Set a reasonable viewport so the rendered page matches typical desktop layout
+        await page.setViewport({ width: 1200, height: 800 });
+        await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 });
+
+        const pdfBuffer = await page.pdf({
+            format: 'A4',
+            printBackground: true,
+            margin: { top: '10mm', bottom: '10mm', left: '10mm', right: '10mm' }
+        });
+
+        res.set({ 'Content-Type': 'application/pdf', 'Content-Length': pdfBuffer.length });
+        return res.send(pdfBuffer);
+    } catch (err) {
+        console.error('Server-side PDF render failed:', err);
+        return res.status(500).json({ error: 'PDF generation failed' });
+    } finally {
+        if (browser) await browser.close();
+    }
 });
 
 // Start Server
