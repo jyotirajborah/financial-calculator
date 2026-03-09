@@ -423,22 +423,63 @@ const deleteCalculation = async (id) => {
 
 // --- Export Logic ---
 const exportToPDF = (elementId) => {
+    // Clone the element and adjust styles for clean PDF rendering
     const element = document.getElementById(elementId);
+    if (!element) return alert('Export failed: element not found');
+
+    // Create a clone so we don't mutate the live UI
+    const clone = element.cloneNode(true);
+
+    // Replace canvas (Chart.js) elements in the clone with images copied from originals
+    const originalCanvases = element.querySelectorAll('canvas');
+    const cloneCanvases = clone.querySelectorAll('canvas');
+    originalCanvases.forEach((origCanvas, idx) => {
+        try {
+            const dataURL = origCanvas.toDataURL('image/png');
+            const img = document.createElement('img');
+            img.src = dataURL;
+            // Preserve sizing
+            img.style.width = (origCanvas.style.width || origCanvas.width + 'px');
+            img.style.height = (origCanvas.style.height || origCanvas.height + 'px');
+            const target = cloneCanvases[idx];
+            if (target && target.parentNode) target.parentNode.replaceChild(img, target);
+        } catch (e) {
+            console.warn('Could not export canvas to image for PDF:', e);
+        }
+    });
+
+    // Remove interactive elements from clone
+    clone.querySelectorAll('button, input, select, textarea').forEach(n => n.remove());
+
+    // Force a light background and readable text for the PDF (overrides dark themes)
+    clone.style.background = '#ffffff';
+    clone.style.color = '#000000';
+    clone.style.width = getComputedStyle(element).width || '100%';
+    clone.style.boxSizing = 'border-box';
+
+    // Keep the clone in the viewport but invisible (opacity:0) so html2canvas can render it
+    clone.style.position = 'fixed';
+    clone.style.left = '0';
+    clone.style.top = '0';
+    clone.style.opacity = '0';
+    clone.style.pointerEvents = 'none';
+    clone.style.zIndex = '9999';
+    document.body.appendChild(clone);
+
     const options = {
-        margin: 0.5,
+        margin: 10, // in mm when jsPDF unit is 'mm'
         filename: `FinCalc-${elementId}-${new Date().getTime()}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, backgroundColor: '#0f172a' },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+        html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
-    
-    // Hide buttons temporarily during export
-    const buttons = element.querySelectorAll('button');
-    buttons.forEach(btn => btn.style.display = 'none');
-    
-    html2pdf().from(element).set(options).save().then(() => {
-        // Show buttons again
-        buttons.forEach(btn => btn.style.display = '');
+
+    html2pdf().from(clone).set(options).save().then(() => {
+        document.body.removeChild(clone);
+    }).catch(err => {
+        console.error('PDF export error:', err);
+        document.body.removeChild(clone);
+        alert('Could not export PDF. Check console for details.');
     });
 };
 
