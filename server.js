@@ -147,6 +147,32 @@ app.get('/api/history', async (req, res) => {
     res.json(data);
 });
 
+// 3. Delete a Calculation
+app.delete('/api/history/:id', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: 'No token provided' });
+
+    const token = authHeader.split(' ')[1];
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) return res.status(401).json({ error: 'Invalid token' });
+
+    const { id } = req.params;
+
+    const userSupabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+        global: { headers: { Authorization: `Bearer ${token}` } }
+    });
+
+    const { error } = await userSupabase
+        .from('calculations')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+    if (error) return res.status(400).json({ error: error.message });
+    res.status(200).json({ message: 'Deleted successfully' });
+});
+
 // Fallback to serve index.html for root path
 app.get('/*path', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));

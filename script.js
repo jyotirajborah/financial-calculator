@@ -389,11 +389,35 @@ const loadHistory = async () => {
                     <span class="main-val">${mainVal}</span>
                     <span class="date">${date}</span>
                 </div>
+                <button class="btn-delete-history" onclick="deleteCalculation('${item.id}')" title="Delete">
+                    <ion-icon name="trash-outline"></ion-icon>
+                </button>
             `;
             list.appendChild(div);
         });
     } catch (error) {
         list.innerHTML = '<p class="empty-msg">Something went wrong while loading history.</p>';
+    }
+};
+
+const deleteCalculation = async (id) => {
+    const token = localStorage.getItem('auth_token');
+    if (!token) return;
+
+    try {
+        const response = await fetch(`/api/history/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+            loadHistory(); // Refresh the list
+        } else {
+            const errData = await response.json();
+            alert(`Could not delete: ${errData.error}`);
+        }
+    } catch (error) {
+        console.error('Error deleting history item:', error);
     }
 };
 
