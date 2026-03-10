@@ -428,6 +428,23 @@ input[type=range]::-webkit-slider-thumb:hover {
 }
 
 /* Budget breakdown (lockable line items) */
+.budget-tweaks {
+    margin-top: 0.75rem;
+    text-align: left;
+}
+
+.budget-tweaks summary {
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 500;
+    user-select: none;
+}
+
+.budget-tweaks[open] summary {
+    color: var(--text-main);
+}
+
 .budget-breakdown {
     display: flex;
     flex-direction: column;
@@ -466,6 +483,10 @@ input[type=range]::-webkit-slider-thumb:hover {
     color: var(--text-main);
     font-family: inherit;
     font-size: 0.9rem;
+}
+
+.budget-breakdown-controls input[type="number"]::placeholder {
+    color: rgba(148, 163, 184, 0.6);
 }
 
 .budget-breakdown-controls input[type="number"]:focus {
