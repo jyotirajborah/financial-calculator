@@ -54,7 +54,7 @@ function exportToExcel(elementId) {
 
         pushRes('Needs (50%)', document.getElementById('budget-needs').textContent);
         pushRes('Wants (30%)', document.getElementById('budget-wants').textContent);
-        pushRes('Savings (20%)', document.getElementById('budget-savings').textContent);
+        pushRes('Investing (20%)', document.getElementById('budget-savings').textContent);
     } else if (elementId === 'tax-calculator') {
         pushRow('Annual Income', document.getElementById('tax-income').value);
         pushRow('Standard Deduction', (document.getElementById('tax-std-deduction') || {}).value || '');
