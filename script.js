@@ -288,6 +288,168 @@ document.getElementById('ci-compounding').addEventListener('change', calculateCI
 
 
 // --- Budget Planner ---
+const budgetBreakdownConfig = {
+    needs: [
+        { key: 'housing', label: 'Housing', weight: 1 },
+        { key: 'groceries', label: 'Groceries', weight: 1 },
+        { key: 'utilities', label: 'Utilities', weight: 1 },
+        { key: 'transport', label: 'Transportation', weight: 1 },
+        { key: 'insurance', label: 'Insurance', weight: 1 }
+    ],
+    wants: [
+        { key: 'entertainment', label: 'Entertainment', weight: 1 },
+        { key: 'dining', label: 'Dining out', weight: 1 },
+        { key: 'hobbies', label: 'Hobbies', weight: 1 },
+        { key: 'vacations', label: 'Vacations', weight: 1 },
+        { key: 'shopping', label: 'Shopping', weight: 1 }
+    ],
+    savings: [
+        { key: 'emergency', label: 'Emergency fund', weight: 1 },
+        { key: 'short_term', label: 'Short-term goals', weight: 1 },
+        { key: 'buffer', label: 'Cash buffer', weight: 1 }
+    ],
+    investments: [
+        { key: 'sip', label: 'SIPs / Index funds', weight: 1 },
+        { key: 'retirement', label: 'Retirement', weight: 1 },
+        { key: 'long_term', label: 'Long-term goals', weight: 1 }
+    ]
+};
+
+const budgetBreakdownState = { needs: {}, wants: {}, savings: {}, investments: {} };
+const budgetBreakdownEls = { needs: {}, wants: {}, savings: {}, investments: {} };
+let budgetBreakdownInitialized = false;
+let budgetBreakdownInternalUpdate = false;
+
+const ensureBudgetBreakdownState = () => {
+    Object.keys(budgetBreakdownConfig).forEach((cat) => {
+        budgetBreakdownConfig[cat].forEach((it) => {
+            if (!budgetBreakdownState[cat][it.key]) {
+                budgetBreakdownState[cat][it.key] = { locked: false, amount: 0 };
+            }
+        });
+    });
+};
+
+const allocateBudgetCategory = (total, catKey) => {
+    const items = budgetBreakdownConfig[catKey] || [];
+    const state = budgetBreakdownState[catKey] || {};
+
+    const locked = [];
+    const unlocked = [];
+    let lockedSum = 0;
+
+    items.forEach((it) => {
+        const st = state[it.key] || { locked: false, amount: 0 };
+        const amt = Math.max(0, parseFloat(st.amount) || 0);
+        if (st.locked) {
+            locked.push({ ...it, amount: amt });
+            lockedSum += amt;
+        } else {
+            unlocked.push(it);
+        }
+    });
+
+    const overflow = lockedSum > total;
+    const remaining = Math.max(0, total - lockedSum);
+    const sumW = unlocked.reduce((acc, it) => acc + (it.weight || 1), 0) || 0;
+
+    const alloc = {};
+    locked.forEach((it) => { alloc[it.key] = it.amount; });
+
+    if (unlocked.length === 0) {
+        return { alloc, lockedSum, remaining, overflow };
+    }
+
+    // Distribute remaining across unlocked items; adjust last to fix rounding drift.
+    let running = 0;
+    unlocked.forEach((it, idx) => {
+        const w = it.weight || 1;
+        let val = sumW > 0 ? (remaining * w) / sumW : 0;
+        val = Math.round(val);
+        if (idx === unlocked.length - 1) {
+            val = Math.max(0, Math.round(remaining - running));
+        } else {
+            running += val;
+        }
+        alloc[it.key] = val;
+    });
+
+    return { alloc, lockedSum, remaining, overflow };
+};
+
+const ensureBudgetBreakdownUI = () => {
+    if (budgetBreakdownInitialized) return;
+    ensureBudgetBreakdownState();
+
+    Object.keys(budgetBreakdownConfig).forEach((catKey) => {
+        const container = document.getElementById(`budget-breakdown-${catKey}`);
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        budgetBreakdownConfig[catKey].forEach((it) => {
+            const row = document.createElement('div');
+            row.className = 'budget-breakdown-row';
+
+            const label = document.createElement('div');
+            label.className = 'budget-breakdown-label';
+            label.textContent = it.label;
+
+            const controls = document.createElement('div');
+            controls.className = 'budget-breakdown-controls';
+
+            const lockLabel = document.createElement('label');
+            lockLabel.className = 'budget-breakdown-lock';
+
+            const lock = document.createElement('input');
+            lock.type = 'checkbox';
+
+            const lockText = document.createElement('span');
+            lockText.textContent = 'Lock';
+
+            lockLabel.appendChild(lock);
+            lockLabel.appendChild(lockText);
+
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.min = '0';
+            input.step = '100';
+            input.placeholder = 'Amount';
+            input.inputMode = 'numeric';
+
+            lock.addEventListener('change', () => {
+                if (budgetBreakdownInternalUpdate) return;
+                const st = budgetBreakdownState[catKey][it.key];
+                st.locked = !!lock.checked;
+                if (st.locked) {
+                    st.amount = parseFloat(input.value) || 0;
+                }
+                calculateBudget();
+            });
+
+            input.addEventListener('input', () => {
+                if (budgetBreakdownInternalUpdate) return;
+                const st = budgetBreakdownState[catKey][it.key];
+                st.amount = parseFloat(input.value) || 0;
+                st.locked = true;
+                lock.checked = true;
+                calculateBudget();
+            });
+
+            controls.appendChild(input);
+            controls.appendChild(lockLabel);
+
+            row.appendChild(label);
+            row.appendChild(controls);
+            container.appendChild(row);
+
+            budgetBreakdownEls[catKey][it.key] = { input, lock };
+        });
+    });
+
+    budgetBreakdownInitialized = true;
+};
+
 const calculateBudget = () => {
     const RUPEE = '\u20B9';
     const income = parseFloat(document.getElementById('budget-income').value) || 0;
@@ -351,6 +513,38 @@ const calculateBudget = () => {
     document.getElementById('budget-savings').textContent = RUPEE + formatCurrency(savings);
     const invEl = document.getElementById('budget-investments');
     if (invEl) invEl.textContent = RUPEE + formatCurrency(investments);
+
+    ensureBudgetBreakdownUI();
+
+    const applyBreakdown = (catKey, total) => {
+        const res = allocateBudgetCategory(total, catKey);
+        const meta = document.getElementById(`budget-breakdown-meta-${catKey}`);
+
+        budgetBreakdownInternalUpdate = true;
+        (budgetBreakdownConfig[catKey] || []).forEach((it) => {
+            const el = budgetBreakdownEls[catKey][it.key];
+            if (!el) return;
+            const st = budgetBreakdownState[catKey][it.key];
+            const val = Math.max(0, res.alloc[it.key] || 0);
+            el.input.value = String(Math.round(val));
+            el.lock.checked = !!st.locked;
+        });
+        budgetBreakdownInternalUpdate = false;
+
+        if (meta) {
+            meta.classList.toggle('warning', !!res.overflow);
+            if (res.overflow) {
+                meta.textContent = `Locked items exceed total: locked ${RUPEE}${formatCurrency(res.lockedSum)} > total ${RUPEE}${formatCurrency(total)}.`;
+            } else {
+                meta.textContent = `Locked: ${RUPEE}${formatCurrency(res.lockedSum)} | Auto-allocated: ${RUPEE}${formatCurrency(res.remaining)}`;
+            }
+        }
+    };
+
+    applyBreakdown('needs', needs);
+    applyBreakdown('wants', wants);
+    applyBreakdown('savings', savings);
+    applyBreakdown('investments', investments);
 
     updateChart(
         'budgetChart',
