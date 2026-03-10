@@ -495,23 +495,24 @@
                 <section class="calculator-view" id="tax-calculator">
                     <div class="calc-grid">
                         <div class="input-panel glass-card">
-                            <h2>Tax Details (FY 24-25)</h2>
-                            <p class="subtitle">Calculate your tax liability under the New Tax Regime.</p>
+                            <h2>Income Tax (New Regime, FY 2024-25)</h2>
+                            <p class="subtitle">Quick estimate of income tax + 4% cess. Excludes PF/ESI/professional tax and any surcharge.</p>
                             <div class="input-group">
-                                <label for="tax-income">Annual Gross Salary</label>
+                                <label for="tax-income">Annual Income</label>
                                 <div class="input-wrapper">
                                     <span class="currency">₹</span>
                                     <input type="number" id="tax-income" value="1200000" min="0" step="10000">
                                 </div>
                                 <input type="range" id="tax-income-range" min="0" max="10000000" step="50000" value="1200000">
+                                <p class="helper-text">Use your taxable annual income figure (salary + taxable allowances).</p>
                             </div>
                             <div class="input-group">
-                                <label for="tax-investments">Other Income / Deductions (Standard ₹75k incl.)</label>
+                                <label for="tax-std-deduction">Standard Deduction</label>
                                 <div class="input-wrapper">
                                     <span class="currency">₹</span>
-                                    <input type="number" id="tax-deductions" value="75000" min="0" step="5000" readonly disabled>
+                                    <input type="number" id="tax-std-deduction" value="75000" min="0" step="1000">
                                 </div>
-                                <p class="helper-text">Standard deduction of ₹75,000 is automatically applied in New Regime.</p>
+                                <p class="helper-text">Default ₹75,000 for FY 2024-25. Adjust if your case/FY differs.</p>
                             </div>
                         </div>
                         <div class="result-panel glass-card">
@@ -521,7 +522,7 @@
                             </div>
                             <div class="summary">
                                 <div class="summary-item total">
-                                    <span>Total Tax Payable</span>
+                                    <span>Total Tax Payable (Incl. Cess)</span>
                                     <strong id="tax-payable" class="text-danger">₹0</strong>
                                 </div>
                                 <div class="summary-item">
@@ -529,13 +530,33 @@
                                     <strong id="tax-taxable">₹11,25,000</strong>
                                 </div>
                                 <div class="summary-item">
-                                    <span>In-Hand (Annual)</span>
+                                    <span>Slab Tax (Before Cess)</span>
+                                    <strong id="tax-slab-tax">₹0</strong>
+                                </div>
+                                <div class="summary-item">
+                                    <span>Health &amp; Education Cess (4%)</span>
+                                    <strong id="tax-cess">₹0</strong>
+                                </div>
+                                <div class="summary-item">
+                                    <span>Effective Tax Rate (Of Gross)</span>
+                                    <strong id="tax-effective-rate">0%</strong>
+                                </div>
+                                <div class="summary-item">
+                                    <span>After-Tax Income (Annual)</span>
                                     <strong id="tax-inhand">₹12,00,000</strong>
                                 </div>
                                 <div class="summary-item">
-                                    <span>Monthly In-Hand</span>
+                                    <span>After-Tax Income (Monthly)</span>
                                     <strong id="tax-monthly" class="text-success">₹1,00,000</strong>
                                 </div>
+                                <div class="summary-item">
+                                    <span>Tax (Monthly Avg.)</span>
+                                    <strong id="tax-monthly-tax" class="text-danger">₹0</strong>
+                                </div>
+                                <details class="tax-details">
+                                    <summary>Show slab breakdown</summary>
+                                    <div id="tax-slab-breakdown" class="tax-breakdown"></div>
+                                </details>
                                 <button class="btn-secondary btn-save" onclick="saveCalculation('TAX', event)">
                                     <ion-icon name="bookmark-outline"></ion-icon> Save to History
                                 </button>

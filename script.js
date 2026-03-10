@@ -56,12 +56,17 @@ function exportToExcel(elementId) {
         pushRes('Wants (30%)', document.getElementById('budget-wants').textContent);
         pushRes('Savings (20%)', document.getElementById('budget-savings').textContent);
     } else if (elementId === 'tax-calculator') {
-        pushRow('Annual Gross Salary', document.getElementById('tax-income').value);
+        pushRow('Annual Income', document.getElementById('tax-income').value);
+        pushRow('Standard Deduction', (document.getElementById('tax-std-deduction') || {}).value || '');
 
         pushRes('Taxable Income', document.getElementById('tax-taxable').textContent);
-        pushRes('Total Tax Payable', document.getElementById('tax-payable').textContent);
-        pushRes('Annual In-Hand', document.getElementById('tax-inhand').textContent);
-        pushRes('Monthly In-Hand', document.getElementById('tax-monthly').textContent);
+        pushRes('Slab Tax (Before Cess)', (document.getElementById('tax-slab-tax') || {}).textContent || '');
+        pushRes('Cess (4%)', (document.getElementById('tax-cess') || {}).textContent || '');
+        pushRes('Total Tax Payable (Incl. Cess)', document.getElementById('tax-payable').textContent);
+        pushRes('Effective Tax Rate', (document.getElementById('tax-effective-rate') || {}).textContent || '');
+        pushRes('After-Tax Income (Annual)', document.getElementById('tax-inhand').textContent);
+        pushRes('After-Tax Income (Monthly)', document.getElementById('tax-monthly').textContent);
+        pushRes('Tax (Monthly Avg.)', (document.getElementById('tax-monthly-tax') || {}).textContent || '');
     } else if (elementId === 'net-worth-calculator') {
         pushRow('Savings', document.getElementById('nw-savings').value);
         pushRow('Investments', document.getElementById('nw-investments').value);
@@ -294,68 +299,90 @@ const calculateBudget = () => {
 document.getElementById('budget-income').addEventListener('input', calculateBudget);
 
 
-// --- Income Tax Calculator (New Regime FY 24-25) ---
+// --- Income Tax Calculator (New Regime FY 2024-25) ---
+const computeNewRegimeFY2425SlabTax = (taxableIncome) => {
+    const slabs = [
+        { from: 0, to: 300000, rate: 0.00, label: '0 - 3L @ 0%' },
+        { from: 300000, to: 700000, rate: 0.05, label: '3L - 7L @ 5%' },
+        { from: 700000, to: 1000000, rate: 0.10, label: '7L - 10L @ 10%' },
+        { from: 1000000, to: 1200000, rate: 0.15, label: '10L - 12L @ 15%' },
+        { from: 1200000, to: 1500000, rate: 0.20, label: '12L - 15L @ 20%' },
+        { from: 1500000, to: Infinity, rate: 0.30, label: '15L+ @ 30%' }
+    ];
+
+    let slabTax = 0;
+    const breakdown = [];
+
+    for (const slab of slabs) {
+        if (taxableIncome <= slab.from) break;
+        const upper = Math.min(taxableIncome, slab.to);
+        const amountInSlab = Math.max(0, upper - slab.from);
+        const taxForSlab = amountInSlab * slab.rate;
+
+        slabTax += taxForSlab;
+        breakdown.push({ label: slab.label, amountInSlab, rate: slab.rate, taxForSlab });
+    }
+
+    return { slabTax, breakdown };
+};
+
 const calculateTax = () => {
+    const RUPEE = '\u20B9';
     const income = parseFloat(document.getElementById('tax-income').value) || 0;
-    const stdDeduction = 75000;
+    const stdDeductionEl = document.getElementById('tax-std-deduction');
+    const stdDeduction = parseFloat(stdDeductionEl ? stdDeductionEl.value : '0') || 0;
     const taxableIncome = Math.max(0, income - stdDeduction);
-    
-    let tax = 0;
-    
-    // New Tax Regime Slabs (FY 2024-25)
-    // 0 - 3L: Nil
-    // 3L - 7L: 5% (on amount > 3L)
-    // 7L - 10L: 10% (on amount > 7L)
-    // 10L - 12L: 15% (on amount > 10L)
-    // 12L - 15L: 20% (on amount > 12L)
-    // > 15L: 30% (on amount > 15L)
-    
-    // Rebate under 87A: If taxable income <= 7L, tax is NIL (Standard deduction extra)
-    // Actually in New Regime, if taxable income <= 7L (after std deduction), tax is NIL.
-    
+
+    // Rebate u/s 87A (new regime): taxable income <= 7L => income tax becomes 0.
+    let slabTax = 0;
+    let breakdown = [];
+    const breakdownEl = document.getElementById('tax-slab-breakdown');
+
     if (taxableIncome <= 700000) {
-        tax = 0;
+        slabTax = 0;
+        breakdown = [];
+        if (breakdownEl) {
+            breakdownEl.textContent = 'Rebate u/s 87A applied: taxable income <= 7,00,000 => income tax = 0.';
+        }
     } else {
-        if (taxableIncome > 1500000) {
-            tax += (taxableIncome - 1500000) * 0.30;
-            tax += (1500000 - 1200000) * 0.20;
-            tax += (1200000 - 1000000) * 0.15;
-            tax += (1000000 - 700000) * 0.10;
-            tax += (700000 - 300000) * 0.05;
-        } else if (taxableIncome > 1200000) {
-            tax += (taxableIncome - 1200000) * 0.20;
-            tax += (1200000 - 1000000) * 0.15;
-            tax += (1000000 - 700000) * 0.10;
-            tax += (700000 - 300000) * 0.05;
-        } else if (taxableIncome > 1000000) {
-            tax += (taxableIncome - 1000000) * 0.15;
-            tax += (1000000 - 700000) * 0.10;
-            tax += (700000 - 300000) * 0.05;
-        } else if (taxableIncome > 700000) {
-            tax += (taxableIncome - 700000) * 0.10;
-            tax += (700000 - 300000) * 0.05;
-        } else if (taxableIncome > 300000) {
-            tax += (taxableIncome - 300000) * 0.05;
+        const res = computeNewRegimeFY2425SlabTax(taxableIncome);
+        slabTax = res.slabTax;
+        breakdown = res.breakdown;
+
+        if (breakdownEl) {
+            breakdownEl.innerHTML = breakdown.map((b) => {
+                const taxableInSlab = `${RUPEE}${formatCurrency(b.amountInSlab)}`;
+                const taxInSlab = `${RUPEE}${formatCurrency(b.taxForSlab)}`;
+                const pct = (b.rate * 100).toFixed(0);
+                return `<div class="tax-breakdown-row"><span>${b.label} (Taxable: ${taxableInSlab})</span><strong>${taxInSlab} (${pct}%)</strong></div>`;
+            }).join('');
         }
     }
-    
-    // Health and Education Cess @ 4%
-    const cess = tax * 0.04;
-    const totalTax = tax + cess;
-    
-    const annualInHand = income - totalTax;
-    const monthlyInHand = annualInHand / 12;
-    
-    document.getElementById('tax-payable').textContent = '₹' + formatCurrency(totalTax);
-    document.getElementById('tax-taxable').textContent = '₹' + formatCurrency(taxableIncome);
-    document.getElementById('tax-inhand').textContent = '₹' + formatCurrency(annualInHand);
-    document.getElementById('tax-monthly').textContent = '₹' + formatCurrency(monthlyInHand);
-    
-    updateChart('taxChart', taxChartObj, ['In-Hand Salary', 'Total Tax'], [annualInHand, totalTax], ['#10b981', '#ef4444'], 'taxChartObj', 'doughnut');
+
+    const cess = slabTax * 0.04;
+    const totalTax = slabTax + cess;
+
+    const annualAfterTax = Math.max(0, income - totalTax);
+    const monthlyAfterTax = annualAfterTax / 12;
+    const monthlyTax = totalTax / 12;
+    const effectiveRate = income > 0 ? (totalTax / income) * 100 : 0;
+
+    document.getElementById('tax-payable').textContent = RUPEE + formatCurrency(totalTax);
+    document.getElementById('tax-taxable').textContent = RUPEE + formatCurrency(taxableIncome);
+    document.getElementById('tax-slab-tax').textContent = RUPEE + formatCurrency(slabTax);
+    document.getElementById('tax-cess').textContent = RUPEE + formatCurrency(cess);
+    document.getElementById('tax-effective-rate').textContent = `${effectiveRate.toFixed(1)}%`;
+    document.getElementById('tax-inhand').textContent = RUPEE + formatCurrency(annualAfterTax);
+    document.getElementById('tax-monthly').textContent = RUPEE + formatCurrency(monthlyAfterTax);
+    document.getElementById('tax-monthly-tax').textContent = RUPEE + formatCurrency(monthlyTax);
+
+    updateChart('taxChart', taxChartObj, ['After-Tax Income', 'Total Tax'], [annualAfterTax, totalTax], ['#10b981', '#ef4444'], 'taxChartObj', 'doughnut');
     updateDashboard();
 };
 
 syncInputs('tax-income', 'tax-income-range', calculateTax);
+const stdDeductionInput = document.getElementById('tax-std-deduction');
+if (stdDeductionInput) stdDeductionInput.addEventListener('input', calculateTax);
 
 
 // --- Net Worth Calculator ---
