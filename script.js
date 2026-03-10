@@ -62,6 +62,21 @@ function exportToExcel(elementId) {
         pushRes('Total Tax Payable', document.getElementById('tax-payable').textContent);
         pushRes('Annual In-Hand', document.getElementById('tax-inhand').textContent);
         pushRes('Monthly In-Hand', document.getElementById('tax-monthly').textContent);
+    } else if (elementId === 'net-worth-calculator') {
+        pushRow('Savings', document.getElementById('nw-savings').value);
+        pushRow('Investments', document.getElementById('nw-investments').value);
+        pushRow('Property', document.getElementById('nw-property').value);
+        pushRow('Vehicles', document.getElementById('nw-vehicle').value);
+        pushRow('Other Assets', document.getElementById('nw-other-assets').value);
+        pushRow('Home Loan', document.getElementById('nw-home-loan').value);
+        pushRow('Car Loan', document.getElementById('nw-car-loan').value);
+        pushRow('Personal Loan', document.getElementById('nw-personal-loan').value);
+        pushRow('Credit Card Debt', document.getElementById('nw-credit-card').value);
+        pushRow('Other Liabilities', document.getElementById('nw-other-liabilities').value);
+
+        pushRes('Total Assets', document.getElementById('nw-result-assets').textContent);
+        pushRes('Total Liabilities', document.getElementById('nw-result-liabilities').textContent);
+        pushRes('Net Worth', document.getElementById('nw-net-worth').textContent);
     } else {
         alert('Excel export: unknown view');
         return;
@@ -338,6 +353,54 @@ const calculateTax = () => {
 syncInputs('tax-income', 'tax-income-range', calculateTax);
 
 
+// --- Net Worth Calculator ---
+const calculateNetWorth = () => {
+    // Get all asset values
+    const savings = parseFloat(document.getElementById('nw-savings').value) || 0;
+    const investments = parseFloat(document.getElementById('nw-investments').value) || 0;
+    const property = parseFloat(document.getElementById('nw-property').value) || 0;
+    const vehicle = parseFloat(document.getElementById('nw-vehicle').value) || 0;
+    const otherAssets = parseFloat(document.getElementById('nw-other-assets').value) || 0;
+    
+    const totalAssets = savings + investments + property + vehicle + otherAssets;
+    
+    // Get all liability values
+    const homeLoan = parseFloat(document.getElementById('nw-home-loan').value) || 0;
+    const carLoan = parseFloat(document.getElementById('nw-car-loan').value) || 0;
+    const personalLoan = parseFloat(document.getElementById('nw-personal-loan').value) || 0;
+    const creditCard = parseFloat(document.getElementById('nw-credit-card').value) || 0;
+    const otherLiabilities = parseFloat(document.getElementById('nw-other-liabilities').value) || 0;
+    
+    const totalLiabilities = homeLoan + carLoan + personalLoan + creditCard + otherLiabilities;
+    
+    // Calculate net worth
+    const netWorth = totalAssets - totalLiabilities;
+    
+    // Update display
+    document.getElementById('nw-total-assets').textContent = '₹' + formatCurrency(totalAssets);
+    document.getElementById('nw-total-liabilities').textContent = '₹' + formatCurrency(totalLiabilities);
+    document.getElementById('nw-result-assets').textContent = '₹' + formatCurrency(totalAssets);
+    document.getElementById('nw-result-liabilities').textContent = '₹' + formatCurrency(totalLiabilities);
+    document.getElementById('nw-net-worth').textContent = '₹' + formatCurrency(netWorth);
+};
+
+// Attach listeners to all net worth input fields
+const nwInputIds = [
+    'nw-savings', 'nw-investments', 'nw-property', 'nw-vehicle', 'nw-other-assets',
+    'nw-home-loan', 'nw-car-loan', 'nw-personal-loan', 'nw-credit-card', 'nw-other-liabilities'
+];
+
+nwInputIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+        el.addEventListener('input', calculateNetWorth);
+    }
+});
+
+// Initial calculation
+calculateNetWorth();
+
+
 // --- History Logic ---
 const saveCalculation = async (type, e) => {
     if (e) e.preventDefault();
@@ -371,6 +434,12 @@ const saveCalculation = async (type, e) => {
     } else if (type === 'BUDGET') {
         input_data = { income: document.getElementById('budget-income').value };
         result_data = { savings: document.getElementById('budget-savings').textContent };
+    } else if (type === 'NETWORTH') {
+        input_data = {
+            assets: document.getElementById('nw-total-assets').textContent,
+            liabilities: document.getElementById('nw-total-liabilities').textContent
+        };
+        result_data = { networth: document.getElementById('nw-net-worth').textContent };
     }
 
     const token = localStorage.getItem('auth_token');
@@ -457,6 +526,10 @@ const loadHistory = async () => {
                 label = "Budget Rule";
                 subtext = `Monthly Income: ₹${item.input_data.income}`;
                 mainVal = item.result_data.savings;
+            } else if (item.calc_type === 'NETWORTH') {
+                label = "Net Worth";
+                subtext = `Assets: ${item.input_data.assets} | Liabilities: ${item.input_data.liabilities}`;
+                mainVal = item.result_data.networth;
             }
 
             const date = new Date(item.created_at).toLocaleDateString('en-IN', {

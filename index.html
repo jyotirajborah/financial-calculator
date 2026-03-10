@@ -149,6 +149,10 @@
                     <ion-icon name="calculator"></ion-icon>
                     <span>Tax Calculator</span>
                 </button>
+                <button class="nav-item" data-target="net-worth-calculator">
+                    <ion-icon name="trending-up"></ion-icon>
+                    <span>Net Worth</span>
+                </button>
                 <button class="nav-item" data-target="calc-history">
                     <ion-icon name="time"></ion-icon>
                     <span>History</span>
@@ -461,6 +465,123 @@
                                     <ion-icon name="document-text-outline"></ion-icon> Export XLSX
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Net Worth Calculator View -->
+                <section class="calculator-view" id="net-worth-calculator">
+                    <div class="calc-grid">
+                        <div class="input-panel glass-card">
+                            <h2>Assets</h2>
+                            <p class="subtitle">List all your assets.</p>
+                            <div class="input-group">
+                                <label for="nw-savings">Savings Account</label>
+                                <div class="input-wrapper">
+                                    <span class="currency">₹</span>
+                                    <input type="number" id="nw-savings" value="500000" min="0" step="10000">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="nw-investments">Investments (Stocks, Mutual Funds, Crypto)</label>
+                                <div class="input-wrapper">
+                                    <span class="currency">₹</span>
+                                    <input type="number" id="nw-investments" value="1000000" min="0" step="10000">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="nw-property">Real Estate / Property Value</label>
+                                <div class="input-wrapper">
+                                    <span class="currency">₹</span>
+                                    <input type="number" id="nw-property" value="5000000" min="0" step="100000">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="nw-vehicle">Vehicles / Fixed Assets</label>
+                                <div class="input-wrapper">
+                                    <span class="currency">₹</span>
+                                    <input type="number" id="nw-vehicle" value="500000" min="0" step="10000">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="nw-other-assets">Other Assets</label>
+                                <div class="input-wrapper">
+                                    <span class="currency">₹</span>
+                                    <input type="number" id="nw-other-assets" value="0" min="0" step="10000">
+                                </div>
+                            </div>
+                            <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--border);">
+                            <h3>Total Assets</h3>
+                            <div class="summary-item total" style="font-size: 1.3rem; margin: 1rem 0;">
+                                <strong id="nw-total-assets" class="text-success">₹70,00,000</strong>
+                            </div>
+                        </div>
+                        <div class="input-panel glass-card">
+                            <h2>Liabilities</h2>
+                            <p class="subtitle">List all your debts and liabilities.</p>
+                            <div class="input-group">
+                                <label for="nw-home-loan">Home Loan</label>
+                                <div class="input-wrapper">
+                                    <span class="currency">₹</span>
+                                    <input type="number" id="nw-home-loan" value="2000000" min="0" step="10000">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="nw-car-loan">Car Loan</label>
+                                <div class="input-wrapper">
+                                    <span class="currency">₹</span>
+                                    <input type="number" id="nw-car-loan" value="300000" min="0" step="10000">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="nw-personal-loan">Personal Loans / Other Debts</label>
+                                <div class="input-wrapper">
+                                    <span class="currency">₹</span>
+                                    <input type="number" id="nw-personal-loan" value="100000" min="0" step="10000">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="nw-credit-card">Credit Card / Short-term Debts</label>
+                                <div class="input-wrapper">
+                                    <span class="currency">₹</span>
+                                    <input type="number" id="nw-credit-card" value="50000" min="0" step="5000">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="nw-other-liabilities">Other Liabilities</label>
+                                <div class="input-wrapper">
+                                    <span class="currency">₹</span>
+                                    <input type="number" id="nw-other-liabilities" value="0" min="0" step="10000">
+                                </div>
+                            </div>
+                            <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--border);">
+                            <h3>Total Liabilities</h3>
+                            <div class="summary-item total" style="font-size: 1.3rem; margin: 1rem 0;">
+                                <strong id="nw-total-liabilities" class="text-danger">₹24,50,000</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="result-panel glass-card" style="margin-top: 1.5rem;">
+                        <h2>Net Worth Summary</h2>
+                        <div class="summary">
+                            <div class="summary-item">
+                                <span>Total Assets</span>
+                                <strong id="nw-result-assets" class="text-success">₹70,00,000</strong>
+                            </div>
+                            <div class="summary-item">
+                                <span>Total Liabilities</span>
+                                <strong id="nw-result-liabilities" class="text-danger">₹24,50,000</strong>
+                            </div>
+                            <div class="summary-item total" style="font-size: 1.5rem; padding: 1rem; background: rgba(76,175,80,0.1); border-radius: 8px; margin-top: 1rem;">
+                                <span>Net Worth (Assets - Liabilities)</span>
+                                <strong id="nw-net-worth" class="text-success">₹45,50,000</strong>
+                            </div>
+                            <button class="btn-secondary btn-save" onclick="saveCalculation('NETWORTH', event)" style="margin-top: 1rem;">
+                                <ion-icon name="bookmark-outline"></ion-icon> Save to History
+                            </button>
+                            <button class="btn-secondary btn-export" onclick="exportToExcel('net-worth-calculator')" title="Export to Excel" style="margin-left: 0.5rem;">
+                                <ion-icon name="document-text-outline"></ion-icon> Export XLSX
+                            </button>
                         </div>
                     </div>
                 </section>
