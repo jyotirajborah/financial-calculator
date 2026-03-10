@@ -459,8 +459,42 @@
                                     <option value="aggressive_investor">Aggressive Investor (40/12.5/7.5/40)</option>
                                     <option value="financial_freedom">Financial Freedom (35/25/7.5/32.5)</option>
                                     <option value="ultra_minimalist">Ultra-Minimalist (32.5/7.5/7.5/52.5)</option>
+                                    <option value="custom">Custom (set your own)</option>
                                 </select>
                                 <p class="helper-text" id="budget-persona-hint">Balanced default: steady lifestyle plus wealth building.</p>
+                            </div>
+                            <div class="budget-custom-controls" id="budget-custom-controls" style="display:none;">
+                                <p class="helper-text">Adjust percentages (auto-balances to 100%).</p>
+                                <div class="budget-custom-grid">
+                                    <div class="input-group">
+                                        <label for="budget-pct-needs">Needs</label>
+                                        <div class="input-wrapper">
+                                            <input type="number" id="budget-pct-needs" min="0" max="100" step="0.5" value="50">
+                                            <span class="unit">%</span>
+                                        </div>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="budget-pct-wants">Wants</label>
+                                        <div class="input-wrapper">
+                                            <input type="number" id="budget-pct-wants" min="0" max="100" step="0.5" value="30">
+                                            <span class="unit">%</span>
+                                        </div>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="budget-pct-savings">Savings</label>
+                                        <div class="input-wrapper">
+                                            <input type="number" id="budget-pct-savings" min="0" max="100" step="0.5" value="10">
+                                            <span class="unit">%</span>
+                                        </div>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="budget-pct-investments">Investments</label>
+                                        <div class="input-wrapper">
+                                            <input type="number" id="budget-pct-investments" min="0" max="100" step="0.5" value="10">
+                                            <span class="unit">%</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="input-group large-input">
                                 <div class="input-wrapper">

@@ -543,6 +543,23 @@ input[type=range]::-webkit-slider-thumb:hover {
     height: 300px;
 }
 
+/* Budget custom persona controls */
+.budget-custom-controls {
+    margin-top: 0.75rem;
+}
+
+.budget-custom-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .budget-custom-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 .large-input .input-wrapper {
     padding: 1rem 1.5rem;
 }

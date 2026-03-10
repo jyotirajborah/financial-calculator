@@ -56,6 +56,9 @@ function exportToExcel(elementId) {
             const opt = personaEl.options[personaEl.selectedIndex];
             const personaText = (opt && opt.text) ? opt.text : personaEl.value;
             pushRow('Financial Persona', personaText);
+            if (personaEl.value === 'custom') {
+                pushRow('Percent Split', `Needs ${budgetCustomPct.needs}%, Wants ${budgetCustomPct.wants}%, Savings ${budgetCustomPct.savings}%, Investments ${budgetCustomPct.investments}%`);
+            }
         }
 
         pushRes('Needs', document.getElementById('budget-needs').textContent);
@@ -450,46 +453,169 @@ const ensureBudgetBreakdownUI = () => {
     budgetBreakdownInitialized = true;
 };
 
+const budgetPersonas = {
+    survival: {
+        label: 'Survival Persona',
+        hint: 'Focus: basic stability. Prioritize essentials and a small buffer.',
+        needs: 65, wants: 22.5, savings: 7.5, investments: 5
+    },
+    balanced: {
+        label: 'Balanced Persona',
+        hint: 'Focus: stable lifestyle + wealth building (50/30/10/10 split).',
+        needs: 50, wants: 30, savings: 10, investments: 10
+    },
+    wealth_builder: {
+        label: 'Wealth Builder Persona',
+        hint: 'Focus: long-term accumulation. Higher investing allocation.',
+        needs: 50, wants: 20, savings: 10, investments: 20
+    },
+    aggressive_investor: {
+        label: 'Aggressive Investor Persona',
+        hint: 'Focus: maximize investments (FIRE-style). Keep wants tight.',
+        needs: 40, wants: 12.5, savings: 7.5, investments: 40
+    },
+    financial_freedom: {
+        label: 'Financial Freedom Persona',
+        hint: 'Focus: wealth preservation + flexibility.',
+        needs: 35, wants: 25, savings: 7.5, investments: 32.5
+    },
+    ultra_minimalist: {
+        label: 'Ultra-Minimalist Persona',
+        hint: 'Focus: extreme investing rate. Lifestyle kept very lean.',
+        needs: 32.5, wants: 7.5, savings: 7.5, investments: 52.5
+    }
+};
+
+let budgetPrevPersonaKey = 'balanced';
+let budgetCustomSeeded = false;
+let budgetCustomInternalUpdate = false;
+let budgetCustomListenersAttached = false;
+let budgetCustomPct = { needs: 50, wants: 30, savings: 10, investments: 10 };
+
+const roundPct05 = (v) => Math.round(v * 2) / 2;
+const clampPct = (v) => Math.max(0, Math.min(100, v));
+
+const setBudgetCustomControlsVisible = (visible) => {
+    const el = document.getElementById('budget-custom-controls');
+    if (!el) return;
+    el.style.display = visible ? 'block' : 'none';
+};
+
+const writeBudgetCustomInputs = (pct) => {
+    const ids = {
+        needs: 'budget-pct-needs',
+        wants: 'budget-pct-wants',
+        savings: 'budget-pct-savings',
+        investments: 'budget-pct-investments'
+    };
+
+    budgetCustomInternalUpdate = true;
+    Object.keys(ids).forEach((k) => {
+        const inp = document.getElementById(ids[k]);
+        if (inp) inp.value = String(pct[k]);
+    });
+    budgetCustomInternalUpdate = false;
+};
+
+const rebalanceBudgetCustom = (changedKey, rawVal) => {
+    const next = { ...budgetCustomPct };
+    const newVal = roundPct05(clampPct(parseFloat(rawVal) || 0));
+    next[changedKey] = newVal;
+
+    const others = ['needs', 'wants', 'savings', 'investments'].filter((k) => k !== changedKey);
+    const remaining = Math.max(0, 100 - newVal);
+    const sumOthers = others.reduce((acc, k) => acc + (parseFloat(next[k]) || 0), 0);
+
+    if (sumOthers <= 0) {
+        const even = remaining / others.length;
+        others.forEach((k, idx) => {
+            let v = roundPct05(even);
+            if (idx === others.length - 1) {
+                const used = others.slice(0, -1).reduce((acc, kk) => acc + (parseFloat(next[kk]) || 0), 0);
+                v = roundPct05(Math.max(0, remaining - used));
+            }
+            next[k] = v;
+        });
+    } else {
+        let running = 0;
+        others.forEach((k, idx) => {
+            let v = (remaining * (parseFloat(next[k]) || 0)) / sumOthers;
+            v = roundPct05(v);
+            if (idx === others.length - 1) {
+                v = roundPct05(Math.max(0, remaining - running));
+            } else {
+                running += v;
+            }
+            next[k] = v;
+        });
+    }
+
+    // Final correction to ensure exact 100 after rounding.
+    const sum = ['needs', 'wants', 'savings', 'investments'].reduce((acc, k) => acc + (parseFloat(next[k]) || 0), 0);
+    const delta = roundPct05(100 - sum);
+    if (Math.abs(delta) > 0) {
+        const fixKey = others[others.length - 1];
+        next[fixKey] = roundPct05(clampPct((parseFloat(next[fixKey]) || 0) + delta));
+    }
+
+    budgetCustomPct = next;
+    writeBudgetCustomInputs(budgetCustomPct);
+};
+
+const attachBudgetCustomPctListeners = () => {
+    if (budgetCustomListenersAttached) return;
+    const bindings = [
+        { key: 'needs', id: 'budget-pct-needs' },
+        { key: 'wants', id: 'budget-pct-wants' },
+        { key: 'savings', id: 'budget-pct-savings' },
+        { key: 'investments', id: 'budget-pct-investments' }
+    ];
+
+    bindings.forEach((b) => {
+        const el = document.getElementById(b.id);
+        if (!el) return;
+        el.addEventListener('input', () => {
+            if (budgetCustomInternalUpdate) return;
+            rebalanceBudgetCustom(b.key, el.value);
+            calculateBudget();
+        });
+    });
+
+    budgetCustomListenersAttached = true;
+};
+
+const onBudgetPersonaChange = () => {
+    const personaSelect = document.getElementById('budget-persona');
+    const personaKey = personaSelect ? personaSelect.value : 'balanced';
+
+    if (personaKey === 'custom') {
+        setBudgetCustomControlsVisible(true);
+
+        if (!budgetCustomSeeded) {
+            const seed = budgetPersonas[budgetPrevPersonaKey] || budgetPersonas.balanced;
+            budgetCustomPct = { needs: seed.needs, wants: seed.wants, savings: seed.savings, investments: seed.investments };
+            budgetCustomSeeded = true;
+        }
+
+        writeBudgetCustomInputs(budgetCustomPct);
+        attachBudgetCustomPctListeners();
+    } else {
+        setBudgetCustomControlsVisible(false);
+    }
+
+    calculateBudget();
+    budgetPrevPersonaKey = personaKey;
+};
+
 const calculateBudget = () => {
     const RUPEE = '\u20B9';
     const income = parseFloat(document.getElementById('budget-income').value) || 0;
 
-    const personas = {
-        survival: {
-            label: 'Survival Persona',
-            hint: 'Focus: basic stability. Prioritize essentials and a small buffer.',
-            needs: 65, wants: 22.5, savings: 7.5, investments: 5
-        },
-        balanced: {
-            label: 'Balanced Persona',
-            hint: 'Focus: stable lifestyle + wealth building (50/30/10/10 split).',
-            needs: 50, wants: 30, savings: 10, investments: 10
-        },
-        wealth_builder: {
-            label: 'Wealth Builder Persona',
-            hint: 'Focus: long-term accumulation. Higher investing allocation.',
-            needs: 50, wants: 20, savings: 10, investments: 20
-        },
-        aggressive_investor: {
-            label: 'Aggressive Investor Persona',
-            hint: 'Focus: maximize investments (FIRE-style). Keep wants tight.',
-            needs: 40, wants: 12.5, savings: 7.5, investments: 40
-        },
-        financial_freedom: {
-            label: 'Financial Freedom Persona',
-            hint: 'Focus: wealth preservation + flexibility.',
-            needs: 35, wants: 25, savings: 7.5, investments: 32.5
-        },
-        ultra_minimalist: {
-            label: 'Ultra-Minimalist Persona',
-            hint: 'Focus: extreme investing rate. Lifestyle kept very lean.',
-            needs: 32.5, wants: 7.5, savings: 7.5, investments: 52.5
-        }
-    };
-
     const personaSelect = document.getElementById('budget-persona');
     const personaKey = personaSelect ? personaSelect.value : 'balanced';
-    const p = personas[personaKey] || personas.balanced;
+    const p = (personaKey === 'custom')
+        ? { label: 'Custom', hint: 'Custom: adjust percentages below (auto-balances to 100%).', ...budgetCustomPct }
+        : (budgetPersonas[personaKey] || budgetPersonas.balanced);
 
     const needs = income * (p.needs / 100);
     const wants = income * (p.wants / 100);
@@ -560,7 +686,7 @@ const calculateBudget = () => {
 
 document.getElementById('budget-income').addEventListener('input', calculateBudget);
 const budgetPersonaEl = document.getElementById('budget-persona');
-if (budgetPersonaEl) budgetPersonaEl.addEventListener('change', calculateBudget);
+if (budgetPersonaEl) budgetPersonaEl.addEventListener('change', onBudgetPersonaChange);
 
 
 // --- Income Tax Calculator (New Regime FY 2024-25) ---
@@ -796,6 +922,9 @@ const saveCalculation = async (type, e) => {
         const personaEl = document.getElementById('budget-persona');
         const personaValue = personaEl ? personaEl.value : 'balanced';
         input_data = { income: document.getElementById('budget-income').value, persona: personaValue };
+        if (personaValue === 'custom') {
+            input_data.percentages = { ...budgetCustomPct };
+        }
         result_data = {
             needs: document.getElementById('budget-needs').textContent,
             wants: document.getElementById('budget-wants').textContent,
