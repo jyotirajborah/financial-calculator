@@ -1091,16 +1091,11 @@ const updateDashboard = () => {
     const dashCiInterest = document.getElementById('dash-ci-interest');
     if (ciInterest && dashCiInterest) dashCiInterest.textContent = ciInterest.textContent;
 
-    // Monthly Investing Goal: From budget calculator (prefer investments if available)
-    const monthlyInvestments = document.getElementById('budget-investments');
-    const monthlySavings = document.getElementById('budget-savings');
+    // Budget: show income as the main number (so the card feels consistent with the split below)
     const dashBudget = document.getElementById('dash-budget');
-    if (dashBudget) {
-        if (monthlyInvestments && monthlyInvestments.textContent) {
-            dashBudget.textContent = monthlyInvestments.textContent;
-        } else if (monthlySavings && monthlySavings.textContent) {
-            dashBudget.textContent = monthlySavings.textContent;
-        }
+    const budgetIncome = document.getElementById('budget-income');
+    if (dashBudget && budgetIncome) {
+        dashBudget.textContent = '\u20B9' + formatCurrency(parseFloat(budgetIncome.value) || 0);
     }
     
     const budgetNeeds = document.getElementById('budget-needs');
@@ -1114,6 +1109,10 @@ const updateDashboard = () => {
     const budgetSavings = document.getElementById('budget-savings');
     const dashBudgetSavings = document.getElementById('dash-budget-savings');
     if (budgetSavings && dashBudgetSavings) dashBudgetSavings.textContent = budgetSavings.textContent;
+
+    const budgetInvestments = document.getElementById('budget-investments');
+    const dashBudgetInvestments = document.getElementById('dash-budget-investments');
+    if (budgetInvestments && dashBudgetInvestments) dashBudgetInvestments.textContent = budgetInvestments.textContent;
 
     const budgetPersona = document.getElementById('budget-persona');
     const dashBudgetPersona = document.getElementById('dash-budget-persona');

@@ -230,16 +230,25 @@ h1 {
 
 .metric-row span {
     color: var(--text-muted);
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
+    flex: 0 0 auto;
 }
 
 .metric-row strong {
     font-weight: 600;
     color: var(--text-main);
-    flex: 0 0 auto;
+    flex: 1 1 auto;
+    min-width: 0;
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.metric-row strong.metric-wrap {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
 }
 
 /* Calculator Views */
