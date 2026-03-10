@@ -455,9 +455,9 @@ input[type=range]::-webkit-slider-thumb:hover {
 
 .budget-breakdown-row {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) max-content;
-    align-items: center;
-    gap: 0.75rem;
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 0.35rem;
 }
 
 .budget-breakdown-label {
@@ -465,18 +465,20 @@ input[type=range]::-webkit-slider-thumb:hover {
     color: var(--text-muted);
     flex: 1;
     min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .budget-breakdown-controls {
     display: grid;
-    grid-template-columns: 110px max-content;
+    grid-template-columns: 1fr max-content;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.5rem;
     flex-shrink: 0;
 }
 
 .budget-breakdown-controls input[type="number"] {
-    width: 110px;
+    width: 100%;
     padding: 0.4rem 0.5rem;
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.12);
@@ -513,30 +515,15 @@ input[type=range]::-webkit-slider-thumb:hover {
 }
 
 @media (max-width: 768px) {
-    .budget-breakdown-controls {
-        grid-template-columns: 96px max-content;
-    }
-
     .budget-breakdown-controls input[type="number"] {
-        width: 96px;
         padding: 0.35rem 0.45rem;
         font-size: 0.85rem;
     }
 }
 
 @media (max-width: 420px) {
-    .budget-breakdown-row {
-        grid-template-columns: 1fr;
-        align-items: start;
-    }
-
     .budget-breakdown-controls {
-        grid-template-columns: 1fr max-content;
         justify-content: space-between;
-    }
-
-    .budget-breakdown-controls input[type="number"] {
-        width: 100%;
     }
 }
 
