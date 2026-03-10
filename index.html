@@ -465,6 +465,7 @@
                             </div>
                             <div class="budget-custom-controls" id="budget-custom-controls" style="display:none;">
                                 <p class="helper-text">Adjust percentages (auto-balances to 100%).</p>
+                                <p class="helper-text" id="budget-custom-warning" style="display:none;"></p>
                                 <div class="budget-custom-grid">
                                     <div class="input-group">
                                         <label for="budget-pct-needs">Needs</label>
@@ -472,6 +473,7 @@
                                             <input type="number" id="budget-pct-needs" min="0" max="100" step="0.5" value="50">
                                             <span class="unit">%</span>
                                         </div>
+                                        <label class="budget-pct-lock"><input type="checkbox" id="budget-lock-needs"> Lock</label>
                                     </div>
                                     <div class="input-group">
                                         <label for="budget-pct-wants">Wants</label>
@@ -479,6 +481,7 @@
                                             <input type="number" id="budget-pct-wants" min="0" max="100" step="0.5" value="30">
                                             <span class="unit">%</span>
                                         </div>
+                                        <label class="budget-pct-lock"><input type="checkbox" id="budget-lock-wants"> Lock</label>
                                     </div>
                                     <div class="input-group">
                                         <label for="budget-pct-savings">Savings</label>
@@ -486,6 +489,7 @@
                                             <input type="number" id="budget-pct-savings" min="0" max="100" step="0.5" value="10">
                                             <span class="unit">%</span>
                                         </div>
+                                        <label class="budget-pct-lock"><input type="checkbox" id="budget-lock-savings"> Lock</label>
                                     </div>
                                     <div class="input-group">
                                         <label for="budget-pct-investments">Investments</label>
@@ -493,6 +497,7 @@
                                             <input type="number" id="budget-pct-investments" min="0" max="100" step="0.5" value="10">
                                             <span class="unit">%</span>
                                         </div>
+                                        <label class="budget-pct-lock"><input type="checkbox" id="budget-lock-investments"> Lock</label>
                                     </div>
                                 </div>
                             </div>

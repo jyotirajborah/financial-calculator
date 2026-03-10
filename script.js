@@ -491,6 +491,7 @@ let budgetCustomSeeded = false;
 let budgetCustomInternalUpdate = false;
 let budgetCustomListenersAttached = false;
 let budgetCustomPct = { needs: 50, wants: 30, savings: 10, investments: 10 };
+let budgetCustomLocks = { needs: false, wants: false, savings: false, investments: false };
 
 const roundPct05 = (v) => Math.round(v * 2) / 2;
 const clampPct = (v) => Math.max(0, Math.min(100, v));
@@ -514,7 +515,30 @@ const writeBudgetCustomInputs = (pct) => {
         const inp = document.getElementById(ids[k]);
         if (inp) inp.value = String(pct[k]);
     });
+
+    const lockIds = {
+        needs: 'budget-lock-needs',
+        wants: 'budget-lock-wants',
+        savings: 'budget-lock-savings',
+        investments: 'budget-lock-investments'
+    };
+    Object.keys(lockIds).forEach((k) => {
+        const cb = document.getElementById(lockIds[k]);
+        if (cb) cb.checked = !!budgetCustomLocks[k];
+    });
     budgetCustomInternalUpdate = false;
+};
+
+const setBudgetCustomWarning = (msg) => {
+    const el = document.getElementById('budget-custom-warning');
+    if (!el) return;
+    if (!msg) {
+        el.style.display = 'none';
+        el.textContent = '';
+        return;
+    }
+    el.style.display = 'block';
+    el.textContent = msg;
 };
 
 const rebalanceBudgetCustom = (changedKey, rawVal) => {
@@ -522,26 +546,51 @@ const rebalanceBudgetCustom = (changedKey, rawVal) => {
     const newVal = roundPct05(clampPct(parseFloat(rawVal) || 0));
     next[changedKey] = newVal;
 
-    const others = ['needs', 'wants', 'savings', 'investments'].filter((k) => k !== changedKey);
-    const remaining = Math.max(0, 100 - newVal);
-    const sumOthers = others.reduce((acc, k) => acc + (parseFloat(next[k]) || 0), 0);
+    const keys = ['needs', 'wants', 'savings', 'investments'];
+    const lockedKeys = keys.filter((k) => budgetCustomLocks[k]);
+    const fixedKeys = Array.from(new Set([...lockedKeys, changedKey]));
+    const adjustableKeys = keys.filter((k) => !fixedKeys.includes(k));
 
-    if (sumOthers <= 0) {
-        const even = remaining / others.length;
-        others.forEach((k, idx) => {
+    const fixedSum = fixedKeys.reduce((acc, k) => acc + (parseFloat(next[k]) || 0), 0);
+    if (fixedSum > 100) {
+        setBudgetCustomWarning('Locked + fixed percentages exceed 100%. Reduce a locked value or unlock a bucket.');
+        budgetCustomPct = next;
+        writeBudgetCustomInputs(budgetCustomPct);
+        return;
+    }
+
+    const remaining = Math.max(0, 100 - fixedSum);
+    const sumAdjustable = adjustableKeys.reduce((acc, k) => acc + (parseFloat(next[k]) || 0), 0);
+
+    if (adjustableKeys.length === 0) {
+        // Nothing to rebalance. Keep user values, but warn if not 100.
+        const sum = fixedSum;
+        if (Math.abs(100 - sum) > 0.001) {
+            setBudgetCustomWarning('All other buckets are locked. Unlock one bucket to rebalance to 100%.');
+        } else {
+            setBudgetCustomWarning('');
+        }
+        budgetCustomPct = next;
+        writeBudgetCustomInputs(budgetCustomPct);
+        return;
+    }
+
+    if (sumAdjustable <= 0) {
+        const even = remaining / adjustableKeys.length;
+        adjustableKeys.forEach((k, idx) => {
             let v = roundPct05(even);
-            if (idx === others.length - 1) {
-                const used = others.slice(0, -1).reduce((acc, kk) => acc + (parseFloat(next[kk]) || 0), 0);
+            if (idx === adjustableKeys.length - 1) {
+                const used = adjustableKeys.slice(0, -1).reduce((acc, kk) => acc + (parseFloat(next[kk]) || 0), 0);
                 v = roundPct05(Math.max(0, remaining - used));
             }
             next[k] = v;
         });
     } else {
         let running = 0;
-        others.forEach((k, idx) => {
-            let v = (remaining * (parseFloat(next[k]) || 0)) / sumOthers;
+        adjustableKeys.forEach((k, idx) => {
+            let v = (remaining * (parseFloat(next[k]) || 0)) / sumAdjustable;
             v = roundPct05(v);
-            if (idx === others.length - 1) {
+            if (idx === adjustableKeys.length - 1) {
                 v = roundPct05(Math.max(0, remaining - running));
             } else {
                 running += v;
@@ -551,14 +600,15 @@ const rebalanceBudgetCustom = (changedKey, rawVal) => {
     }
 
     // Final correction to ensure exact 100 after rounding.
-    const sum = ['needs', 'wants', 'savings', 'investments'].reduce((acc, k) => acc + (parseFloat(next[k]) || 0), 0);
+    const sum = keys.reduce((acc, k) => acc + (parseFloat(next[k]) || 0), 0);
     const delta = roundPct05(100 - sum);
-    if (Math.abs(delta) > 0) {
-        const fixKey = others[others.length - 1];
+    if (Math.abs(delta) > 0.0001) {
+        const fixKey = adjustableKeys[adjustableKeys.length - 1];
         next[fixKey] = roundPct05(clampPct((parseFloat(next[fixKey]) || 0) + delta));
     }
 
     budgetCustomPct = next;
+    setBudgetCustomWarning('');
     writeBudgetCustomInputs(budgetCustomPct);
 };
 
@@ -581,6 +631,25 @@ const attachBudgetCustomPctListeners = () => {
         });
     });
 
+    const lockBindings = [
+        { key: 'needs', id: 'budget-lock-needs' },
+        { key: 'wants', id: 'budget-lock-wants' },
+        { key: 'savings', id: 'budget-lock-savings' },
+        { key: 'investments', id: 'budget-lock-investments' }
+    ];
+    lockBindings.forEach((b) => {
+        const cb = document.getElementById(b.id);
+        if (!cb) return;
+        cb.addEventListener('change', () => {
+            if (budgetCustomInternalUpdate) return;
+            budgetCustomLocks[b.key] = !!cb.checked;
+            // Rebalance by "nudging" an unlocked key, prefer wants.
+            const pivot = (b.key !== 'wants') ? 'wants' : 'savings';
+            rebalanceBudgetCustom(pivot, budgetCustomPct[pivot]);
+            calculateBudget();
+        });
+    });
+
     budgetCustomListenersAttached = true;
 };
 
@@ -597,10 +666,12 @@ const onBudgetPersonaChange = () => {
             budgetCustomSeeded = true;
         }
 
+        setBudgetCustomWarning('');
         writeBudgetCustomInputs(budgetCustomPct);
         attachBudgetCustomPctListeners();
     } else {
         setBudgetCustomControlsVisible(false);
+        setBudgetCustomWarning('');
     }
 
     calculateBudget();
@@ -924,6 +995,7 @@ const saveCalculation = async (type, e) => {
         input_data = { income: document.getElementById('budget-income').value, persona: personaValue };
         if (personaValue === 'custom') {
             input_data.percentages = { ...budgetCustomPct };
+            input_data.locks = { ...budgetCustomLocks };
         }
         result_data = {
             needs: document.getElementById('budget-needs').textContent,

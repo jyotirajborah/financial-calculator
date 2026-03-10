@@ -548,6 +548,26 @@ input[type=range]::-webkit-slider-thumb:hover {
     margin-top: 0.75rem;
 }
 
+.budget-pct-lock {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 0.4rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    user-select: none;
+}
+
+.budget-pct-lock input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent-color);
+}
+
+#budget-custom-warning {
+    color: var(--danger);
+}
+
 .budget-custom-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
