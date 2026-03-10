@@ -19,6 +19,7 @@ const formatCurrency = (amount) => {
 function exportToExcel(elementId) {
     const rowsInputs = [];
     const rowsResults = [];
+    const extraSheets = [];
 
     const pushRow = (label, value) => rowsInputs.push([label, value]);
     const pushRes = (label, value) => rowsResults.push([label, value]);
@@ -58,6 +59,18 @@ function exportToExcel(elementId) {
             pushRow('Financial Persona', personaText);
             if (personaEl.value === 'custom') {
                 pushRow('Percent Split', `Needs ${budgetCustomPct.needs}%, Wants ${budgetCustomPct.wants}%, Savings ${budgetCustomPct.savings}%, Investments ${budgetCustomPct.investments}%`);
+                pushRow('Percent Locks', `Needs ${budgetCustomLocks.needs ? 'Locked' : 'Auto'}, Wants ${budgetCustomLocks.wants ? 'Locked' : 'Auto'}, Savings ${budgetCustomLocks.savings ? 'Locked' : 'Auto'}, Investments ${budgetCustomLocks.investments ? 'Locked' : 'Auto'}`);
+
+                extraSheets.push({
+                    name: 'Custom Percentages',
+                    aoa: [
+                        ['Bucket', 'Percent', 'Locked'],
+                        ['Needs', budgetCustomPct.needs, budgetCustomLocks.needs ? 'Yes' : 'No'],
+                        ['Wants', budgetCustomPct.wants, budgetCustomLocks.wants ? 'Yes' : 'No'],
+                        ['Savings', budgetCustomPct.savings, budgetCustomLocks.savings ? 'Yes' : 'No'],
+                        ['Investments', budgetCustomPct.investments, budgetCustomLocks.investments ? 'Yes' : 'No']
+                    ]
+                });
             }
         }
 
@@ -65,6 +78,27 @@ function exportToExcel(elementId) {
         pushRes('Wants', document.getElementById('budget-wants').textContent);
         pushRes('Savings', document.getElementById('budget-savings').textContent);
         pushRes('Investments', (document.getElementById('budget-investments') || {}).textContent || '');
+
+        // Full line-item breakdown (reflects live allocations + user locks)
+        const hasBreakdownConfig = (typeof budgetBreakdownConfig !== 'undefined') && budgetBreakdownConfig;
+        const hasBreakdownEls = (typeof budgetBreakdownEls !== 'undefined') && budgetBreakdownEls;
+        if (hasBreakdownConfig) {
+            const aoa = [['Category', 'Item', 'Amount', 'Locked']];
+            const cats = ['needs', 'wants', 'savings', 'investments'];
+            cats.forEach((catKey) => {
+                const items = budgetBreakdownConfig[catKey] || [];
+                items.forEach((it) => {
+                    const el = hasBreakdownEls && budgetBreakdownEls[catKey] ? budgetBreakdownEls[catKey][it.key] : null;
+                    const rawAmount = el && el.input ? el.input.value : '';
+                    const amount = rawAmount === '' ? '' : (parseFloat(rawAmount) || 0);
+                    const locked = el && el.lock ? (el.lock.checked ? 'Yes' : 'No') : '';
+                    const catLabel = catKey.charAt(0).toUpperCase() + catKey.slice(1);
+                    aoa.push([catLabel, it.label, amount, locked]);
+                });
+            });
+
+            extraSheets.push({ name: 'Line Item Breakdown', aoa });
+        }
     } else if (elementId === 'tax-calculator') {
         pushRow('Annual Income', document.getElementById('tax-income').value);
         pushRow('Standard Deduction', (document.getElementById('tax-std-deduction') || {}).value || '');
@@ -103,6 +137,13 @@ function exportToExcel(elementId) {
     const wsResults = XLSX.utils.aoa_to_sheet([['Result', 'Value'], ...rowsResults]);
     XLSX.utils.book_append_sheet(wb, wsInputs, 'Inputs');
     XLSX.utils.book_append_sheet(wb, wsResults, 'Results');
+
+    extraSheets.forEach((s) => {
+        if (!s || !s.name || !s.aoa) return;
+        const safeName = String(s.name).slice(0, 31);
+        const ws = XLSX.utils.aoa_to_sheet(s.aoa);
+        XLSX.utils.book_append_sheet(wb, ws, safeName);
+    });
 
     const filename = `FinCalc-${elementId}-${Date.now()}.xlsx`;
     XLSX.writeFile(wb, filename);
