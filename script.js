@@ -80,13 +80,13 @@ function exportToExcel(elementId) {
         pushRes('Investments', (document.getElementById('budget-investments') || {}).textContent || '');
 
         // Full line-item breakdown (reflects live allocations + user locks)
-        const hasBreakdownConfig = (typeof budgetBreakdownConfig !== 'undefined') && budgetBreakdownConfig;
+        const hasBreakdownConfig = (typeof budgetBreakdownBaseConfig !== 'undefined') && budgetBreakdownBaseConfig;
         const hasBreakdownEls = (typeof budgetBreakdownEls !== 'undefined') && budgetBreakdownEls;
         if (hasBreakdownConfig) {
             const aoa = [['Category', 'Item', 'Amount', 'Locked']];
             const cats = ['needs', 'wants', 'savings', 'investments'];
             cats.forEach((catKey) => {
-                const items = budgetBreakdownConfig[catKey] || [];
+                const items = getBudgetBreakdownItems(catKey);
                 items.forEach((it) => {
                     const el = hasBreakdownEls && budgetBreakdownEls[catKey] ? budgetBreakdownEls[catKey][it.key] : null;
                     const rawAmount = el && el.input ? el.input.value : '';
@@ -332,7 +332,7 @@ document.getElementById('ci-compounding').addEventListener('change', calculateCI
 
 
 // --- Budget Planner ---
-const budgetBreakdownConfig = {
+const budgetBreakdownBaseConfig = {
     needs: [
         { key: 'housing', label: 'Housing', weight: 1 },
         { key: 'groceries', label: 'Groceries', weight: 1 },
@@ -359,14 +359,59 @@ const budgetBreakdownConfig = {
     ]
 };
 
+const budgetBreakdownMisc = { needs: [], wants: [], savings: [], investments: [] };
+
 const budgetBreakdownState = { needs: {}, wants: {}, savings: {}, investments: {} };
 const budgetBreakdownEls = { needs: {}, wants: {}, savings: {}, investments: {} };
 let budgetBreakdownInitialized = false;
 let budgetBreakdownInternalUpdate = false;
 
+const getBudgetBreakdownItems = (catKey) => {
+    const base = (budgetBreakdownBaseConfig[catKey] || []).map((x) => ({ ...x, isMisc: false }));
+    const misc = (budgetBreakdownMisc[catKey] || []).map((x) => ({ ...x, isMisc: true }));
+    return [...base, ...misc];
+};
+
+const captureBudgetLineItemBreakdown = () => {
+    // Returns a stable JSON-friendly structure for history/export.
+    const cats = ['needs', 'wants', 'savings', 'investments'];
+    const out = {};
+
+    cats.forEach((catKey) => {
+        const items = getBudgetBreakdownItems(catKey);
+        const elsByKey = budgetBreakdownEls[catKey] || {};
+        const stateByKey = budgetBreakdownState[catKey] || {};
+
+        out[catKey] = items.map((it) => {
+            const el = elsByKey[it.key] || {};
+            const rawAmount = el.input ? el.input.value : '';
+            const amount = rawAmount === '' ? 0 : (parseFloat(rawAmount) || 0);
+            const locked = el.lock ? !!el.lock.checked : !!(stateByKey[it.key] && stateByKey[it.key].locked);
+            const label = it.isMisc && el.labelInput && typeof el.labelInput.value === 'string'
+                ? el.labelInput.value
+                : (it.label || '');
+
+            return { key: it.key, label, amount, locked, isMisc: !!it.isMisc };
+        });
+    });
+
+    return out;
+};
+
+const ensureBudgetMiscDefaults = () => {
+    Object.keys(budgetBreakdownMisc).forEach((catKey) => {
+        if ((budgetBreakdownMisc[catKey] || []).length > 0) return;
+        // Default misc row per category (locked at 0 until user uses it)
+        const key = `misc_${catKey}_0`;
+        budgetBreakdownMisc[catKey].push({ key, label: 'Misc', weight: 1 });
+        budgetBreakdownState[catKey][key] = { locked: true, amount: 0 };
+    });
+};
+
 const ensureBudgetBreakdownState = () => {
-    Object.keys(budgetBreakdownConfig).forEach((cat) => {
-        budgetBreakdownConfig[cat].forEach((it) => {
+    ensureBudgetMiscDefaults();
+    Object.keys(budgetBreakdownBaseConfig).forEach((cat) => {
+        getBudgetBreakdownItems(cat).forEach((it) => {
             if (!budgetBreakdownState[cat][it.key]) {
                 budgetBreakdownState[cat][it.key] = { locked: false, amount: 0 };
             }
@@ -375,7 +420,7 @@ const ensureBudgetBreakdownState = () => {
 };
 
 const allocateBudgetCategory = (total, catKey) => {
-    const items = budgetBreakdownConfig[catKey] || [];
+    const items = getBudgetBreakdownItems(catKey);
     const state = budgetBreakdownState[catKey] || {};
 
     const locked = [];
@@ -421,75 +466,136 @@ const allocateBudgetCategory = (total, catKey) => {
     return { alloc, lockedSum, remaining, overflow };
 };
 
+const addBudgetMiscItem = (catKey) => {
+    const id = `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+    const key = `misc_${catKey}_${id}`;
+    budgetBreakdownMisc[catKey] = budgetBreakdownMisc[catKey] || [];
+    budgetBreakdownMisc[catKey].push({ key, label: 'Misc', weight: 1 });
+    budgetBreakdownState[catKey][key] = { locked: true, amount: 0 };
+};
+
+const deleteBudgetMiscItem = (catKey, key) => {
+    budgetBreakdownMisc[catKey] = (budgetBreakdownMisc[catKey] || []).filter((it) => it.key !== key);
+    if (budgetBreakdownState[catKey]) delete budgetBreakdownState[catKey][key];
+    if (budgetBreakdownEls[catKey]) delete budgetBreakdownEls[catKey][key];
+};
+
+const renderBudgetBreakdownCategory = (catKey) => {
+    const container = document.getElementById(`budget-breakdown-${catKey}`);
+    if (!container) return;
+
+    budgetBreakdownEls[catKey] = {};
+    container.innerHTML = '';
+
+    const items = getBudgetBreakdownItems(catKey);
+    items.forEach((it) => {
+        const row = document.createElement('div');
+        row.className = 'budget-breakdown-row';
+
+        let labelNode = null;
+        if (it.isMisc) {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'budget-breakdown-label-input';
+            input.value = it.label || 'Misc';
+            input.placeholder = 'Name';
+            input.addEventListener('input', () => {
+                const list = budgetBreakdownMisc[catKey] || [];
+                const target = list.find((x) => x.key === it.key);
+                if (target) target.label = input.value;
+            });
+            labelNode = input;
+        } else {
+            const label = document.createElement('div');
+            label.className = 'budget-breakdown-label';
+            label.textContent = it.label;
+            labelNode = label;
+        }
+
+        const controls = document.createElement('div');
+        controls.className = 'budget-breakdown-controls';
+
+        const lockLabel = document.createElement('label');
+        lockLabel.className = 'budget-breakdown-lock';
+
+        const lock = document.createElement('input');
+        lock.type = 'checkbox';
+
+        const lockText = document.createElement('span');
+        lockText.textContent = 'Lock';
+
+        lockLabel.appendChild(lock);
+        lockLabel.appendChild(lockText);
+
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.min = '0';
+        input.step = '100';
+        input.placeholder = 'Amount';
+        input.inputMode = 'numeric';
+
+        lock.addEventListener('change', () => {
+            if (budgetBreakdownInternalUpdate) return;
+            const st = budgetBreakdownState[catKey][it.key];
+            st.locked = !!lock.checked;
+            if (st.locked) {
+                st.amount = parseFloat(input.value) || 0;
+            }
+            calculateBudget();
+        });
+
+        input.addEventListener('input', () => {
+            if (budgetBreakdownInternalUpdate) return;
+            const st = budgetBreakdownState[catKey][it.key];
+            st.amount = parseFloat(input.value) || 0;
+            st.locked = true;
+            lock.checked = true;
+            calculateBudget();
+        });
+
+        controls.appendChild(input);
+        controls.appendChild(lockLabel);
+
+        if (it.isMisc && it.key !== `misc_${catKey}_0`) {
+            const del = document.createElement('button');
+            del.type = 'button';
+            del.className = 'budget-breakdown-delete';
+            del.textContent = 'Remove';
+            del.addEventListener('click', () => {
+                deleteBudgetMiscItem(catKey, it.key);
+                renderBudgetBreakdownCategory(catKey);
+                calculateBudget();
+            });
+            controls.appendChild(del);
+        }
+
+        if (labelNode) row.appendChild(labelNode);
+        row.appendChild(controls);
+        container.appendChild(row);
+
+        budgetBreakdownEls[catKey][it.key] = { input, lock, labelInput: labelNode };
+    });
+
+    const addRow = document.createElement('div');
+    addRow.className = 'budget-breakdown-add';
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'budget-breakdown-add-btn';
+    btn.textContent = 'Add item';
+    btn.addEventListener('click', () => {
+        addBudgetMiscItem(catKey);
+        renderBudgetBreakdownCategory(catKey);
+        calculateBudget();
+    });
+    addRow.appendChild(btn);
+    container.appendChild(addRow);
+};
+
 const ensureBudgetBreakdownUI = () => {
     if (budgetBreakdownInitialized) return;
     ensureBudgetBreakdownState();
 
-    Object.keys(budgetBreakdownConfig).forEach((catKey) => {
-        const container = document.getElementById(`budget-breakdown-${catKey}`);
-        if (!container) return;
-
-        container.innerHTML = '';
-
-        budgetBreakdownConfig[catKey].forEach((it) => {
-            const row = document.createElement('div');
-            row.className = 'budget-breakdown-row';
-
-            const label = document.createElement('div');
-            label.className = 'budget-breakdown-label';
-            label.textContent = it.label;
-
-            const controls = document.createElement('div');
-            controls.className = 'budget-breakdown-controls';
-
-            const lockLabel = document.createElement('label');
-            lockLabel.className = 'budget-breakdown-lock';
-
-            const lock = document.createElement('input');
-            lock.type = 'checkbox';
-
-            const lockText = document.createElement('span');
-            lockText.textContent = 'Lock';
-
-            lockLabel.appendChild(lock);
-            lockLabel.appendChild(lockText);
-
-            const input = document.createElement('input');
-            input.type = 'number';
-            input.min = '0';
-            input.step = '100';
-            input.placeholder = 'Amount';
-            input.inputMode = 'numeric';
-
-            lock.addEventListener('change', () => {
-                if (budgetBreakdownInternalUpdate) return;
-                const st = budgetBreakdownState[catKey][it.key];
-                st.locked = !!lock.checked;
-                if (st.locked) {
-                    st.amount = parseFloat(input.value) || 0;
-                }
-                calculateBudget();
-            });
-
-            input.addEventListener('input', () => {
-                if (budgetBreakdownInternalUpdate) return;
-                const st = budgetBreakdownState[catKey][it.key];
-                st.amount = parseFloat(input.value) || 0;
-                st.locked = true;
-                lock.checked = true;
-                calculateBudget();
-            });
-
-            controls.appendChild(input);
-            controls.appendChild(lockLabel);
-
-            row.appendChild(label);
-            row.appendChild(controls);
-            container.appendChild(row);
-
-            budgetBreakdownEls[catKey][it.key] = { input, lock };
-        });
-    });
+    Object.keys(budgetBreakdownBaseConfig).forEach((catKey) => renderBudgetBreakdownCategory(catKey));
 
     budgetBreakdownInitialized = true;
 };
@@ -759,7 +865,7 @@ const calculateBudget = () => {
         const meta = document.getElementById(`budget-breakdown-meta-${catKey}`);
 
         budgetBreakdownInternalUpdate = true;
-        (budgetBreakdownConfig[catKey] || []).forEach((it) => {
+        getBudgetBreakdownItems(catKey).forEach((it) => {
             const el = budgetBreakdownEls[catKey][it.key];
             if (!el) return;
             const st = budgetBreakdownState[catKey][it.key];
@@ -1044,6 +1150,9 @@ const saveCalculation = async (type, e) => {
             savings: document.getElementById('budget-savings').textContent,
             investments: (document.getElementById('budget-investments') || {}).textContent || ''
         };
+        if (budgetBreakdownInitialized) {
+            result_data.breakdown = captureBudgetLineItemBreakdown();
+        }
     } else if (type === 'NETWORTH') {
         input_data = {
             assets: document.getElementById('nw-total-assets').textContent,

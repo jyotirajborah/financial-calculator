@@ -469,6 +469,60 @@ input[type=range]::-webkit-slider-thumb:hover {
     word-break: break-word;
 }
 
+.budget-breakdown-label-input {
+    width: 100%;
+    padding: 0.35rem 0.5rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(15, 23, 42, 0.55);
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 0.85rem;
+}
+
+.budget-breakdown-label-input:focus {
+    outline: none;
+    border-color: rgba(99, 102, 241, 0.6);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+.budget-breakdown-add {
+    margin-top: 0.65rem;
+}
+
+.budget-breakdown-add-btn {
+    width: 100%;
+    padding: 0.55rem 0.75rem;
+    border-radius: 12px;
+    border: 1px dashed rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-muted);
+    font-family: inherit;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.budget-breakdown-add-btn:hover {
+    color: var(--text-main);
+    border-color: rgba(99, 102, 241, 0.5);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.budget-breakdown-delete {
+    padding: 0.35rem 0.55rem;
+    border-radius: 10px;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.08);
+    color: var(--danger);
+    font-family: inherit;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.budget-breakdown-delete:hover {
+    background: rgba(239, 68, 68, 0.16);
+}
+
 .budget-breakdown-controls {
     display: grid;
     grid-template-columns: 1fr max-content;
