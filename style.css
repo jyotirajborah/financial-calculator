@@ -373,7 +373,7 @@ input[type=range]::-webkit-slider-thumb:hover {
 /* Budget Cards */
 .budget-cards {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 1.5rem;
     margin-bottom: 2rem;
 }
@@ -395,6 +395,7 @@ input[type=range]::-webkit-slider-thumb:hover {
 .budget-card.needs { border-color: var(--accent-color); }
 .budget-card.wants { border-color: var(--warning); }
 .budget-card.savings { border-color: var(--success); }
+.budget-card.investments { border-color: #38bdf8; }
 
 .card-icon {
     font-size: 2rem;
@@ -405,6 +406,7 @@ input[type=range]::-webkit-slider-thumb:hover {
 .budget-card.needs .card-icon { color: var(--accent-color); }
 .budget-card.wants .card-icon { color: var(--warning); }
 .budget-card.savings .card-icon { color: var(--success); }
+.budget-card.investments .card-icon { color: #38bdf8; }
 
 .budget-card h3 {
     font-size: 1rem;

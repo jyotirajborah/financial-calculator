@@ -51,10 +51,17 @@ function exportToExcel(elementId) {
         pushRes('Total', document.getElementById('ci-total').textContent);
     } else if (elementId === 'budget-planner') {
         pushRow('Monthly Income', document.getElementById('budget-income').value);
+        const personaEl = document.getElementById('budget-persona');
+        if (personaEl) {
+            const opt = personaEl.options[personaEl.selectedIndex];
+            const personaText = (opt && opt.text) ? opt.text : personaEl.value;
+            pushRow('Financial Persona', personaText);
+        }
 
-        pushRes('Needs (50%)', document.getElementById('budget-needs').textContent);
-        pushRes('Wants (30%)', document.getElementById('budget-wants').textContent);
-        pushRes('Investing (20%)', document.getElementById('budget-savings').textContent);
+        pushRes('Needs', document.getElementById('budget-needs').textContent);
+        pushRes('Wants', document.getElementById('budget-wants').textContent);
+        pushRes('Savings', document.getElementById('budget-savings').textContent);
+        pushRes('Investments', (document.getElementById('budget-investments') || {}).textContent || '');
     } else if (elementId === 'tax-calculator') {
         pushRow('Annual Income', document.getElementById('tax-income').value);
         pushRow('Standard Deduction', (document.getElementById('tax-std-deduction') || {}).value || '');
@@ -282,21 +289,84 @@ document.getElementById('ci-compounding').addEventListener('change', calculateCI
 
 // --- Budget Planner ---
 const calculateBudget = () => {
+    const RUPEE = '\u20B9';
     const income = parseFloat(document.getElementById('budget-income').value) || 0;
-    
-    const needs = income * 0.5;
-    const wants = income * 0.3;
-    const savings = income * 0.2;
-    
-    document.getElementById('budget-needs').textContent = '₹' + formatCurrency(needs);
-    document.getElementById('budget-wants').textContent = '₹' + formatCurrency(wants);
-    document.getElementById('budget-savings').textContent = '₹' + formatCurrency(savings);
-    
-    updateChart('budgetChart', budgetChartObj, ['Needs (50%)', 'Wants (30%)', 'Savings (20%)'], [needs, wants, savings], ['#6366f1', '#f59e0b', '#10b981'], 'budgetChartObj', 'doughnut');
+
+    const personas = {
+        survival: {
+            label: 'Survival Persona',
+            hint: 'Focus: basic stability. Prioritize essentials and a small buffer.',
+            needs: 65, wants: 22.5, savings: 7.5, investments: 5
+        },
+        balanced: {
+            label: 'Balanced Persona',
+            hint: 'Focus: stable lifestyle + wealth building (50/30/10/10 split).',
+            needs: 50, wants: 30, savings: 10, investments: 10
+        },
+        wealth_builder: {
+            label: 'Wealth Builder Persona',
+            hint: 'Focus: long-term accumulation. Higher investing allocation.',
+            needs: 50, wants: 20, savings: 10, investments: 20
+        },
+        aggressive_investor: {
+            label: 'Aggressive Investor Persona',
+            hint: 'Focus: maximize investments (FIRE-style). Keep wants tight.',
+            needs: 40, wants: 12.5, savings: 7.5, investments: 40
+        },
+        financial_freedom: {
+            label: 'Financial Freedom Persona',
+            hint: 'Focus: wealth preservation + flexibility.',
+            needs: 35, wants: 25, savings: 7.5, investments: 32.5
+        },
+        ultra_minimalist: {
+            label: 'Ultra-Minimalist Persona',
+            hint: 'Focus: extreme investing rate. Lifestyle kept very lean.',
+            needs: 32.5, wants: 7.5, savings: 7.5, investments: 52.5
+        }
+    };
+
+    const personaSelect = document.getElementById('budget-persona');
+    const personaKey = personaSelect ? personaSelect.value : 'balanced';
+    const p = personas[personaKey] || personas.balanced;
+
+    const needs = income * (p.needs / 100);
+    const wants = income * (p.wants / 100);
+    const savings = income * (p.savings / 100);
+    const investments = income * (p.investments / 100);
+
+    const needsTitle = document.getElementById('budget-needs-title');
+    const wantsTitle = document.getElementById('budget-wants-title');
+    const savingsTitle = document.getElementById('budget-savings-title');
+    const investmentsTitle = document.getElementById('budget-investments-title');
+    if (needsTitle) needsTitle.textContent = `Needs (${p.needs}%)`;
+    if (wantsTitle) wantsTitle.textContent = `Wants (${p.wants}%)`;
+    if (savingsTitle) savingsTitle.textContent = `Savings (${p.savings}%)`;
+    if (investmentsTitle) investmentsTitle.textContent = `Investments (${p.investments}%)`;
+
+    const personaHint = document.getElementById('budget-persona-hint');
+    if (personaHint) personaHint.textContent = p.hint;
+
+    document.getElementById('budget-needs').textContent = RUPEE + formatCurrency(needs);
+    document.getElementById('budget-wants').textContent = RUPEE + formatCurrency(wants);
+    document.getElementById('budget-savings').textContent = RUPEE + formatCurrency(savings);
+    const invEl = document.getElementById('budget-investments');
+    if (invEl) invEl.textContent = RUPEE + formatCurrency(investments);
+
+    updateChart(
+        'budgetChart',
+        budgetChartObj,
+        [`Needs (${p.needs}%)`, `Wants (${p.wants}%)`, `Savings (${p.savings}%)`, `Investments (${p.investments}%)`],
+        [needs, wants, savings, investments],
+        ['#6366f1', '#f59e0b', '#10b981', '#38bdf8'],
+        'budgetChartObj',
+        'doughnut'
+    );
     updateDashboard();
 };
 
 document.getElementById('budget-income').addEventListener('input', calculateBudget);
+const budgetPersonaEl = document.getElementById('budget-persona');
+if (budgetPersonaEl) budgetPersonaEl.addEventListener('change', calculateBudget);
 
 
 // --- Income Tax Calculator (New Regime FY 2024-25) ---
@@ -454,9 +524,12 @@ const updateDashboard = () => {
         }
     }
     
-    // Monthly Savings: From budget calculator
+    // Monthly Investing Goal: From budget calculator (prefer investments if available)
+    const monthlyInvestments = document.getElementById('budget-investments');
     const monthlySavings = document.getElementById('budget-savings');
-    if (monthlySavings) {
+    if (monthlyInvestments && monthlyInvestments.textContent) {
+        document.getElementById('dash-savings').textContent = monthlyInvestments.textContent;
+    } else if (monthlySavings && monthlySavings.textContent) {
         document.getElementById('dash-savings').textContent = monthlySavings.textContent;
     }
     
@@ -526,8 +599,15 @@ const saveCalculation = async (type, e) => {
         input_data = { income: document.getElementById('tax-income').value };
         result_data = { tax: document.getElementById('tax-payable').textContent };
     } else if (type === 'BUDGET') {
-        input_data = { income: document.getElementById('budget-income').value };
-        result_data = { savings: document.getElementById('budget-savings').textContent };
+        const personaEl = document.getElementById('budget-persona');
+        const personaValue = personaEl ? personaEl.value : 'balanced';
+        input_data = { income: document.getElementById('budget-income').value, persona: personaValue };
+        result_data = {
+            needs: document.getElementById('budget-needs').textContent,
+            wants: document.getElementById('budget-wants').textContent,
+            savings: document.getElementById('budget-savings').textContent,
+            investments: (document.getElementById('budget-investments') || {}).textContent || ''
+        };
     } else if (type === 'NETWORTH') {
         input_data = {
             assets: document.getElementById('nw-total-assets').textContent,
@@ -618,8 +698,9 @@ const loadHistory = async () => {
                 mainVal = item.result_data.total;
             } else if (item.calc_type === 'BUDGET') {
                 label = "Budget Rule";
-                subtext = `Monthly Income: ₹${item.input_data.income}`;
-                mainVal = item.result_data.savings;
+                const persona = item.input_data.persona ? ` | Persona: ${item.input_data.persona}` : "";
+                subtext = `Monthly Income: ₹${item.input_data.income}${persona}`;
+                mainVal = item.result_data.investments || item.result_data.savings;
             } else if (item.calc_type === 'NETWORTH') {
                 label = "Net Worth";
                 subtext = `Assets: ${item.input_data.assets} | Liabilities: ${item.input_data.liabilities}`;
