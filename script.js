@@ -210,6 +210,7 @@ const calculateSIP = () => {
     document.getElementById('sip-total').textContent = '₹' + formatCurrency(expectedAmount);
     
     updateChart('sipChart', sipChartObj, ['Invested Amount', 'Est. Returns'], [investedAmount, estReturns], ['#6366f1', '#10b981'], 'sipChartObj');
+    updateDashboard();
 };
 
 syncInputs('sip-amount', 'sip-amount-range', calculateSIP);
@@ -242,6 +243,7 @@ const calculateEMI = () => {
     document.getElementById('emi-total').textContent = '₹' + formatCurrency(totalPayable);
     
     updateChart('emiChart', emiChartObj, ['Principal Loan Amount', 'Total Interest'], [P, totalInterest], ['#6366f1', '#f59e0b'], 'emiChartObj');
+    updateDashboard();
 };
 
 syncInputs('emi-amount', 'emi-amount-range', calculateEMI);
@@ -264,6 +266,7 @@ const calculateCI = () => {
     document.getElementById('ci-total').textContent = '₹' + formatCurrency(amount);
     
     updateChart('ciChart', ciChartObj, ['Principal Amount', 'Total Interest'], [P, interest], ['#6366f1', '#10b981'], 'ciChartObj');
+    updateDashboard();
 };
 
 syncInputs('ci-principal', 'ci-principal-range', calculateCI);
@@ -285,6 +288,7 @@ const calculateBudget = () => {
     document.getElementById('budget-savings').textContent = '₹' + formatCurrency(savings);
     
     updateChart('budgetChart', budgetChartObj, ['Needs (50%)', 'Wants (30%)', 'Savings (20%)'], [needs, wants, savings], ['#6366f1', '#f59e0b', '#10b981'], 'budgetChartObj', 'doughnut');
+    updateDashboard();
 };
 
 document.getElementById('budget-income').addEventListener('input', calculateBudget);
@@ -348,6 +352,7 @@ const calculateTax = () => {
     document.getElementById('tax-monthly').textContent = '₹' + formatCurrency(monthlyInHand);
     
     updateChart('taxChart', taxChartObj, ['In-Hand Salary', 'Total Tax'], [annualInHand, totalTax], ['#10b981', '#ef4444'], 'taxChartObj', 'doughnut');
+    updateDashboard();
 };
 
 syncInputs('tax-income', 'tax-income-range', calculateTax);
@@ -399,6 +404,68 @@ nwInputIds.forEach(id => {
 
 // Initial calculation
 calculateNetWorth();
+
+
+// --- Dashboard Update Function ---
+const updateDashboard = () => {
+    // Update dashboard cards with current calculator values
+    
+    // Net Worth: Assets minus Liabilities
+    const nwNetWorth = document.getElementById('nw-net-worth');
+    if (nwNetWorth) {
+        document.getElementById('dash-networth').textContent = nwNetWorth.textContent;
+    }
+    
+    // SIP: Total SIP Value
+    const sipTotal = document.getElementById('sip-total');
+    if (sipTotal && sipTotal.textContent) {
+        document.getElementById('dash-sip').textContent = sipTotal.textContent;
+    } else {
+        const sipAmount = document.getElementById('sip-amount');
+        if (sipAmount) {
+            document.getElementById('dash-sip').textContent = '₹' + formatCurrency(parseFloat(sipAmount.value) || 0);
+        }
+    }
+    
+    // Monthly Savings: From budget calculator
+    const monthlySavings = document.getElementById('budget-savings');
+    if (monthlySavings) {
+        document.getElementById('dash-savings').textContent = monthlySavings.textContent;
+    }
+    
+    // Annual Tax: Tax payable amount
+    const annualTax = document.getElementById('tax-payable');
+    if (annualTax) {
+        document.getElementById('dash-tax').textContent = annualTax.textContent;
+    }
+    
+    // Monthly EMI: EMI monthly payment
+    const monthlyEMI = document.getElementById('emi-monthly');
+    if (monthlyEMI) {
+        document.getElementById('dash-emi').textContent = monthlyEMI.textContent;
+    }
+    
+    // Total Liabilities: From net worth calculator
+    const nwLiabilities = document.getElementById('nw-result-liabilities');
+    if (nwLiabilities) {
+        document.getElementById('dash-liabilities').textContent = nwLiabilities.textContent;
+    }
+};
+
+// Attach updateDashboard to calculator change events
+const calculateNetWorthWithDashboard = () => {
+    calculateNetWorth();
+    updateDashboard();
+};
+
+// Replace the previous listeners with ones that update dashboard
+nwInputIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+        el.removeEventListener('input', calculateNetWorth);
+        el.addEventListener('input', calculateNetWorthWithDashboard);
+    }
+});
 
 
 // --- History Logic ---
@@ -910,4 +977,5 @@ window.addEventListener('DOMContentLoaded', () => {
     
     initAuth();
     openViewFromQuery();
+    updateDashboard();
 });
