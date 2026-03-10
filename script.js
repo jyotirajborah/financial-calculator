@@ -1047,47 +1047,47 @@ const updateDashboard = () => {
     
     // Net Worth: Assets minus Liabilities
     const nwNetWorth = document.getElementById('nw-net-worth');
-    if (nwNetWorth) {
-        document.getElementById('dash-networth').textContent = nwNetWorth.textContent;
-    }
+    const dashNetWorth = document.getElementById('dash-networth');
+    if (nwNetWorth && dashNetWorth) dashNetWorth.textContent = nwNetWorth.textContent;
     
     // SIP: Total SIP Value
     const sipTotal = document.getElementById('sip-total');
-    if (sipTotal && sipTotal.textContent) {
-        document.getElementById('dash-sip').textContent = sipTotal.textContent;
-    } else {
-        const sipAmount = document.getElementById('sip-amount');
-        if (sipAmount) {
-            document.getElementById('dash-sip').textContent = '₹' + formatCurrency(parseFloat(sipAmount.value) || 0);
+    const dashSip = document.getElementById('dash-sip');
+    if (dashSip) {
+        if (sipTotal && sipTotal.textContent) {
+            dashSip.textContent = sipTotal.textContent;
+        } else {
+            const sipAmount = document.getElementById('sip-amount');
+            if (sipAmount) dashSip.textContent = '₹' + formatCurrency(parseFloat(sipAmount.value) || 0);
         }
     }
+
+    // Compound Interest: Total Value
+    const ciTotal = document.getElementById('ci-total');
+    const dashCi = document.getElementById('dash-ci');
+    if (ciTotal && dashCi) dashCi.textContent = ciTotal.textContent;
     
     // Monthly Investing Goal: From budget calculator (prefer investments if available)
     const monthlyInvestments = document.getElementById('budget-investments');
     const monthlySavings = document.getElementById('budget-savings');
-    if (monthlyInvestments && monthlyInvestments.textContent) {
-        document.getElementById('dash-savings').textContent = monthlyInvestments.textContent;
-    } else if (monthlySavings && monthlySavings.textContent) {
-        document.getElementById('dash-savings').textContent = monthlySavings.textContent;
+    const dashSavings = document.getElementById('dash-savings');
+    if (dashSavings) {
+        if (monthlyInvestments && monthlyInvestments.textContent) {
+            dashSavings.textContent = monthlyInvestments.textContent;
+        } else if (monthlySavings && monthlySavings.textContent) {
+            dashSavings.textContent = monthlySavings.textContent;
+        }
     }
     
     // Annual Tax: Tax payable amount
     const annualTax = document.getElementById('tax-payable');
-    if (annualTax) {
-        document.getElementById('dash-tax').textContent = annualTax.textContent;
-    }
+    const dashTax = document.getElementById('dash-tax');
+    if (annualTax && dashTax) dashTax.textContent = annualTax.textContent;
     
     // Monthly EMI: EMI monthly payment
     const monthlyEMI = document.getElementById('emi-monthly');
-    if (monthlyEMI) {
-        document.getElementById('dash-emi').textContent = monthlyEMI.textContent;
-    }
-    
-    // Total Liabilities: From net worth calculator
-    const nwLiabilities = document.getElementById('nw-result-liabilities');
-    if (nwLiabilities) {
-        document.getElementById('dash-liabilities').textContent = nwLiabilities.textContent;
-    }
+    const dashEmi = document.getElementById('dash-emi');
+    if (monthlyEMI && dashEmi) dashEmi.textContent = monthlyEMI.textContent;
 };
 
 // Attach updateDashboard to calculator change events
