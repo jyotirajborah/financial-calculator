@@ -303,9 +303,9 @@ document.getElementById('budget-income').addEventListener('input', calculateBudg
 const computeNewRegimeFY2425SlabTax = (taxableIncome) => {
     const slabs = [
         { from: 0, to: 300000, rate: 0.00, label: '0 - 3L @ 0%' },
-        { from: 300000, to: 700000, rate: 0.05, label: '3L - 7L @ 5%' },
-        { from: 700000, to: 1000000, rate: 0.10, label: '7L - 10L @ 10%' },
-        { from: 1000000, to: 1200000, rate: 0.15, label: '10L - 12L @ 15%' },
+        { from: 300000, to: 600000, rate: 0.05, label: '3L - 6L @ 5%' },
+        { from: 600000, to: 900000, rate: 0.10, label: '6L - 9L @ 10%' },
+        { from: 900000, to: 1200000, rate: 0.15, label: '9L - 12L @ 15%' },
         { from: 1200000, to: 1500000, rate: 0.20, label: '12L - 15L @ 20%' },
         { from: 1500000, to: Infinity, rate: 0.30, label: '15L+ @ 30%' }
     ];
