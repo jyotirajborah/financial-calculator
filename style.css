@@ -45,6 +45,11 @@ body {
 /* Sidebar */
 .sidebar {
     width: 280px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    align-self: flex-start;
     background: rgba(15, 23, 42, 0.6);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
