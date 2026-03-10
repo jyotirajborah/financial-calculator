@@ -1049,6 +1049,14 @@ const updateDashboard = () => {
     const nwNetWorth = document.getElementById('nw-net-worth');
     const dashNetWorth = document.getElementById('dash-networth');
     if (nwNetWorth && dashNetWorth) dashNetWorth.textContent = nwNetWorth.textContent;
+
+    const nwAssets = document.getElementById('nw-total-assets');
+    const dashNwAssets = document.getElementById('dash-networth-assets');
+    if (nwAssets && dashNwAssets) dashNwAssets.textContent = nwAssets.textContent;
+
+    const nwLiabilities = document.getElementById('nw-total-liabilities');
+    const dashNwLiabilities = document.getElementById('dash-networth-liabilities');
+    if (nwLiabilities && dashNwLiabilities) dashNwLiabilities.textContent = nwLiabilities.textContent;
     
     // SIP: Total SIP Value
     const sipTotal = document.getElementById('sip-total');
@@ -1062,32 +1070,96 @@ const updateDashboard = () => {
         }
     }
 
+    const sipInvested = document.getElementById('sip-invested');
+    const dashSipInvested = document.getElementById('dash-sip-invested');
+    if (sipInvested && dashSipInvested) dashSipInvested.textContent = sipInvested.textContent;
+
+    const sipReturns = document.getElementById('sip-returns');
+    const dashSipReturns = document.getElementById('dash-sip-returns');
+    if (sipReturns && dashSipReturns) dashSipReturns.textContent = sipReturns.textContent;
+
     // Compound Interest: Total Value
     const ciTotal = document.getElementById('ci-total');
     const dashCi = document.getElementById('dash-ci');
     if (ciTotal && dashCi) dashCi.textContent = ciTotal.textContent;
     
+    const ciPrincipalRes = document.getElementById('ci-principal-res');
+    const dashCiPrincipal = document.getElementById('dash-ci-principal');
+    if (ciPrincipalRes && dashCiPrincipal) dashCiPrincipal.textContent = ciPrincipalRes.textContent;
+
+    const ciInterest = document.getElementById('ci-interest');
+    const dashCiInterest = document.getElementById('dash-ci-interest');
+    if (ciInterest && dashCiInterest) dashCiInterest.textContent = ciInterest.textContent;
+
     // Monthly Investing Goal: From budget calculator (prefer investments if available)
     const monthlyInvestments = document.getElementById('budget-investments');
     const monthlySavings = document.getElementById('budget-savings');
-    const dashSavings = document.getElementById('dash-savings');
-    if (dashSavings) {
+    const dashBudget = document.getElementById('dash-budget');
+    if (dashBudget) {
         if (monthlyInvestments && monthlyInvestments.textContent) {
-            dashSavings.textContent = monthlyInvestments.textContent;
+            dashBudget.textContent = monthlyInvestments.textContent;
         } else if (monthlySavings && monthlySavings.textContent) {
-            dashSavings.textContent = monthlySavings.textContent;
+            dashBudget.textContent = monthlySavings.textContent;
         }
     }
     
+    const budgetNeeds = document.getElementById('budget-needs');
+    const dashBudgetNeeds = document.getElementById('dash-budget-needs');
+    if (budgetNeeds && dashBudgetNeeds) dashBudgetNeeds.textContent = budgetNeeds.textContent;
+
+    const budgetWants = document.getElementById('budget-wants');
+    const dashBudgetWants = document.getElementById('dash-budget-wants');
+    if (budgetWants && dashBudgetWants) dashBudgetWants.textContent = budgetWants.textContent;
+
+    const budgetSavings = document.getElementById('budget-savings');
+    const dashBudgetSavings = document.getElementById('dash-budget-savings');
+    if (budgetSavings && dashBudgetSavings) dashBudgetSavings.textContent = budgetSavings.textContent;
+
+    const budgetPersona = document.getElementById('budget-persona');
+    const dashBudgetPersona = document.getElementById('dash-budget-persona');
+    if (dashBudgetPersona) {
+        dashBudgetPersona.textContent = budgetPersona && budgetPersona.selectedOptions && budgetPersona.selectedOptions[0]
+            ? budgetPersona.selectedOptions[0].textContent.trim()
+            : '—';
+    }
+
     // Annual Tax: Tax payable amount
     const annualTax = document.getElementById('tax-payable');
     const dashTax = document.getElementById('dash-tax');
     if (annualTax && dashTax) dashTax.textContent = annualTax.textContent;
     
+    const taxTaxable = document.getElementById('tax-taxable');
+    const dashTaxTaxable = document.getElementById('dash-tax-taxable');
+    if (taxTaxable && dashTaxTaxable) dashTaxTaxable.textContent = taxTaxable.textContent;
+
+    const taxSlab = document.getElementById('tax-slab-tax');
+    const dashTaxSlab = document.getElementById('dash-tax-slab');
+    if (taxSlab && dashTaxSlab) dashTaxSlab.textContent = taxSlab.textContent;
+
+    const taxCess = document.getElementById('tax-cess');
+    const dashTaxCess = document.getElementById('dash-tax-cess');
+    if (taxCess && dashTaxCess) dashTaxCess.textContent = taxCess.textContent;
+
+    const taxEffective = document.getElementById('tax-effective-rate');
+    const dashTaxEffective = document.getElementById('dash-tax-effective');
+    if (taxEffective && dashTaxEffective) dashTaxEffective.textContent = taxEffective.textContent;
+
     // Monthly EMI: EMI monthly payment
     const monthlyEMI = document.getElementById('emi-monthly');
     const dashEmi = document.getElementById('dash-emi');
     if (monthlyEMI && dashEmi) dashEmi.textContent = monthlyEMI.textContent;
+
+    const emiInterest = document.getElementById('emi-interest');
+    const dashEmiInterest = document.getElementById('dash-emi-interest');
+    if (emiInterest && dashEmiInterest) dashEmiInterest.textContent = emiInterest.textContent;
+
+    const emiTotal = document.getElementById('emi-total');
+    const dashEmiTotal = document.getElementById('dash-emi-total');
+    if (emiTotal && dashEmiTotal) dashEmiTotal.textContent = emiTotal.textContent;
+
+    if (Array.isArray(window.__historyCache) && typeof updateDashboardHistory === 'function') {
+        updateDashboardHistory(window.__historyCache);
+    }
 };
 
 // Attach updateDashboard to calculator change events
@@ -1107,6 +1179,53 @@ nwInputIds.forEach(id => {
 
 
 // --- History Logic ---
+function updateDashboardHistory(items) {
+    const dashCount = document.getElementById('dash-history');
+    const dashLast = document.getElementById('dash-history-last');
+    const dashType = document.getElementById('dash-history-type');
+    if (!dashCount && !dashLast && !dashType) return;
+
+    const data = Array.isArray(items) ? items : [];
+    if (dashCount) dashCount.textContent = String(data.length || 0);
+
+    if (!data.length) {
+        if (dashLast) dashLast.textContent = '—';
+        if (dashType) dashType.textContent = '—';
+        return;
+    }
+
+    const latest = data.reduce((acc, cur) => {
+        if (!acc) return cur;
+        const a = new Date(acc.created_at).getTime();
+        const b = new Date(cur.created_at).getTime();
+        return (b > a) ? cur : acc;
+    }, null);
+
+    const typeMap = {
+        SIP: 'SIP Calculator',
+        EMI: 'EMI Calculator',
+        CI: 'Compound Interest',
+        TAX: 'Tax Calculator',
+        BUDGET: 'Budget Planner',
+        NETWORTH: 'Net Worth'
+    };
+
+    if (dashType) {
+        dashType.textContent = latest && latest.calc_type ? (typeMap[latest.calc_type] || latest.calc_type) : '—';
+    }
+
+    if (dashLast) {
+        const ts = latest && latest.created_at ? new Date(latest.created_at) : null;
+        if (ts && !isNaN(ts.getTime())) {
+            dashLast.textContent = ts.toLocaleDateString('en-IN', {
+                day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+        } else {
+            dashLast.textContent = '—';
+        }
+    }
+}
+
 const saveCalculation = async (type, e) => {
     if (e) e.preventDefault();
     let input_data = {};
@@ -1187,6 +1306,8 @@ const saveCalculation = async (type, e) => {
                 }, 2000);
             }
             // Save completed successfully - no auto-export
+            loadHistory(); // refresh dashboard history summary
+            updateDashboard();
         } else {
             const errData = await response.json();
             console.error("Save failed:", errData);
@@ -1210,8 +1331,11 @@ const loadHistory = async () => {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await response.json();
+
+        window.__historyCache = Array.isArray(data) ? data : [];
+        updateDashboardHistory(window.__historyCache);
         
-        if (data.length === 0) {
+        if (!Array.isArray(data) || data.length === 0) {
             list.innerHTML = '<p class="empty-msg">No history found. Save a calculation to see it here!</p>';
             return;
         }
@@ -1272,6 +1396,8 @@ const loadHistory = async () => {
             list.appendChild(div);
         });
     } catch (error) {
+        window.__historyCache = [];
+        updateDashboardHistory(window.__historyCache);
         list.innerHTML = '<p class="empty-msg">Something went wrong while loading history.</p>';
     }
 };
