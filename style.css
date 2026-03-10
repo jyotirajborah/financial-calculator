@@ -772,6 +772,38 @@ input[type=range]::-webkit-slider-thumb:hover {
     
     .top-header {
         padding: 1.5rem;
+        gap: 0.75rem;
+    }
+
+    .header-left {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    #page-title {
+        font-size: 1.6rem;
+        line-height: 1.1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .user-profile {
+        gap: 0.6rem;
+        padding: 0.45rem 0.45rem 0.45rem 0.9rem;
+        max-width: 55%;
+    }
+
+    #user-display-name {
+        max-width: 10ch;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .btn-icon {
+        width: 34px;
+        height: 34px;
     }
     
     .view-container {
@@ -817,6 +849,20 @@ input[type=range]::-webkit-slider-thumb:hover {
     
     .auth-card {
         padding: 2rem !important;
+    }
+}
+
+@media (max-width: 420px) {
+    #page-title {
+        font-size: 1.45rem;
+    }
+
+    .user-profile {
+        max-width: 60%;
+    }
+
+    #user-display-name {
+        max-width: 8ch;
     }
 }
 
