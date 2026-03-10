@@ -778,12 +778,16 @@ input[type=range]::-webkit-slider-thumb:hover {
     .header-left {
         flex: 1 1 auto;
         min-width: 0;
+        align-items: flex-start;
     }
 
     #page-title {
         font-size: 1.6rem;
         line-height: 1.1;
-        white-space: nowrap;
+        white-space: normal;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
         overflow: hidden;
         text-overflow: ellipsis;
     }
@@ -791,11 +795,11 @@ input[type=range]::-webkit-slider-thumb:hover {
     .user-profile {
         gap: 0.6rem;
         padding: 0.45rem 0.45rem 0.45rem 0.9rem;
-        max-width: 55%;
+        max-width: 45%;
     }
 
     #user-display-name {
-        max-width: 10ch;
+        max-width: 9ch;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -855,14 +859,15 @@ input[type=range]::-webkit-slider-thumb:hover {
 @media (max-width: 420px) {
     #page-title {
         font-size: 1.45rem;
+        -webkit-line-clamp: 2;
     }
 
     .user-profile {
-        max-width: 60%;
+        max-width: 50%;
     }
 
     #user-display-name {
-        max-width: 8ch;
+        max-width: 7ch;
     }
 }
 
