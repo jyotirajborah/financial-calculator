@@ -168,9 +168,12 @@ h1 {
     display: flex;
     gap: 1rem;
     align-items: flex-start;
-    padding: 1.5rem;
     cursor: default;
     transition: var(--transition);
+}
+
+.dashboard-card.glass-card {
+    padding: 1.5rem;
 }
 
 .dashboard-card:hover {
@@ -772,6 +775,10 @@ input[type=range]::-webkit-slider-thumb:hover {
     }
 
     .dashboard-card {
+        /* keep layout changes; padding is set on .dashboard-card.glass-card */
+    }
+
+    .dashboard-card.glass-card {
         padding: 1.25rem;
     }
 
