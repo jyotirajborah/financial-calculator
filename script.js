@@ -1747,6 +1747,187 @@ const initAuth = () => {
     }
 };
 
+// ---- PROJECTION CALCULATOR ----
+
+let projRisk = 'moderate';
+
+const RISK_RATES = {
+    conservative: { rate: 0.08, label: 'Conservative · 8% p.a.', alloc: 0.10 },
+    moderate:     { rate: 0.12, label: 'Moderate · 12% p.a.',    alloc: 0.20 },
+    aggressive:   { rate: 0.15, label: 'Aggressive · 15% p.a.',  alloc: 0.30 },
+};
+
+function calculateProjection() {
+    const income     = parseFloat(document.getElementById('proj-income').value)   || 0;
+    const expenses   = parseFloat(document.getElementById('proj-expenses').value) || 0;
+    const existingEMI = parseFloat(document.getElementById('proj-emi').value)     || 0;
+    const debt       = parseFloat(document.getElementById('proj-debt').value)     || 0;
+    const horizon    = parseFloat(document.getElementById('proj-horizon').value)  || 10;
+    const riskCfg    = RISK_RATES[projRisk];
+
+    const disposable = income - expenses - existingEMI;
+    const n = horizon * 12;
+
+    // SIP projection
+    const sipAmt = Math.max(0, Math.round(disposable * riskCfg.alloc));
+    const r      = riskCfg.rate / 12;
+    const sipCorpus   = sipAmt > 0 ? sipAmt * ((Math.pow(1 + r, n) - 1) / r) * (1 + r) : 0;
+    const sipInvested = sipAmt * n;
+    const sipReturns  = sipCorpus - sipInvested;
+
+    // EMI capacity (max 40% of income minus existing EMIs)
+    const maxEMI   = Math.max(0, income * 0.4 - existingEMI);
+    const emiRate  = 0.085 / 12;
+    const emiMonths = 20 * 12;
+    const maxLoan  = maxEMI > 0 ? maxEMI * (1 - Math.pow(1 + emiRate, -emiMonths)) / emiRate : 0;
+    const emiRatioPct = income > 0 ? (existingEMI / income) * 100 : 0;
+
+    // Savings growth (20% of income at 7% compounded monthly)
+    const monthlySavings = income * 0.20;
+    const ciRate = 0.07 / 12;
+    const ciCorpus = monthlySavings > 0
+        ? monthlySavings * ((Math.pow(1 + ciRate, n) - 1) / ciRate) * (1 + ciRate)
+        : 0;
+    const emergencyFund = expenses * 6;
+
+    // Budget 50/30/20
+    const needs50   = income * 0.50;
+    const wants30   = income * 0.30;
+    const savings20 = income * 0.20;
+
+    // Debt payoff (30% of disposable income toward debt at 10% p.a.)
+    let debtPayment = 0, debtMonths = 0, totalDebtInterest = 0;
+    if (debt > 0) {
+        const dRate = 0.10 / 12;
+        debtPayment = Math.round(Math.max(disposable * 0.3, debt * dRate * 1.05));
+        const minPmt = debt * dRate;
+        if (debtPayment > minPmt) {
+            debtMonths = Math.ceil(Math.log(debtPayment / (debtPayment - debt * dRate)) / Math.log(1 + dRate));
+            totalDebtInterest = debtPayment * debtMonths - debt;
+        } else {
+            debtMonths = -1;
+        }
+    }
+
+    const R = '₹';
+    const fc = formatCurrency;
+
+    // Key metrics row
+    setText('proj-res-disposable', (disposable >= 0 ? R : '-' + R) + fc(Math.abs(Math.round(disposable))));
+    setText('proj-res-sip',        R + fc(sipAmt));
+    setText('proj-res-corpus',     R + fc(Math.round(sipCorpus)));
+
+    // SIP card
+    setText('proj-sip-tag',      riskCfg.label);
+    setText('proj-sip-amount',   R + fc(sipAmt));
+    setText('proj-sip-invested', R + fc(Math.round(sipInvested)));
+    setText('proj-sip-returns',  R + fc(Math.round(sipReturns)));
+    setText('proj-sip-corpus',   R + fc(Math.round(sipCorpus)));
+    setText('proj-sip-tip', sipAmt > 0
+        ? `Investing ${R}${fc(sipAmt)}/month at ${riskCfg.rate * 100}% p.a. can grow your wealth to ${R}${fc(Math.round(sipCorpus))} in ${horizon} years.`
+        : 'Reduce expenses or EMIs to free up income for SIP investments.');
+
+    // EMI card
+    setText('proj-emi-max',    R + fc(Math.round(maxEMI)));
+    setText('proj-emi-loan',   R + fc(Math.round(maxLoan)));
+    setText('proj-emi-burden', R + fc(existingEMI));
+    const ratioEl = document.getElementById('proj-emi-ratio');
+    if (ratioEl) {
+        ratioEl.textContent = emiRatioPct.toFixed(1) + '%';
+        ratioEl.style.color = emiRatioPct > 40 ? '#ef4444' : emiRatioPct > 25 ? '#f59e0b' : '#10b981';
+    }
+    setText('proj-emi-tip', emiRatioPct > 40
+        ? 'Your EMI burden exceeds 40% of income. Prioritise paying down existing debt before taking new loans.'
+        : emiRatioPct > 25
+        ? 'EMI burden is moderate. You can take new loans cautiously.'
+        : 'Healthy EMI ratio — good capacity for additional loans if needed.');
+
+    // Savings / CI card
+    setText('proj-ci-monthly',   R + fc(Math.round(monthlySavings)));
+    setText('proj-ci-annual',    R + fc(Math.round(monthlySavings * 12)));
+    setText('proj-ci-corpus',    R + fc(Math.round(ciCorpus)));
+    setText('proj-ci-emergency', R + fc(Math.round(emergencyFund)));
+    const emMonths = monthlySavings > 0 ? Math.ceil(emergencyFund / monthlySavings) : 0;
+    setText('proj-ci-tip', emMonths > 0
+        ? `Build your emergency fund of ${R}${fc(Math.round(emergencyFund))} first. At a 20% savings rate you'll reach it in ~${emMonths} months.`
+        : 'Start saving to build a 6-month emergency fund.');
+
+    // Budget card
+    setText('proj-budget-needs',   R + fc(Math.round(needs50)));
+    setText('proj-budget-wants',   R + fc(Math.round(wants30)));
+    setText('proj-budget-savings', R + fc(Math.round(savings20)));
+    const actualEl = document.getElementById('proj-budget-actual');
+    if (actualEl) {
+        actualEl.textContent = (disposable >= 0 ? R : '-' + R) + fc(Math.abs(Math.round(disposable)));
+        actualEl.style.color = disposable >= savings20 ? '#10b981' : disposable < 0 ? '#ef4444' : '#f59e0b';
+    }
+    setText('proj-budget-tip', disposable < 0
+        ? 'Your expenses exceed your income. Review fixed costs and cut spending urgently.'
+        : disposable >= savings20
+        ? `You save ${R}${fc(Math.round(disposable))}/month — exceeding the 20% savings goal.`
+        : `Try to reach the 20% savings target of ${R}${fc(Math.round(savings20))}/month.`);
+
+    // Debt card
+    const debtCard = document.getElementById('proj-debt-card');
+    if (debtCard) {
+        debtCard.style.display = debt > 0 ? '' : 'none';
+        if (debt > 0) {
+            setText('proj-debt-total',    R + fc(debt));
+            setText('proj-debt-payment',  R + fc(debtPayment));
+            setText('proj-debt-interest', totalDebtInterest > 0 ? R + fc(Math.round(totalDebtInterest)) : '—');
+            setText('proj-debt-months',   debtMonths === -1 ? 'Cannot pay off at this rate' : debtMonths > 0 ? `${debtMonths} months` : '—');
+            setText('proj-debt-tip', debtMonths === -1
+                ? 'Payment is too low to cover interest. Increase EMI allocation to eliminate debt.'
+                : `Paying ${R}${fc(debtPayment)}/month clears your debt in ${debtMonths} months.`);
+        }
+    }
+
+    // Update dashboard projection card
+    updateProjectionDashCard(income, disposable, sipAmt, sipCorpus, maxEMI);
+}
+
+function setText(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+}
+
+function updateProjectionDashCard(income, disposable, sipAmt, sipCorpus, maxEMI) {
+    const card = document.getElementById('dash-projection-card');
+    if (!card) return;
+    if (income > 0) {
+        card.style.display = '';
+        setText('dash-projection-disposable', '₹' + formatCurrency(Math.max(0, Math.round(disposable))));
+        setText('dash-proj-sip',    '₹' + formatCurrency(sipAmt));
+        setText('dash-proj-corpus', '₹' + formatCurrency(Math.round(sipCorpus)));
+        setText('dash-proj-emi',    '₹' + formatCurrency(Math.round(maxEMI)));
+    } else {
+        card.style.display = 'none';
+    }
+}
+
+function initProjection() {
+    // Sync range inputs with number inputs
+    ['proj-income', 'proj-expenses', 'proj-emi', 'proj-debt', 'proj-horizon'].forEach(id => {
+        const input = document.getElementById(id);
+        const range = document.getElementById(id + '-range');
+        if (!input || !range) return;
+        input.addEventListener('input', () => { range.value = input.value; calculateProjection(); });
+        range.addEventListener('input', () => { input.value = range.value; calculateProjection(); });
+    });
+
+    // Risk profile buttons
+    document.querySelectorAll('.risk-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.risk-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            projRisk = btn.getAttribute('data-risk');
+            calculateProjection();
+        });
+    });
+
+    calculateProjection();
+}
+
 // Initialize all calculators on load
 window.addEventListener('DOMContentLoaded', () => {
     // Chart.js global defaults
@@ -1754,6 +1935,7 @@ window.addEventListener('DOMContentLoaded', () => {
     Chart.defaults.font.family = "'Outfit', sans-serif";
     
     initAuth();
+    initProjection();
     openViewFromQuery();
     updateDashboard();
 });

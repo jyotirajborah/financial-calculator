@@ -157,6 +157,10 @@
                     <ion-icon name="trending-up"></ion-icon>
                     <span>Net Worth</span>
                 </button>
+                <button class="nav-item" data-target="projection">
+                    <ion-icon name="telescope"></ion-icon>
+                    <span>Projection</span>
+                </button>
                 <button class="nav-item" data-target="calc-history">
                     <ion-icon name="time"></ion-icon>
                     <span>History</span>
@@ -279,6 +283,25 @@
                                         <div class="metric-row"><span>Assets</span><strong id="dash-networth-assets">—</strong></div>
                                         <div class="metric-row"><span>Liabilities</span><strong id="dash-networth-liabilities">—</strong></div>
                                     </div>
+                                </div>
+                            </div>
+
+                            <div class="dashboard-card glass-card proj-dash-card" id="dash-projection-card" style="border-left: 4px solid #06b6d4; display:none;">
+                                <div class="card-icon" style="color: #06b6d4;">
+                                    <ion-icon name="telescope"></ion-icon>
+                                </div>
+                                <div class="card-content">
+                                    <p class="card-label">Financial Projection</p>
+                                    <h3 class="card-value" id="dash-projection-disposable">—</h3>
+                                    <p class="card-hint">Monthly Disposable</p>
+                                    <div class="card-metrics" aria-label="Projection summary">
+                                        <div class="metric-row"><span>Suggested SIP</span><strong id="dash-proj-sip">—</strong></div>
+                                        <div class="metric-row"><span>Projected Corpus</span><strong id="dash-proj-corpus">—</strong></div>
+                                        <div class="metric-row"><span>EMI Capacity</span><strong id="dash-proj-emi">—</strong></div>
+                                    </div>
+                                    <button class="btn-secondary proj-dash-btn" onclick="document.querySelector('[data-target=projection]').click()">
+                                        <ion-icon name="telescope-outline"></ion-icon> View Full Projection
+                                    </button>
                                 </div>
                             </div>
 
@@ -784,6 +807,182 @@
                             <button class="btn-secondary btn-export" onclick="exportToExcel('net-worth-calculator')" title="Export to Excel" style="margin-left: 0.5rem;">
                                 <ion-icon name="document-text-outline"></ion-icon> Export XLSX
                             </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Projection View -->
+                <section class="calculator-view" id="projection">
+                    <div class="proj-layout">
+                        <!-- Left: Input Panel -->
+                        <div class="input-panel glass-card proj-input-panel">
+                            <h2>Your Financial Profile</h2>
+                            <p class="proj-intro">Enter your financial details and we'll project personalised recommendations across all calculators.</p>
+
+                            <div class="proj-section-title">Income</div>
+                            <div class="input-group">
+                                <label for="proj-income">Monthly Income</label>
+                                <div class="input-wrapper">
+                                    <span class="currency">₹</span>
+                                    <input type="number" id="proj-income" value="50000" min="1000" step="1000">
+                                </div>
+                                <input type="range" id="proj-income-range" min="10000" max="500000" step="1000" value="50000">
+                            </div>
+
+                            <div class="proj-section-title">Monthly Outgoings</div>
+                            <div class="input-group">
+                                <label for="proj-expenses">Fixed Expenses <span class="input-hint">(rent, utilities, groceries)</span></label>
+                                <div class="input-wrapper">
+                                    <span class="currency">₹</span>
+                                    <input type="number" id="proj-expenses" value="20000" min="0" step="500">
+                                </div>
+                                <input type="range" id="proj-expenses-range" min="0" max="300000" step="500" value="20000">
+                            </div>
+                            <div class="input-group">
+                                <label for="proj-emi">Existing Monthly EMIs</label>
+                                <div class="input-wrapper">
+                                    <span class="currency">₹</span>
+                                    <input type="number" id="proj-emi" value="0" min="0" step="500">
+                                </div>
+                                <input type="range" id="proj-emi-range" min="0" max="200000" step="500" value="0">
+                            </div>
+                            <div class="input-group">
+                                <label for="proj-debt">Total Outstanding Debt</label>
+                                <div class="input-wrapper">
+                                    <span class="currency">₹</span>
+                                    <input type="number" id="proj-debt" value="0" min="0" step="10000">
+                                </div>
+                                <input type="range" id="proj-debt-range" min="0" max="5000000" step="10000" value="0">
+                            </div>
+
+                            <div class="proj-section-title">Investment Preferences</div>
+                            <div class="input-group">
+                                <label for="proj-horizon">Investment Horizon</label>
+                                <div class="input-wrapper">
+                                    <input type="number" id="proj-horizon" value="10" min="1" max="40" step="1">
+                                    <span class="unit">Yr</span>
+                                </div>
+                                <input type="range" id="proj-horizon-range" min="1" max="40" step="1" value="10">
+                            </div>
+                            <div class="input-group">
+                                <label>Risk Profile</label>
+                                <div class="proj-risk-selector">
+                                    <button class="risk-btn" data-risk="conservative">Conservative</button>
+                                    <button class="risk-btn active" data-risk="moderate">Moderate</button>
+                                    <button class="risk-btn" data-risk="aggressive">Aggressive</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Results -->
+                        <div class="proj-results-panel">
+                            <!-- Top key metrics -->
+                            <div class="proj-metrics-row">
+                                <div class="proj-metric-card glass-card" style="border-top: 3px solid #06b6d4;">
+                                    <ion-icon name="cash-outline" style="color:#06b6d4;font-size:1.5rem;"></ion-icon>
+                                    <div>
+                                        <p class="proj-metric-label">Monthly Disposable</p>
+                                        <h3 class="proj-metric-value" id="proj-res-disposable">—</h3>
+                                    </div>
+                                </div>
+                                <div class="proj-metric-card glass-card" style="border-top: 3px solid #10b981;">
+                                    <ion-icon name="trending-up-outline" style="color:#10b981;font-size:1.5rem;"></ion-icon>
+                                    <div>
+                                        <p class="proj-metric-label">Suggested SIP / mo</p>
+                                        <h3 class="proj-metric-value" id="proj-res-sip">—</h3>
+                                    </div>
+                                </div>
+                                <div class="proj-metric-card glass-card" style="border-top: 3px solid #8b5cf6;">
+                                    <ion-icon name="rocket-outline" style="color:#8b5cf6;font-size:1.5rem;"></ion-icon>
+                                    <div>
+                                        <p class="proj-metric-label">Projected Corpus</p>
+                                        <h3 class="proj-metric-value" id="proj-res-corpus">—</h3>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Detail projection cards -->
+                            <div class="proj-cards-grid">
+                                <!-- SIP Projection -->
+                                <div class="proj-detail-card glass-card">
+                                    <div class="proj-card-header" style="border-left: 4px solid #10b981;">
+                                        <ion-icon name="trending-up" style="color:#10b981;font-size:1.2rem;"></ion-icon>
+                                        <h3>SIP Projection</h3>
+                                        <span class="proj-tag" id="proj-sip-tag">Moderate · 12% p.a.</span>
+                                    </div>
+                                    <div class="proj-card-body">
+                                        <div class="metric-row"><span>Suggested Monthly SIP</span><strong id="proj-sip-amount">—</strong></div>
+                                        <div class="metric-row"><span>Total Invested</span><strong id="proj-sip-invested">—</strong></div>
+                                        <div class="metric-row"><span>Est. Returns</span><strong class="text-success" id="proj-sip-returns">—</strong></div>
+                                        <div class="metric-row proj-highlight"><span>Projected Corpus</span><strong id="proj-sip-corpus">—</strong></div>
+                                    </div>
+                                    <p class="proj-card-tip" id="proj-sip-tip"></p>
+                                </div>
+
+                                <!-- EMI Capacity -->
+                                <div class="proj-detail-card glass-card">
+                                    <div class="proj-card-header" style="border-left: 4px solid #8b5cf6;">
+                                        <ion-icon name="home" style="color:#8b5cf6;font-size:1.2rem;"></ion-icon>
+                                        <h3>Loan / EMI Capacity</h3>
+                                        <span class="proj-tag">8.5% p.a. · 20 yr</span>
+                                    </div>
+                                    <div class="proj-card-body">
+                                        <div class="metric-row"><span>Max Affordable EMI</span><strong id="proj-emi-max">—</strong></div>
+                                        <div class="metric-row"><span>Max Loan Amount</span><strong id="proj-emi-loan">—</strong></div>
+                                        <div class="metric-row"><span>Current EMI Burden</span><strong id="proj-emi-burden">—</strong></div>
+                                        <div class="metric-row proj-highlight"><span>EMI-to-Income Ratio</span><strong id="proj-emi-ratio">—</strong></div>
+                                    </div>
+                                    <p class="proj-card-tip" id="proj-emi-tip"></p>
+                                </div>
+
+                                <!-- Savings Growth -->
+                                <div class="proj-detail-card glass-card">
+                                    <div class="proj-card-header" style="border-left: 4px solid #f59e0b;">
+                                        <ion-icon name="stats-chart" style="color:#f59e0b;font-size:1.2rem;"></ion-icon>
+                                        <h3>Savings Growth</h3>
+                                        <span class="proj-tag">Compound · 7% p.a.</span>
+                                    </div>
+                                    <div class="proj-card-body">
+                                        <div class="metric-row"><span>Monthly Savings (20%)</span><strong id="proj-ci-monthly">—</strong></div>
+                                        <div class="metric-row"><span>Annual Savings</span><strong id="proj-ci-annual">—</strong></div>
+                                        <div class="metric-row"><span>Corpus at 7% p.a.</span><strong class="text-success" id="proj-ci-corpus">—</strong></div>
+                                        <div class="metric-row proj-highlight"><span>Emergency Fund Goal</span><strong id="proj-ci-emergency">—</strong></div>
+                                    </div>
+                                    <p class="proj-card-tip" id="proj-ci-tip"></p>
+                                </div>
+
+                                <!-- Budget Breakdown -->
+                                <div class="proj-detail-card glass-card">
+                                    <div class="proj-card-header" style="border-left: 4px solid #3b82f6;">
+                                        <ion-icon name="pie-chart" style="color:#3b82f6;font-size:1.2rem;"></ion-icon>
+                                        <h3>Budget Breakdown</h3>
+                                        <span class="proj-tag">50 / 30 / 20 Rule</span>
+                                    </div>
+                                    <div class="proj-card-body">
+                                        <div class="metric-row"><span>Needs (50%)</span><strong id="proj-budget-needs">—</strong></div>
+                                        <div class="metric-row"><span>Wants (30%)</span><strong id="proj-budget-wants">—</strong></div>
+                                        <div class="metric-row"><span>Savings (20%)</span><strong id="proj-budget-savings">—</strong></div>
+                                        <div class="metric-row proj-highlight"><span>Your Actual Savings</span><strong id="proj-budget-actual">—</strong></div>
+                                    </div>
+                                    <p class="proj-card-tip" id="proj-budget-tip"></p>
+                                </div>
+
+                                <!-- Debt Payoff (hidden when no debt) -->
+                                <div class="proj-detail-card glass-card" id="proj-debt-card" style="display:none;">
+                                    <div class="proj-card-header" style="border-left: 4px solid #ef4444;">
+                                        <ion-icon name="close-circle" style="color:#ef4444;font-size:1.2rem;"></ion-icon>
+                                        <h3>Debt Payoff Plan</h3>
+                                        <span class="proj-tag">10% p.a. interest</span>
+                                    </div>
+                                    <div class="proj-card-body">
+                                        <div class="metric-row"><span>Outstanding Debt</span><strong id="proj-debt-total">—</strong></div>
+                                        <div class="metric-row"><span>Suggested Monthly Payment</span><strong id="proj-debt-payment">—</strong></div>
+                                        <div class="metric-row"><span>Total Interest Paid</span><strong class="text-danger" id="proj-debt-interest">—</strong></div>
+                                        <div class="metric-row proj-highlight"><span>Debt-Free In</span><strong id="proj-debt-months">—</strong></div>
+                                    </div>
+                                    <p class="proj-card-tip" id="proj-debt-tip"></p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>

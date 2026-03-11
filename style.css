@@ -1335,3 +1335,211 @@ input[type=range]::-webkit-slider-thumb:hover {
     color: var(--text-main);
     font-weight: 600;
 }
+
+/* ---- PROJECTION SECTION ---- */
+
+.proj-layout {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.proj-input-panel {
+    position: sticky;
+    top: 1rem;
+}
+
+.proj-intro {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 1.25rem;
+    line-height: 1.5;
+}
+
+.proj-section-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent-color);
+    margin: 1.25rem 0 0.5rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid rgba(139,92,246,0.2);
+}
+
+.input-hint {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--text-muted);
+}
+
+/* Risk selector */
+.proj-risk-selector {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.risk-btn {
+    flex: 1;
+    padding: 0.5rem 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: 'Outfit', sans-serif;
+    border: 1.5px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.04);
+    color: var(--text-muted);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.risk-btn:hover {
+    background: rgba(255,255,255,0.09);
+    color: var(--text-main);
+}
+
+.risk-btn.active {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: #fff;
+}
+
+/* Key metrics row */
+.proj-metrics-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.proj-metric-card {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 1rem 1.1rem;
+    border-radius: 14px;
+}
+
+.proj-metric-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin: 0 0 0.2rem;
+    font-weight: 500;
+}
+
+.proj-metric-value {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0;
+}
+
+/* Detail cards grid */
+.proj-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.proj-detail-card {
+    padding: 1.25rem;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.proj-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding-left: 0.75rem;
+}
+
+.proj-card-header h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin: 0;
+    flex: 1;
+}
+
+.proj-tag {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: rgba(255,255,255,0.07);
+    padding: 0.2rem 0.5rem;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+.proj-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.metric-row.proj-highlight {
+    background: rgba(255,255,255,0.06);
+    border-radius: 8px;
+    padding: 0.35rem 0.5rem;
+    margin-top: 0.25rem;
+}
+
+.metric-row.proj-highlight span {
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.metric-row.proj-highlight strong {
+    font-size: 1rem;
+}
+
+.proj-card-tip {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+    margin: 0;
+    padding-top: 0.25rem;
+    border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+/* Dashboard projection card button */
+.proj-dash-btn {
+    margin-top: 0.75rem;
+    width: 100%;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+}
+
+/* Utility colours */
+.text-success { color: #10b981 !important; }
+.text-danger  { color: #ef4444 !important; }
+
+/* Responsive */
+@media (max-width: 900px) {
+    .proj-layout {
+        grid-template-columns: 1fr;
+    }
+    .proj-input-panel {
+        position: static;
+    }
+    .proj-metrics-row {
+        grid-template-columns: 1fr 1fr;
+    }
+    .proj-cards-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 500px) {
+    .proj-metrics-row {
+        grid-template-columns: 1fr;
+    }
+}
