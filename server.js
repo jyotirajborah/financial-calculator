@@ -5,7 +5,7 @@ const cors = require('cors');
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
 // For server-side PDF rendering fallback
 const PDF_SECRET = process.env.PDF_SECRET || null;
@@ -185,6 +185,6 @@ app.get('/*path', (req, res) => {
 // The /api/render-pdf endpoint is no longer available. Use client-side Excel export (exportToExcel) instead.
 
 // Start Server
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server is running on http://0.0.0.0:${PORT}`);
 });
