@@ -65,6 +65,7 @@
             <div class="auth-tabs">
                 <button class="auth-tab active" data-form="login">Login</button>
                 <button class="auth-tab" data-form="signup">Sign Up</button>
+                <button class="auth-tab guest-tab" data-form="guest">Continue as Guest</button>
             </div>
             
             <div class="auth-forms">
@@ -114,6 +115,23 @@
                     </div>
                     <button type="submit" class="btn-primary">Create Account</button>
                 </form>
+                
+                <!-- Guest Access -->
+                <div id="guest-form" class="auth-form guest-access">
+                    <div class="guest-info">
+                        <ion-icon name="information-circle-outline" style="font-size: 2rem; color: #3b82f6; margin-bottom: 1rem;"></ion-icon>
+                        <h3>Guest Access</h3>
+                        <p>Use all calculators without creating an account. Your calculations won't be saved to history.</p>
+                        <ul class="guest-features">
+                            <li><ion-icon name="checkmark-circle" style="color: #10b981;"></ion-icon> Full access to all calculators</li>
+                            <li><ion-icon name="checkmark-circle" style="color: #10b981;"></ion-icon> Export results to Excel</li>
+                            <li><ion-icon name="close-circle" style="color: #ef4444;"></ion-icon> No calculation history</li>
+                            <li><ion-icon name="close-circle" style="color: #ef4444;"></ion-icon> No saved preferences</li>
+                        </ul>
+                        <button type="button" class="btn-primary" id="guest-continue-btn">Continue as Guest</button>
+                        <p class="guest-note">You can create an account anytime to save your calculations.</p>
+                    </div>
+                </div>
             </div>
         </div>
             </div>

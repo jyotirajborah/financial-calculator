@@ -1227,6 +1227,15 @@ function updateDashboardHistory(items) {
 
 const saveCalculation = async (type, e) => {
     if (e) e.preventDefault();
+    
+    // Check if user is in guest mode
+    if (isGuestMode) {
+        if (confirm('You need to create an account or login to save calculations. Would you like to go to the login page?')) {
+            logout();
+        }
+        return;
+    }
+    
     let input_data = {};
     let result_data = {};
     
@@ -1321,7 +1330,21 @@ const saveCalculation = async (type, e) => {
 const loadHistory = async () => {
     const list = document.getElementById('history-list');
     const token = localStorage.getItem('auth_token');
-    if (!token) return;
+    
+    // Handle guest users
+    if (isGuestMode || !token) {
+        list.innerHTML = `
+            <div class="guest-history-message">
+                <ion-icon name="lock-closed-outline" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></ion-icon>
+                <h3>History Locked</h3>
+                <p>Create an account or login to save and view your calculation history.</p>
+                <button class="btn-primary" onclick="logout()" style="margin-top: 1rem;">
+                    <ion-icon name="log-in-outline"></ion-icon> Login / Sign Up
+                </button>
+            </div>
+        `;
+        return;
+    }
 
     list.innerHTML = '<div class="empty-msg">Loading history...</div>';
 
@@ -1612,11 +1635,14 @@ function updateChart(canvasId, chartObjInstance, labels, data, colors, varName, 
 
 
 // --- Auth Logic (Real API calls to /api) ---
+let isGuestMode = false;
+
 const initAuth = () => {
     const overlay = document.getElementById('auth-overlay');
     const appContainer = document.getElementById('app-container');
     const loginForm = document.getElementById('login-form');
     const signupForm = document.getElementById('signup-form');
+    const guestForm = document.getElementById('guest-form');
     const loginError = document.getElementById('login-error');
     const signupError = document.getElementById('signup-error');
     
@@ -1628,8 +1654,19 @@ const initAuth = () => {
             
             const targetBtn = e.currentTarget;
             targetBtn.classList.add('active');
-            document.getElementById(`${targetBtn.dataset.form}-form`).classList.add('active');
+            const targetForm = targetBtn.dataset.form;
+            
+            if (targetForm === 'guest') {
+                guestForm.classList.add('active');
+            } else {
+                document.getElementById(`${targetForm}-form`).classList.add('active');
+            }
         });
+    });
+
+    // Guest Continue Handler
+    document.getElementById('guest-continue-btn').addEventListener('click', () => {
+        loginAsGuest();
     });
 
     // Login Handler
@@ -1694,7 +1731,39 @@ const initAuth = () => {
         logout();
     });
 
+    const loginAsGuest = () => {
+        isGuestMode = true;
+        currentUser = { name: 'Guest', email: null };
+        
+        // UI Updates
+        document.getElementById('user-display-name').textContent = 'Guest User';
+        overlay.classList.remove('active');
+        appContainer.style.display = 'flex';
+        appContainer.style.opacity = '0';
+        setTimeout(() => {
+            appContainer.style.transition = 'opacity 0.5s ease';
+            appContainer.style.opacity = '1';
+        }, 50);
+        
+        // Lock history section for guests
+        const historySection = document.getElementById('calc-history');
+        if (historySection) {
+            historySection.classList.add('history-locked');
+        }
+        
+        // Update save buttons to show login prompt for guests
+        updateSaveButtonsForGuest();
+        
+        // Refresh charts now that container is visible
+        calculateSIP();
+        calculateEMI();
+        calculateCI();
+        calculateBudget();
+        calculateTax();
+    };
+
     const login = (user, token) => {
+        isGuestMode = false;
         currentUser = user;
         if (token) localStorage.setItem('auth_token', token);
         
@@ -1707,6 +1776,15 @@ const initAuth = () => {
             appContainer.style.transition = 'opacity 0.5s ease';
             appContainer.style.opacity = '1';
         }, 50);
+        
+        // Unlock history section
+        const historySection = document.getElementById('calc-history');
+        if (historySection) {
+            historySection.classList.remove('history-locked');
+        }
+        
+        // Restore normal save buttons
+        updateSaveButtonsForUser();
         
         // Cleanup errors
         loginError.textContent = "";
@@ -1723,10 +1801,57 @@ const initAuth = () => {
     };
 
     const logout = () => {
+        isGuestMode = false;
         currentUser = null;
         localStorage.removeItem('auth_token');
         appContainer.style.display = 'none';
         overlay.classList.add('active');
+        
+        // Reset to login tab
+        document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+        document.querySelector('.auth-tab[data-form="login"]').classList.add('active');
+        document.getElementById('login-form').classList.add('active');
+    };
+
+    // Update save buttons for guest users
+    const updateSaveButtonsForGuest = () => {
+        document.querySelectorAll('.btn-save').forEach(btn => {
+            btn.innerHTML = '<ion-icon name="log-in-outline"></ion-icon> Login to Save';
+            btn.onclick = (e) => {
+                e.preventDefault();
+                showLoginPrompt();
+            };
+        });
+    };
+
+    // Restore save buttons for logged-in users
+    const updateSaveButtonsForUser = () => {
+        document.querySelectorAll('.btn-save').forEach(btn => {
+            btn.innerHTML = '<ion-icon name="bookmark-outline"></ion-icon> Save to History';
+            // Restore original onclick handlers
+            const calcType = btn.closest('.calculator-view').id;
+            if (calcType.includes('sip')) {
+                btn.onclick = (e) => saveCalculation('SIP', e);
+            } else if (calcType.includes('emi')) {
+                btn.onclick = (e) => saveCalculation('EMI', e);
+            } else if (calcType.includes('ci')) {
+                btn.onclick = (e) => saveCalculation('CI', e);
+            } else if (calcType.includes('budget')) {
+                btn.onclick = (e) => saveCalculation('BUDGET', e);
+            } else if (calcType.includes('tax')) {
+                btn.onclick = (e) => saveCalculation('TAX', e);
+            } else if (calcType.includes('net-worth')) {
+                btn.onclick = (e) => saveCalculation('NETWORTH', e);
+            }
+        });
+    };
+
+    // Show login prompt for guest users
+    const showLoginPrompt = () => {
+        if (confirm('You need to create an account or login to save calculations. Would you like to go to the login page?')) {
+            logout();
+        }
     };
 
     // Check existing session via token verification

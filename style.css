@@ -1082,6 +1082,101 @@ input[type=range]::-webkit-slider-thumb:hover {
     min-height: 20px;
 }
 
+/* Guest Access Styles */
+.guest-tab {
+    background: rgba(16, 185, 129, 0.1) !important;
+    color: var(--success) !important;
+    border: 1px solid rgba(16, 185, 129, 0.3) !important;
+}
+
+.guest-tab.active {
+    background: rgba(16, 185, 129, 0.2) !important;
+    color: var(--success) !important;
+}
+
+.guest-access {
+    text-align: center;
+    padding: 2rem 1rem;
+}
+
+.guest-info h3 {
+    color: var(--text-main);
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.guest-info p {
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.guest-features {
+    list-style: none;
+    margin: 1.5rem 0;
+    text-align: left;
+    max-width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.guest-features li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+.guest-features ion-icon {
+    font-size: 1.2rem;
+}
+
+.guest-note {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 1rem;
+    font-style: italic;
+}
+
+.history-locked {
+    opacity: 0.6;
+    pointer-events: none;
+    position: relative;
+}
+
+.history-locked::after {
+    content: "Login to access history";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(15, 23, 42, 0.9);
+    color: var(--text-muted);
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    border: 1px solid var(--border-color);
+}
+
+.guest-history-message {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--text-muted);
+}
+
+.guest-history-message h3 {
+    color: var(--text-main);
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.guest-history-message p {
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
 /* --- Buttons --- */
 .btn-secondary {
     width: 100%;
