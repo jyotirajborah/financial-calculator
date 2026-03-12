@@ -2062,6 +2062,13 @@ input[type=range]::-webkit-slider-thumb:hover {
     text-transform: capitalize;
 }
 
+.sticky-note-category option {
+    background: white;
+    color: black;
+    padding: 0.5rem;
+    font-weight: normal;
+}
+
 .sticky-note-actions {
     display: flex;
     gap: 0.25rem;
