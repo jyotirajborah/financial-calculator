@@ -254,7 +254,7 @@ app.delete('/api/history/:id', async (req, res) => {
 });
 
 // Fallback to serve index.html for root path
-app.get('/*path', (req, res) => {
+app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
@@ -758,7 +758,7 @@ app.get('/api/get-notes', async (req, res) => {
 // The /api/render-pdf endpoint is no longer available. Use client-side Excel export (exportToExcel) instead.
 
 // Fallback route - serve index.html for any unmatched routes (SPA behavior)
-app.get('*', (req, res) => {
+app.use((req, res, next) => {
     // Don't serve index.html for API routes
     if (req.path.startsWith('/api/')) {
         return res.status(404).json({ error: 'API endpoint not found' });

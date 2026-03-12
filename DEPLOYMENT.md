@@ -28,6 +28,14 @@
 3. Set source to main branch
 4. Update `SITE_URL` to: `https://username.github.io/repository-name`
 
+#### Render
+1. Connect GitHub repository to Render
+2. Add environment variables in Render dashboard:
+   - `NODE_ENV=production`
+   - `SITE_URL=https://your-app-name.onrender.com`
+3. Deploy the application
+4. Update Supabase redirect URLs to match your Render domain
+
 #### Vercel
 1. Connect GitHub repository to Vercel
 2. Add environment variables in Vercel dashboard
