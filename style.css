@@ -1177,6 +1177,186 @@ input[type=range]::-webkit-slider-thumb:hover {
     line-height: 1.6;
 }
 
+/* Finance News Styles */
+.news-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.news-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.news-header h2 {
+    color: var(--text-main);
+    font-size: 1.8rem;
+    margin: 0;
+}
+
+.news-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.news-controls .custom-select {
+    min-width: 150px;
+}
+
+.news-list {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.news-loading {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--text-muted);
+}
+
+.news-loading p {
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.news-item {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: var(--transition);
+    position: relative;
+}
+
+.news-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+}
+
+.news-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    gap: 1rem;
+}
+
+.news-source {
+    background: var(--accent-gradient);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.news-date {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.news-title {
+    color: var(--text-main);
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-bottom: 0.75rem;
+    text-decoration: none;
+    display: block;
+}
+
+.news-title:hover {
+    color: var(--accent-color);
+}
+
+.news-snippet {
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+}
+
+.news-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.news-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--accent-color);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.news-link:hover {
+    color: var(--accent-hover);
+}
+
+.news-domain {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
+.news-error {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--text-muted);
+}
+
+.news-error ion-icon {
+    font-size: 3rem;
+    color: var(--danger);
+    margin-bottom: 1rem;
+}
+
+.news-error h3 {
+    color: var(--text-main);
+    margin-bottom: 1rem;
+}
+
+.news-error p {
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+    .news-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .news-controls {
+        justify-content: space-between;
+    }
+    
+    .news-item-header {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .news-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+}
+
 /* --- Buttons --- */
 .btn-secondary {
     width: 100%;

@@ -179,6 +179,10 @@
                     <ion-icon name="telescope"></ion-icon>
                     <span>Projection</span>
                 </button>
+                <button class="nav-item" data-target="finance-news">
+                    <ion-icon name="newspaper"></ion-icon>
+                    <span>Finance News</span>
+                </button>
                 <button class="nav-item" data-target="calc-history">
                     <ion-icon name="time"></ion-icon>
                     <span>History</span>
@@ -1000,6 +1004,34 @@
                                     </div>
                                     <p class="proj-card-tip" id="proj-debt-tip"></p>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Finance News View -->
+                <section class="calculator-view" id="finance-news">
+                    <div class="news-container glass-card">
+                        <div class="news-header">
+                            <h2>Latest Finance News</h2>
+                            <div class="news-controls">
+                                <select id="news-category" class="custom-select">
+                                    <option value="finance">General Finance</option>
+                                    <option value="stock market">Stock Market</option>
+                                    <option value="cryptocurrency">Cryptocurrency</option>
+                                    <option value="banking">Banking</option>
+                                    <option value="investment">Investment</option>
+                                    <option value="economy">Economy</option>
+                                </select>
+                                <button class="btn-icon-text" onclick="loadFinanceNews()">
+                                    <ion-icon name="refresh"></ion-icon> Refresh
+                                </button>
+                            </div>
+                        </div>
+                        <div id="news-list" class="news-list">
+                            <div class="news-loading">
+                                <ion-icon name="newspaper-outline" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></ion-icon>
+                                <p>Loading latest finance news...</p>
                             </div>
                         </div>
                     </div>

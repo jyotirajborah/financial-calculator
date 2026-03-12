@@ -213,6 +213,11 @@ document.querySelectorAll('.nav-item').forEach(btn => {
         if (targetId === 'calc-history') {
             loadHistory();
         }
+        
+        // Load finance news if target is finance news
+        if (targetId === 'finance-news') {
+            loadFinanceNews();
+        }
 
         // Close sidebar on mobile
         if(window.innerWidth <= 768) {
@@ -2063,4 +2068,124 @@ window.addEventListener('DOMContentLoaded', () => {
     initProjection();
     openViewFromQuery();
     updateDashboard();
+    
+    // Add event listener for news category change
+    const categorySelect = document.getElementById('news-category');
+    if (categorySelect) {
+        categorySelect.addEventListener('change', loadFinanceNews);
+    }
 });
+
+// --- Finance News Functions ---
+const loadFinanceNews = async () => {
+    const newsList = document.getElementById('news-list');
+    const category = document.getElementById('news-category').value;
+    
+    // Show loading state
+    newsList.innerHTML = `
+        <div class="news-loading">
+            <ion-icon name="newspaper-outline" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></ion-icon>
+            <p>Loading latest ${category} news...</p>
+        </div>
+    `;
+
+    try {
+        // Search for finance news using web search
+        const searchQuery = `${category} news latest financial markets India`;
+        const response = await fetch('/api/search-news', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: searchQuery })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch news');
+        }
+
+        const newsData = await response.json();
+        displayFinanceNews(newsData.results || []);
+        
+    } catch (error) {
+        console.error('Error loading finance news:', error);
+        showNewsError();
+    }
+};
+
+const displayFinanceNews = (newsItems) => {
+    const newsList = document.getElementById('news-list');
+    
+    if (!newsItems || newsItems.length === 0) {
+        newsList.innerHTML = `
+            <div class="news-error">
+                <ion-icon name="newspaper-outline"></ion-icon>
+                <h3>No News Found</h3>
+                <p>Unable to fetch finance news at the moment. Please try again later.</p>
+                <button class="btn-secondary" onclick="loadFinanceNews()">
+                    <ion-icon name="refresh"></ion-icon> Try Again
+                </button>
+            </div>
+        `;
+        return;
+    }
+
+    newsList.innerHTML = '';
+    
+    // Filter and sort news items
+    const filteredNews = newsItems
+        .filter(item => item.title && item.snippet)
+        .slice(0, 10); // Show top 10 news items
+
+    filteredNews.forEach(item => {
+        const newsItem = document.createElement('div');
+        newsItem.className = 'news-item';
+        
+        // Format date
+        const publishedDate = item.publishedDate ? 
+            new Date(item.publishedDate).toLocaleDateString('en-IN', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }) : 'Recent';
+
+        // Extract domain from URL
+        const domain = item.domain || (item.url ? new URL(item.url).hostname : 'Unknown Source');
+        
+        newsItem.innerHTML = `
+            <div class="news-item-header">
+                <div class="news-source">${domain}</div>
+                <div class="news-date">${publishedDate}</div>
+            </div>
+            <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="news-title">
+                ${item.title}
+            </a>
+            <div class="news-snippet">
+                ${item.snippet}
+            </div>
+            <div class="news-actions">
+                <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="news-link">
+                    <ion-icon name="open-outline"></ion-icon>
+                    Read Full Article
+                </a>
+                <div class="news-domain">${domain}</div>
+            </div>
+        `;
+        
+        newsList.appendChild(newsItem);
+    });
+};
+
+const showNewsError = () => {
+    const newsList = document.getElementById('news-list');
+    newsList.innerHTML = `
+        <div class="news-error">
+            <ion-icon name="warning-outline"></ion-icon>
+            <h3>Unable to Load News</h3>
+            <p>There was an error fetching the latest finance news. Please check your internet connection and try again.</p>
+            <button class="btn-secondary" onclick="loadFinanceNews()">
+                <ion-icon name="refresh"></ion-icon> Try Again
+            </button>
+        </div>
+    `;
+};
