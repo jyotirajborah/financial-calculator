@@ -2557,7 +2557,152 @@ let notesData = {
 let autoSaveTimeout = null;
 let currentNotesTab = 'board';
 
-const initNotesSection = () => {
+// Make functions globally available
+window.addStickyNote = () => {
+    console.log('Adding sticky note...'); // Debug log
+    
+    const noteId = Date.now().toString();
+    const newNote = {
+        id: noteId,
+        content: '',
+        category: 'financial',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
+    
+    // Ensure notesData.sticky exists
+    if (!notesData.sticky) {
+        notesData.sticky = [];
+    }
+    
+    notesData.sticky.push(newNote);
+    console.log('Note added, rendering...', notesData.sticky); // Debug log
+    
+    renderStickyNotes();
+    autoSaveNotes();
+    
+    // Focus on the new note
+    setTimeout(() => {
+        const noteElement = document.querySelector(`[data-note-id="${noteId}"] .sticky-note-content`);
+        if (noteElement) {
+            noteElement.focus();
+        }
+    }, 100);
+};
+
+window.addBoardCard = (status) => {
+    const cardId = Date.now().toString();
+    const newCard = {
+        id: cardId,
+        content: '',
+        status: status,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
+    
+    notesData.board[status].push(newCard);
+    renderBoardColumn(status);
+    autoSaveNotes();
+    
+    // Focus on the new card
+    setTimeout(() => {
+        const cardElement = document.querySelector(`[data-card-id="${cardId}"] .board-card-content`);
+        if (cardElement) {
+            cardElement.focus();
+        }
+    }, 100);
+};
+
+window.updateBoardCard = (cardId) => {
+    const cardElement = document.querySelector(`[data-card-id="${cardId}"] .board-card-content`);
+    if (!cardElement) return;
+    
+    const content = cardElement.value.trim();
+    
+    // Find and update the card
+    for (const status in notesData.board) {
+        const cardIndex = notesData.board[status].findIndex(card => card.id === cardId);
+        if (cardIndex !== -1) {
+            notesData.board[status][cardIndex].content = content;
+            notesData.board[status][cardIndex].updatedAt = new Date().toISOString();
+            break;
+        }
+    }
+    
+    autoSaveNotes();
+};
+
+window.deleteBoardCard = (cardId) => {
+    if (!confirm('Are you sure you want to delete this card?')) return;
+    
+    // Remove from data
+    for (const status in notesData.board) {
+        notesData.board[status] = notesData.board[status].filter(card => card.id !== cardId);
+    }
+    
+    // Re-render all columns
+    renderBoardNotes();
+    autoSaveNotes();
+};
+
+window.handleCardKeydown = (event, cardId) => {
+    if (event.key === 'Enter' && event.ctrlKey) {
+        event.preventDefault();
+        updateBoardCard(cardId);
+        event.target.blur();
+    }
+};
+
+window.updateStickyNote = (noteId) => {
+    const noteElement = document.querySelector(`[data-note-id="${noteId}"] .sticky-note-content`);
+    if (!noteElement) return;
+    
+    const content = noteElement.value.trim();
+    const noteIndex = notesData.sticky.findIndex(note => note.id === noteId);
+    
+    if (noteIndex !== -1) {
+        notesData.sticky[noteIndex].content = content;
+        notesData.sticky[noteIndex].updatedAt = new Date().toISOString();
+        autoSaveNotes();
+    }
+};
+
+window.updateStickyCategory = (noteId, newCategory) => {
+    const noteIndex = notesData.sticky.findIndex(note => note.id === noteId);
+    
+    if (noteIndex !== -1) {
+        notesData.sticky[noteIndex].category = newCategory;
+        notesData.sticky[noteIndex].updatedAt = new Date().toISOString();
+        renderStickyNotes();
+        autoSaveNotes();
+    }
+};
+
+window.deleteStickyNote = (noteId) => {
+    if (!confirm('Are you sure you want to delete this note?')) return;
+    
+    notesData.sticky = notesData.sticky.filter(note => note.id !== noteId);
+    renderStickyNotes();
+    autoSaveNotes();
+};
+
+window.handleStickyKeydown = (event, noteId) => {
+    if (event.key === 'Enter' && event.ctrlKey) {
+        event.preventDefault();
+        updateStickyNote(noteId);
+        event.target.blur();
+    }
+};
+
+window.showLoginPromptForNotes = () => {
+    if (confirm('Create an account or login to save your notes permanently and access them from any device. Continue?')) {
+        logout();
+    }
+};
+
+const const initNotesSection = () => {
+    console.log('Initializing notes section...'); // Debug log
+    
     // Initialize tabs
     document.querySelectorAll('.notes-tab').forEach(tab => {
         tab.addEventListener('click', (e) => {
@@ -2579,6 +2724,8 @@ const initNotesSection = () => {
     if (isGuestMode) {
         showGuestNotesPrompt();
     }
+    
+    console.log('Notes section initialized'); // Debug log
 };
 
 const switchNotesTab = (notesType) => {
@@ -2625,28 +2772,6 @@ const showLoginPromptForNotes = () => {
 };
 
 // Board Notes Functions
-const addBoardCard = (status) => {
-    const cardId = Date.now().toString();
-    const newCard = {
-        id: cardId,
-        content: '',
-        status: status,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-    };
-    
-    notesData.board[status].push(newCard);
-    renderBoardColumn(status);
-    autoSaveNotes();
-    
-    // Focus on the new card
-    setTimeout(() => {
-        const cardElement = document.querySelector(`[data-card-id="${cardId}"] .board-card-content`);
-        if (cardElement) {
-            cardElement.focus();
-        }
-    }, 100);
-};
 
 const renderBoardNotes = () => {
     renderBoardColumn('todo');
@@ -2795,38 +2920,25 @@ const handleDrop = (e) => {
     }
 };
 
-// Sticky Notes Functions
-const addStickyNote = () => {
-    const noteId = Date.now().toString();
-    const newNote = {
-        id: noteId,
-        content: '',
-        category: 'financial',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-    };
-    
-    notesData.sticky.push(newNote);
-    renderStickyNotes();
-    autoSaveNotes();
-    
-    // Focus on the new note
-    setTimeout(() => {
-        const noteElement = document.querySelector(`[data-note-id="${noteId}"] .sticky-note-content`);
-        if (noteElement) {
-            noteElement.focus();
-        }
-    }, 100);
-};
-
 const renderStickyNotes = () => {
-    const container = document.getElementById('sticky-notes-grid');
-    if (!container) return;
+    console.log('Rendering sticky notes...'); // Debug log
     
-    const filter = document.getElementById('sticky-category-filter').value;
+    const container = document.getElementById('sticky-notes-grid');
+    if (!container) {
+        console.error('sticky-notes-grid container not found');
+        return;
+    }
+    
+    const filterElement = document.getElementById('sticky-category-filter');
+    const filter = filterElement ? filterElement.value : 'all';
+    
+    console.log('Current filter:', filter, 'Notes data:', notesData.sticky); // Debug log
+    
     const filteredNotes = filter === 'all' 
         ? notesData.sticky 
         : notesData.sticky.filter(note => note.category === filter);
+    
+    console.log('Filtered notes:', filteredNotes); // Debug log
     
     if (filteredNotes.length === 0) {
         container.innerHTML = `
@@ -2879,47 +2991,8 @@ const renderStickyNotes = () => {
         
         container.appendChild(noteElement);
     });
-};
-
-const updateStickyNote = (noteId) => {
-    const noteElement = document.querySelector(`[data-note-id="${noteId}"] .sticky-note-content`);
-    if (!noteElement) return;
     
-    const content = noteElement.value.trim();
-    const noteIndex = notesData.sticky.findIndex(note => note.id === noteId);
-    
-    if (noteIndex !== -1) {
-        notesData.sticky[noteIndex].content = content;
-        notesData.sticky[noteIndex].updatedAt = new Date().toISOString();
-        autoSaveNotes();
-    }
-};
-
-const updateStickyCategory = (noteId, newCategory) => {
-    const noteIndex = notesData.sticky.findIndex(note => note.id === noteId);
-    
-    if (noteIndex !== -1) {
-        notesData.sticky[noteIndex].category = newCategory;
-        notesData.sticky[noteIndex].updatedAt = new Date().toISOString();
-        renderStickyNotes();
-        autoSaveNotes();
-    }
-};
-
-const deleteStickyNote = (noteId) => {
-    if (!confirm('Are you sure you want to delete this note?')) return;
-    
-    notesData.sticky = notesData.sticky.filter(note => note.id !== noteId);
-    renderStickyNotes();
-    autoSaveNotes();
-};
-
-const handleStickyKeydown = (event, noteId) => {
-    if (event.key === 'Enter' && event.ctrlKey) {
-        event.preventDefault();
-        updateStickyNote(noteId);
-        event.target.blur();
-    }
+    console.log('Sticky notes rendered successfully'); // Debug log
 };
 
 const filterStickyNotes = () => {
