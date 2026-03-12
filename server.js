@@ -21,6 +21,11 @@ app.use(express.json());
 // Serve static frontend files
 app.use(express.static(path.join(__dirname)));
 
+// Serve reset password page
+app.get('/reset-password', (req, res) => {
+    res.sendFile(path.join(__dirname, 'reset-password.html'));
+});
+
 // Authentication Endpoints
 
 // 1. Sign Up
@@ -80,7 +85,56 @@ app.post('/api/login', async (req, res) => {
     });
 });
 
-// 3. Verify Token (to keep user logged in on refresh)
+// 3. Forgot Password
+app.post('/api/forgot-password', async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ error: 'Please provide an email address.' });
+    }
+
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${process.env.SITE_URL || 'https://your-domain.com'}/reset-password`
+    });
+
+    if (error) {
+        return res.status(400).json({ error: error.message });
+    }
+
+    res.status(200).json({ message: 'Password reset link sent to your email.' });
+});
+
+// 4. Reset Password (handle the callback from email)
+app.post('/api/reset-password', async (req, res) => {
+    const { access_token, refresh_token, new_password } = req.body;
+
+    if (!access_token || !refresh_token || !new_password) {
+        return res.status(400).json({ error: 'Missing required parameters.' });
+    }
+
+    // Set the session with the tokens from the email link
+    const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+        access_token,
+        refresh_token
+    });
+
+    if (sessionError) {
+        return res.status(400).json({ error: sessionError.message });
+    }
+
+    // Update the password
+    const { data, error } = await supabase.auth.updateUser({
+        password: new_password
+    });
+
+    if (error) {
+        return res.status(400).json({ error: error.message });
+    }
+
+    res.status(200).json({ message: 'Password updated successfully.' });
+});
+
+// 5. Verify Token (to keep user logged in on refresh)
 app.get('/api/verify', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader) return res.status(401).json({ error: 'No token provided' });

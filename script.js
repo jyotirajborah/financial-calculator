@@ -1929,11 +1929,90 @@ const handleLoginPromptEscape = (e) => {
     }
 };
 
+// Forgot Password Modal Functions
+window.showForgotPasswordModal = () => {
+    const modal = document.getElementById('forgot-password-modal');
+    const emailInput = document.getElementById('forgot-email');
+    const errorElement = document.getElementById('forgot-error');
+    
+    // Clear previous values
+    emailInput.value = '';
+    errorElement.textContent = '';
+    
+    modal.classList.add('active');
+    
+    // Focus on email input
+    setTimeout(() => emailInput.focus(), 100);
+    
+    // Close on escape key
+    document.addEventListener('keydown', handleForgotPasswordEscape);
+};
+
+window.closeForgotPasswordModal = () => {
+    const modal = document.getElementById('forgot-password-modal');
+    modal.classList.remove('active');
+    document.removeEventListener('keydown', handleForgotPasswordEscape);
+};
+
+const handleForgotPasswordEscape = (e) => {
+    if (e.key === 'Escape') {
+        closeForgotPasswordModal();
+    }
+};
+
+window.sendPasswordReset = async () => {
+    const emailInput = document.getElementById('forgot-email');
+    const errorElement = document.getElementById('forgot-error');
+    const sendBtn = document.getElementById('send-reset-btn');
+    
+    const email = emailInput.value.trim();
+    
+    if (!email) {
+        errorElement.textContent = 'Please enter your email address.';
+        return;
+    }
+    
+    // Show loading state
+    const originalText = sendBtn.innerHTML;
+    sendBtn.innerHTML = '<ion-icon name="sync"></ion-icon> Sending...';
+    sendBtn.disabled = true;
+    errorElement.textContent = '';
+    
+    try {
+        const response = await fetch('/api/forgot-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            closeForgotPasswordModal();
+            showAlertModal(
+                'Password reset link has been sent to your email. Please check your inbox (and spam folder).',
+                'success',
+                'Reset Link Sent'
+            );
+        } else {
+            errorElement.textContent = data.error || 'Failed to send reset link.';
+        }
+    } catch (error) {
+        console.error('Password reset error:', error);
+        errorElement.textContent = 'Network error. Please try again.';
+    } finally {
+        // Restore button state
+        sendBtn.innerHTML = originalText;
+        sendBtn.disabled = false;
+    }
+};
+
 // Close modal when clicking outside
 document.addEventListener('click', (e) => {
     const confirmationModal = document.getElementById('confirmation-modal');
     const alertModal = document.getElementById('alert-modal');
     const loginPromptModal = document.getElementById('login-prompt-modal');
+    const forgotPasswordModal = document.getElementById('forgot-password-modal');
     
     if (e.target === confirmationModal) {
         closeConfirmationModal();
@@ -1941,6 +2020,8 @@ document.addEventListener('click', (e) => {
         closeAlertModal();
     } else if (e.target === loginPromptModal) {
         closeLoginPromptModal();
+    } else if (e.target === forgotPasswordModal) {
+        closeForgotPasswordModal();
     }
 });
 
