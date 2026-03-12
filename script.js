@@ -1663,7 +1663,7 @@ const loginAsGuest = () => {
     const appContainer = document.getElementById('app-container');
     
     // UI Updates
-    document.getElementById('user-display-name').textContent = 'G';
+    document.getElementById('user-display-name').innerHTML = '<ion-icon name="person-outline" style="font-size:1.2em;vertical-align:middle;"></ion-icon>';
     overlay.classList.remove('active');
     appContainer.style.display = 'flex';
     appContainer.style.opacity = '0';
