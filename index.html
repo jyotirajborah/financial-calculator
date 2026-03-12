@@ -1298,5 +1298,15 @@
         </main>
     </div>
     <script src="script.js"></script>
+    
+    <!-- Handle password reset redirect -->
+    <script>
+        // Check if this is a password reset callback
+        if (window.location.hash.includes('access_token') && window.location.hash.includes('type=recovery')) {
+            console.log('Password reset detected, redirecting to reset page...');
+            // Redirect to reset password page with the tokens
+            window.location.href = '/reset-password' + window.location.hash;
+        }
+    </script>
 </body>
 </html>
