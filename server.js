@@ -618,6 +618,65 @@ app.delete('/api/saved-news/:id', async (req, res) => {
     res.status(200).json({ message: 'Deleted successfully' });
 });
 
+// Save Notes Endpoint
+app.post('/api/save-notes', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: 'No token provided' });
+
+    const token = authHeader.split(' ')[1];
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) return res.status(401).json({ error: 'Invalid token' });
+
+    const notesData = req.body;
+
+    const userSupabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+        global: { headers: { Authorization: `Bearer ${token}` } }
+    });
+
+    // Upsert notes data
+    const { data, error } = await userSupabase
+        .from('user_notes')
+        .upsert([{ 
+            user_id: user.id, 
+            notes_data: notesData,
+            updated_at: new Date().toISOString()
+        }], { 
+            onConflict: 'user_id' 
+        })
+        .select();
+
+    if (error) return res.status(400).json({ error: error.message });
+    res.status(200).json({ message: 'Notes saved successfully' });
+});
+
+// Get Notes Endpoint
+app.get('/api/get-notes', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: 'No token provided' });
+
+    const token = authHeader.split(' ')[1];
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) return res.status(401).json({ error: 'Invalid token' });
+
+    const userSupabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+        global: { headers: { Authorization: `Bearer ${token}` } }
+    });
+
+    const { data, error } = await userSupabase
+        .from('user_notes')
+        .select('notes_data')
+        .eq('user_id', user.id)
+        .single();
+
+    if (error && error.code !== 'PGRST116') { // PGRST116 is "not found" error
+        return res.status(400).json({ error: error.message });
+    }
+
+    res.json(data || { notes_data: { board: { todo: [], inprogress: [], done: [] }, sticky: [] } });
+});
+
 // [DEPRECATED] Server-side PDF rendering endpoint removed - Puppeteer dependency removed to speed up builds
 // The /api/render-pdf endpoint is no longer available. Use client-side Excel export (exportToExcel) instead.
 

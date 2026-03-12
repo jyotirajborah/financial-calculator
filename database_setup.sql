@@ -63,3 +63,25 @@ USING (auth.uid() = user_id);
 -- Create index for better performance on saved news queries
 CREATE INDEX IF NOT EXISTS idx_saved_news_user_region ON saved_news(user_id, region);
 CREATE INDEX IF NOT EXISTS idx_saved_news_created_at ON saved_news(created_at DESC);
+
+-- Create table for user notes (board and sticky notes)
+CREATE TABLE IF NOT EXISTS user_notes (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE,
+    notes_data JSONB NOT NULL DEFAULT '{"board": {"todo": [], "inprogress": [], "done": []}, "sticky": []}',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Enable Row Level Security for user_notes
+ALTER TABLE user_notes ENABLE ROW LEVEL SECURITY;
+
+-- Create Policy for Users to insert/update their own notes
+CREATE POLICY "Users can manage their own notes" 
+ON user_notes FOR ALL 
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
+
+-- Create index for better performance on notes queries
+CREATE INDEX IF NOT EXISTS idx_user_notes_user_id ON user_notes(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_notes_updated_at ON user_notes(updated_at DESC);

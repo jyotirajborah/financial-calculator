@@ -1643,6 +1643,413 @@ input[type=range]::-webkit-slider-thumb:hover {
     }
 }
 
+/* My Notes Styles */
+.notes-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.notes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.notes-header h2 {
+    color: var(--text-main);
+    font-size: 1.8rem;
+    margin: 0;
+}
+
+.notes-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.auto-save-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.auto-save-indicator.saving {
+    color: var(--warning);
+}
+
+.auto-save-indicator.saving ion-icon {
+    color: var(--warning);
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Notes Tabs */
+.notes-tabs {
+    display: flex;
+    background: rgba(15, 23, 42, 0.6);
+    border-radius: 12px;
+    padding: 0.5rem;
+    margin-bottom: 2rem;
+    gap: 0.5rem;
+}
+
+.notes-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.notes-tab:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-main);
+}
+
+.notes-tab.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.notes-tab ion-icon {
+    font-size: 1.1rem;
+}
+
+/* Tab Content */
+.notes-tab-content {
+    display: none;
+}
+
+.notes-tab-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Task Board Styles */
+.board-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    min-height: 500px;
+}
+
+.board-column {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    min-height: 500px;
+}
+
+.board-column-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.board-column-header h3 {
+    color: var(--text-main);
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+.btn-add-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-add-card:hover {
+    background: var(--accent-gradient);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+.board-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.board-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    cursor: grab;
+    transition: var(--transition);
+    position: relative;
+}
+
+.board-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+}
+
+.board-card.dragging {
+    opacity: 0.5;
+    transform: rotate(5deg);
+}
+
+.board-card-content {
+    color: var(--text-main);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 0.75rem;
+    min-height: 20px;
+    outline: none;
+    border: none;
+    background: transparent;
+    resize: none;
+    width: 100%;
+}
+
+.board-card-content:focus {
+    color: var(--text-main);
+}
+
+.board-card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.board-card-date {
+    font-size: 0.75rem;
+}
+
+.board-card-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-card-action {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+}
+
+.btn-card-action:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+}
+
+.btn-card-action.delete:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--danger);
+}
+
+/* Sticky Notes Styles */
+.sticky-notes-header {
+    margin-bottom: 2rem;
+}
+
+.sticky-notes-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.sticky-notes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    min-height: 400px;
+}
+
+.sticky-note {
+    background: var(--accent-gradient);
+    border-radius: 12px;
+    padding: 1.5rem;
+    min-height: 200px;
+    position: relative;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+}
+
+.sticky-note:hover {
+    transform: translateY(-4px) rotate(1deg);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.sticky-note.financial { background: linear-gradient(135deg, #10b981, #059669); }
+.sticky-note.investment { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.sticky-note.budget { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.sticky-note.goals { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+.sticky-note.ideas { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+.sticky-note.reminders { background: linear-gradient(135deg, #ef4444, #dc2626); }
+
+.sticky-note-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    gap: 0.5rem;
+}
+
+.sticky-note-category {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.sticky-note-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.btn-sticky-action {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+}
+
+.btn-sticky-action:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.sticky-note-content {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    resize: none;
+    outline: none;
+    font-family: inherit;
+    placeholder-color: rgba(255, 255, 255, 0.7);
+}
+
+.sticky-note-content::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.sticky-note-footer {
+    margin-top: 1rem;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.8);
+    text-align: right;
+}
+
+.empty-notes {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--text-muted);
+}
+
+.empty-notes ion-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.empty-notes h3 {
+    color: var(--text-main);
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+}
+
+.empty-notes p {
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .board-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .board-column {
+        min-height: 300px;
+    }
+    
+    .sticky-notes-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .sticky-notes-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .notes-tabs {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .notes-tab {
+        padding: 0.75rem 1rem;
+    }
+}
+
 /* --- Buttons --- */
 .btn-secondary {
     width: 100%;

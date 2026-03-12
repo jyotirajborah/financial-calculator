@@ -183,6 +183,10 @@
                     <ion-icon name="newspaper"></ion-icon>
                     <span>Finance News</span>
                 </button>
+                <button class="nav-item" data-target="my-notes">
+                    <ion-icon name="document-text"></ion-icon>
+                    <span>My Notes</span>
+                </button>
                 <button class="nav-item" data-target="calc-history">
                     <ion-icon name="time"></ion-icon>
                     <span>History</span>
@@ -1093,6 +1097,100 @@
                                     <h4>No Saved News</h4>
                                     <p>Save interesting articles to read them later. Use the bookmark icon on any news article.</p>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- My Notes View -->
+                <section class="calculator-view" id="my-notes">
+                    <div class="notes-container glass-card">
+                        <div class="notes-header">
+                            <h2>My Notes</h2>
+                            <div class="notes-controls">
+                                <div class="auto-save-indicator" id="auto-save-status">
+                                    <ion-icon name="checkmark-circle" style="color: var(--success);"></ion-icon>
+                                    <span>Auto-saved</span>
+                                </div>
+                                <button class="btn-icon-text" onclick="showLoginPromptForNotes()" id="notes-login-btn" style="display: none;">
+                                    <ion-icon name="log-in-outline"></ion-icon> Login to Save
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Notes Tabs -->
+                        <div class="notes-tabs">
+                            <button class="notes-tab active" data-notes-type="board">
+                                <ion-icon name="grid"></ion-icon>
+                                <span>Task Board</span>
+                            </button>
+                            <button class="notes-tab" data-notes-type="sticky">
+                                <ion-icon name="sticky-note"></ion-icon>
+                                <span>Sticky Notes</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Task Board Tab Content -->
+                        <div class="notes-tab-content active" id="board-notes-content">
+                            <div class="board-container">
+                                <div class="board-column" data-status="todo">
+                                    <div class="board-column-header">
+                                        <h3>To Do</h3>
+                                        <button class="btn-add-card" onclick="addBoardCard('todo')">
+                                            <ion-icon name="add"></ion-icon>
+                                        </button>
+                                    </div>
+                                    <div class="board-cards" id="todo-cards">
+                                        <!-- Cards will be added here -->
+                                    </div>
+                                </div>
+                                
+                                <div class="board-column" data-status="inprogress">
+                                    <div class="board-column-header">
+                                        <h3>In Progress</h3>
+                                        <button class="btn-add-card" onclick="addBoardCard('inprogress')">
+                                            <ion-icon name="add"></ion-icon>
+                                        </button>
+                                    </div>
+                                    <div class="board-cards" id="inprogress-cards">
+                                        <!-- Cards will be added here -->
+                                    </div>
+                                </div>
+                                
+                                <div class="board-column" data-status="done">
+                                    <div class="board-column-header">
+                                        <h3>Done</h3>
+                                        <button class="btn-add-card" onclick="addBoardCard('done')">
+                                            <ion-icon name="add"></ion-icon>
+                                        </button>
+                                    </div>
+                                    <div class="board-cards" id="done-cards">
+                                        <!-- Cards will be added here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Sticky Notes Tab Content -->
+                        <div class="notes-tab-content" id="sticky-notes-content">
+                            <div class="sticky-notes-header">
+                                <div class="sticky-notes-controls">
+                                    <select id="sticky-category-filter" class="custom-select">
+                                        <option value="all">All Categories</option>
+                                        <option value="financial">Financial</option>
+                                        <option value="investment">Investment</option>
+                                        <option value="budget">Budget</option>
+                                        <option value="goals">Goals</option>
+                                        <option value="ideas">Ideas</option>
+                                        <option value="reminders">Reminders</option>
+                                    </select>
+                                    <button class="btn-secondary" onclick="addStickyNote()">
+                                        <ion-icon name="add"></ion-icon> Add Note
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="sticky-notes-grid" id="sticky-notes-grid">
+                                <!-- Sticky notes will be added here -->
                             </div>
                         </div>
                     </div>

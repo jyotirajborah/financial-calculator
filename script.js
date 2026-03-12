@@ -219,6 +219,11 @@ document.querySelectorAll('.nav-item').forEach(btn => {
             initNewsTab();
             loadFinanceNews();
         }
+        
+        // Initialize notes if target is my notes
+        if (targetId === 'my-notes') {
+            initNotesSection();
+        }
 
         // Close sidebar on mobile
         if(window.innerWidth <= 768) {
@@ -2542,4 +2547,467 @@ const showNewsError = (listId) => {
             </button>
         </div>
     `;
+};
+
+// --- My Notes Functions ---
+let notesData = {
+    board: { todo: [], inprogress: [], done: [] },
+    sticky: []
+};
+let autoSaveTimeout = null;
+let currentNotesTab = 'board';
+
+const initNotesSection = () => {
+    // Initialize tabs
+    document.querySelectorAll('.notes-tab').forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            const notesType = e.currentTarget.getAttribute('data-notes-type');
+            switchNotesTab(notesType);
+        });
+    });
+    
+    // Initialize sticky notes category filter
+    const categoryFilter = document.getElementById('sticky-category-filter');
+    if (categoryFilter) {
+        categoryFilter.addEventListener('change', filterStickyNotes);
+    }
+    
+    // Load existing notes
+    loadNotesData();
+    
+    // Show login prompt for guests
+    if (isGuestMode) {
+        showGuestNotesPrompt();
+    }
+};
+
+const switchNotesTab = (notesType) => {
+    currentNotesTab = notesType;
+    
+    // Update tab buttons
+    document.querySelectorAll('.notes-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelector(`[data-notes-type="${notesType}"]`).classList.add('active');
+    
+    // Update tab content
+    document.querySelectorAll('.notes-tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    document.getElementById(`${notesType}-notes-content`).classList.add('active');
+    
+    // Load appropriate content
+    if (notesType === 'board') {
+        renderBoardNotes();
+    } else if (notesType === 'sticky') {
+        renderStickyNotes();
+    }
+};
+
+const showGuestNotesPrompt = () => {
+    const loginBtn = document.getElementById('notes-login-btn');
+    if (loginBtn) {
+        loginBtn.style.display = 'flex';
+    }
+    
+    // Show prompt after a short delay
+    setTimeout(() => {
+        if (isGuestMode) {
+            showToast('💡 Login to save your notes permanently across devices!', 'info');
+        }
+    }, 2000);
+};
+
+const showLoginPromptForNotes = () => {
+    if (confirm('Create an account or login to save your notes permanently and access them from any device. Continue?')) {
+        logout();
+    }
+};
+
+// Board Notes Functions
+const addBoardCard = (status) => {
+    const cardId = Date.now().toString();
+    const newCard = {
+        id: cardId,
+        content: '',
+        status: status,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
+    
+    notesData.board[status].push(newCard);
+    renderBoardColumn(status);
+    autoSaveNotes();
+    
+    // Focus on the new card
+    setTimeout(() => {
+        const cardElement = document.querySelector(`[data-card-id="${cardId}"] .board-card-content`);
+        if (cardElement) {
+            cardElement.focus();
+        }
+    }, 100);
+};
+
+const renderBoardNotes = () => {
+    renderBoardColumn('todo');
+    renderBoardColumn('inprogress');
+    renderBoardColumn('done');
+};
+
+const renderBoardColumn = (status) => {
+    const container = document.getElementById(`${status}-cards`);
+    if (!container) return;
+    
+    const cards = notesData.board[status] || [];
+    
+    if (cards.length === 0) {
+        container.innerHTML = `
+            <div class="empty-notes">
+                <ion-icon name="document-outline"></ion-icon>
+                <p>No cards yet. Click the + button to add one.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = '';
+    
+    cards.forEach(card => {
+        const cardElement = document.createElement('div');
+        cardElement.className = 'board-card';
+        cardElement.setAttribute('data-card-id', card.id);
+        cardElement.draggable = true;
+        
+        const updatedDate = new Date(card.updatedAt).toLocaleDateString('en-IN', {
+            day: '2-digit',
+            month: 'short'
+        });
+        
+        cardElement.innerHTML = `
+            <textarea class="board-card-content" placeholder="Enter your task or note..."
+                      onblur="updateBoardCard('${card.id}')" 
+                      onkeydown="handleCardKeydown(event, '${card.id}')">${card.content}</textarea>
+            <div class="board-card-meta">
+                <div class="board-card-date">${updatedDate}</div>
+                <div class="board-card-actions">
+                    <button class="btn-card-action delete" onclick="deleteBoardCard('${card.id}')" title="Delete card">
+                        <ion-icon name="trash-outline"></ion-icon>
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        // Add drag and drop event listeners
+        cardElement.addEventListener('dragstart', handleDragStart);
+        cardElement.addEventListener('dragend', handleDragEnd);
+        
+        container.appendChild(cardElement);
+    });
+    
+    // Add drop zone listeners to columns
+    container.addEventListener('dragover', handleDragOver);
+    container.addEventListener('drop', handleDrop);
+};
+
+const updateBoardCard = (cardId) => {
+    const cardElement = document.querySelector(`[data-card-id="${cardId}"] .board-card-content`);
+    if (!cardElement) return;
+    
+    const content = cardElement.value.trim();
+    
+    // Find and update the card
+    for (const status in notesData.board) {
+        const cardIndex = notesData.board[status].findIndex(card => card.id === cardId);
+        if (cardIndex !== -1) {
+            notesData.board[status][cardIndex].content = content;
+            notesData.board[status][cardIndex].updatedAt = new Date().toISOString();
+            break;
+        }
+    }
+    
+    autoSaveNotes();
+};
+
+const deleteBoardCard = (cardId) => {
+    if (!confirm('Are you sure you want to delete this card?')) return;
+    
+    // Remove from data
+    for (const status in notesData.board) {
+        notesData.board[status] = notesData.board[status].filter(card => card.id !== cardId);
+    }
+    
+    // Re-render all columns
+    renderBoardNotes();
+    autoSaveNotes();
+};
+
+const handleCardKeydown = (event, cardId) => {
+    if (event.key === 'Enter' && event.ctrlKey) {
+        event.preventDefault();
+        updateBoardCard(cardId);
+        event.target.blur();
+    }
+};
+
+// Drag and Drop Functions
+let draggedCard = null;
+
+const handleDragStart = (e) => {
+    draggedCard = e.target;
+    e.target.classList.add('dragging');
+};
+
+const handleDragEnd = (e) => {
+    e.target.classList.remove('dragging');
+    draggedCard = null;
+};
+
+const handleDragOver = (e) => {
+    e.preventDefault();
+};
+
+const handleDrop = (e) => {
+    e.preventDefault();
+    
+    if (!draggedCard) return;
+    
+    const targetColumn = e.currentTarget;
+    const newStatus = targetColumn.id.replace('-cards', '');
+    const cardId = draggedCard.getAttribute('data-card-id');
+    
+    // Find the card and move it
+    let cardData = null;
+    for (const status in notesData.board) {
+        const cardIndex = notesData.board[status].findIndex(card => card.id === cardId);
+        if (cardIndex !== -1) {
+            cardData = notesData.board[status].splice(cardIndex, 1)[0];
+            break;
+        }
+    }
+    
+    if (cardData) {
+        cardData.status = newStatus;
+        cardData.updatedAt = new Date().toISOString();
+        notesData.board[newStatus].push(cardData);
+        
+        renderBoardNotes();
+        autoSaveNotes();
+    }
+};
+
+// Sticky Notes Functions
+const addStickyNote = () => {
+    const noteId = Date.now().toString();
+    const newNote = {
+        id: noteId,
+        content: '',
+        category: 'financial',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
+    
+    notesData.sticky.push(newNote);
+    renderStickyNotes();
+    autoSaveNotes();
+    
+    // Focus on the new note
+    setTimeout(() => {
+        const noteElement = document.querySelector(`[data-note-id="${noteId}"] .sticky-note-content`);
+        if (noteElement) {
+            noteElement.focus();
+        }
+    }, 100);
+};
+
+const renderStickyNotes = () => {
+    const container = document.getElementById('sticky-notes-grid');
+    if (!container) return;
+    
+    const filter = document.getElementById('sticky-category-filter').value;
+    const filteredNotes = filter === 'all' 
+        ? notesData.sticky 
+        : notesData.sticky.filter(note => note.category === filter);
+    
+    if (filteredNotes.length === 0) {
+        container.innerHTML = `
+            <div class="empty-notes">
+                <ion-icon name="sticky-note-outline"></ion-icon>
+                <h3>No Notes Yet</h3>
+                <p>Create your first sticky note to organize your financial thoughts and ideas.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = '';
+    
+    filteredNotes.forEach(note => {
+        const noteElement = document.createElement('div');
+        noteElement.className = `sticky-note ${note.category}`;
+        noteElement.setAttribute('data-note-id', note.id);
+        
+        const updatedDate = new Date(note.updatedAt).toLocaleDateString('en-IN', {
+            day: '2-digit',
+            month: 'short',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        noteElement.innerHTML = `
+            <div class="sticky-note-header">
+                <select class="sticky-note-category" onchange="updateStickyCategory('${note.id}', this.value)">
+                    <option value="financial" ${note.category === 'financial' ? 'selected' : ''}>Financial</option>
+                    <option value="investment" ${note.category === 'investment' ? 'selected' : ''}>Investment</option>
+                    <option value="budget" ${note.category === 'budget' ? 'selected' : ''}>Budget</option>
+                    <option value="goals" ${note.category === 'goals' ? 'selected' : ''}>Goals</option>
+                    <option value="ideas" ${note.category === 'ideas' ? 'selected' : ''}>Ideas</option>
+                    <option value="reminders" ${note.category === 'reminders' ? 'selected' : ''}>Reminders</option>
+                </select>
+                <div class="sticky-note-actions">
+                    <button class="btn-sticky-action" onclick="deleteStickyNote('${note.id}')" title="Delete note">
+                        <ion-icon name="trash-outline"></ion-icon>
+                    </button>
+                </div>
+            </div>
+            <textarea class="sticky-note-content" placeholder="Write your note here..."
+                      onblur="updateStickyNote('${note.id}')"
+                      onkeydown="handleStickyKeydown(event, '${note.id}')">${note.content}</textarea>
+            <div class="sticky-note-footer">
+                Last updated: ${updatedDate}
+            </div>
+        `;
+        
+        container.appendChild(noteElement);
+    });
+};
+
+const updateStickyNote = (noteId) => {
+    const noteElement = document.querySelector(`[data-note-id="${noteId}"] .sticky-note-content`);
+    if (!noteElement) return;
+    
+    const content = noteElement.value.trim();
+    const noteIndex = notesData.sticky.findIndex(note => note.id === noteId);
+    
+    if (noteIndex !== -1) {
+        notesData.sticky[noteIndex].content = content;
+        notesData.sticky[noteIndex].updatedAt = new Date().toISOString();
+        autoSaveNotes();
+    }
+};
+
+const updateStickyCategory = (noteId, newCategory) => {
+    const noteIndex = notesData.sticky.findIndex(note => note.id === noteId);
+    
+    if (noteIndex !== -1) {
+        notesData.sticky[noteIndex].category = newCategory;
+        notesData.sticky[noteIndex].updatedAt = new Date().toISOString();
+        renderStickyNotes();
+        autoSaveNotes();
+    }
+};
+
+const deleteStickyNote = (noteId) => {
+    if (!confirm('Are you sure you want to delete this note?')) return;
+    
+    notesData.sticky = notesData.sticky.filter(note => note.id !== noteId);
+    renderStickyNotes();
+    autoSaveNotes();
+};
+
+const handleStickyKeydown = (event, noteId) => {
+    if (event.key === 'Enter' && event.ctrlKey) {
+        event.preventDefault();
+        updateStickyNote(noteId);
+        event.target.blur();
+    }
+};
+
+const filterStickyNotes = () => {
+    renderStickyNotes();
+};
+
+// Auto-save Functions
+const autoSaveNotes = () => {
+    const statusElement = document.getElementById('auto-save-status');
+    if (statusElement) {
+        statusElement.classList.add('saving');
+        statusElement.innerHTML = '<ion-icon name="sync"></ion-icon><span>Saving...</span>';
+    }
+    
+    // Clear existing timeout
+    if (autoSaveTimeout) {
+        clearTimeout(autoSaveTimeout);
+    }
+    
+    // Set new timeout
+    autoSaveTimeout = setTimeout(async () => {
+        await saveNotesToServer();
+        
+        if (statusElement) {
+            statusElement.classList.remove('saving');
+            statusElement.innerHTML = '<ion-icon name="checkmark-circle" style="color: var(--success);"></ion-icon><span>Auto-saved</span>';
+        }
+    }, 1000);
+};
+
+const saveNotesToServer = async () => {
+    // For guests, save to localStorage
+    if (isGuestMode || !localStorage.getItem('auth_token')) {
+        localStorage.setItem('guest_notes', JSON.stringify(notesData));
+        return;
+    }
+    
+    const token = localStorage.getItem('auth_token');
+    if (!token) return;
+    
+    try {
+        const response = await fetch('/api/save-notes', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(notesData)
+        });
+        
+        if (!response.ok) {
+            console.error('Failed to save notes to server');
+        }
+    } catch (error) {
+        console.error('Error saving notes:', error);
+    }
+};
+
+const loadNotesData = async () => {
+    // For guests, load from localStorage
+    if (isGuestMode || !localStorage.getItem('auth_token')) {
+        const savedNotes = localStorage.getItem('guest_notes');
+        if (savedNotes) {
+            notesData = JSON.parse(savedNotes);
+        }
+        renderBoardNotes();
+        renderStickyNotes();
+        return;
+    }
+    
+    const token = localStorage.getItem('auth_token');
+    if (!token) return;
+    
+    try {
+        const response = await fetch('/api/get-notes', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.notes_data) {
+                notesData = data.notes_data;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading notes:', error);
+    }
+    
+    renderBoardNotes();
+    renderStickyNotes();
 };
