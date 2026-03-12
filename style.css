@@ -627,6 +627,52 @@ input[type=range]::-webkit-slider-thumb:hover {
     transform: translateY(0);
 }
 
+/* Alert Modal Styles */
+.alert-modal .modal-header .info-icon {
+    color: #3b82f6;
+}
+
+.alert-modal .modal-header .error-icon {
+    color: #ef4444;
+}
+
+.alert-modal .modal-header .success-icon {
+    color: #10b981;
+}
+
+.alert-modal .modal-header .warning-icon {
+    color: #f59e0b;
+}
+
+/* Login Prompt Modal Styles */
+.login-prompt-modal .modal-header .login-icon {
+    color: #3b82f6;
+}
+
+/* Modal header title styling */
+.modal-header h3 {
+    margin: 0;
+    color: #e2e8f0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+/* Responsive modal design */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        margin: 1rem;
+    }
+    
+    .modal-actions {
+        flex-direction: column;
+    }
+    
+    .modal-actions button {
+        width: 100%;
+    }
+}
+
 /* Results block */
 .summary {
     display: flex;

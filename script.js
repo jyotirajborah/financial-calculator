@@ -127,7 +127,7 @@ function exportToExcel(elementId) {
         pushRes('Total Liabilities', document.getElementById('nw-result-liabilities').textContent);
         pushRes('Net Worth', document.getElementById('nw-net-worth').textContent);
     } else {
-        alert('Excel export: unknown view');
+        showAlertModal('Excel export: unknown view', 'error');
         return;
     }
 
@@ -1300,7 +1300,10 @@ const saveCalculation = async (type, e) => {
     }
 
     const token = localStorage.getItem('auth_token');
-    if (!token) return alert("Please login to save calculations.");
+    if (!token) {
+        showAlertModal("Please login to save calculations.", 'warning');
+        return;
+    }
 
     const btn = e ? e.target.closest('.btn-save') : null;
 
@@ -1330,11 +1333,11 @@ const saveCalculation = async (type, e) => {
         } else {
             const errData = await response.json();
             console.error("Save failed:", errData);
-            alert(`Could not save: ${errData.error || 'Server error. Please check Supabase table setup.'}`);
+            showAlertModal(`Could not save: ${errData.error || 'Server error. Please check Supabase table setup.'}`, 'error');
         }
     } catch (error) {
         console.error("Network error saving history:", error);
-        alert("Network error. Make sure the server is running.");
+        showAlertModal("Network error. Make sure the server is running.", 'error');
     }
 };
 
@@ -1449,7 +1452,7 @@ const deleteCalculation = async (id) => {
             loadHistory(); // Refresh the list
         } else {
             const errData = await response.json();
-            alert(`Could not delete: ${errData.error}`);
+            showAlertModal(`Could not delete: ${errData.error}`, 'error');
         }
     } catch (error) {
         console.error('Error deleting history item:', error);
@@ -1461,7 +1464,10 @@ const exportToPDF = async (elementId, options = {}) => {
     // options: { marginMm: number, paper: 'a4'|'letter', scale: number }
     const opts = Object.assign({ marginMm: 10, paper: 'a4', scale: 2 }, options);
     const element = document.getElementById(elementId);
-    if (!element) return alert('Export failed: element not found');
+    if (!element) {
+        showAlertModal('Export failed: element not found', 'error');
+        return;
+    }
 
     // Save original styles/visibility to restore later
     const origBodyOverflow = document.body.style.overflow;
@@ -1593,7 +1599,7 @@ const exportToPDF = async (elementId, options = {}) => {
         }
     } catch (err) {
         console.error('PDF export error:', err);
-        alert('Could not export PDF. Check console for details.');
+        showAlertModal('Could not export PDF. Check console for details.', 'error');
     } finally {
         // Remove the clone
         if (clone && clone.parentNode) clone.parentNode.removeChild(clone);
@@ -1781,9 +1787,12 @@ const updateSaveButtonsForUser = () => {
 
 // Show login prompt for guest users
 const showLoginPrompt = () => {
-    if (confirm('You need to create an account or login to save calculations. Would you like to go to the login page?')) {
-        logout();
-    }
+    showLoginPromptModal(
+        'You need to create an account or login to save calculations. Would you like to go to the login page?',
+        () => {
+            logout();
+        }
+    );
 };
 
 // Make functions globally accessible for HTML onclick handlers
@@ -1831,11 +1840,107 @@ const handleConfirmationEscape = (e) => {
     }
 };
 
+// Custom alert modal functions
+window.showAlertModal = (message, type = 'info', title = null) => {
+    const modal = document.getElementById('alert-modal');
+    const messageElement = document.getElementById('alert-message');
+    const titleElement = document.getElementById('alert-title');
+    const iconElement = document.getElementById('alert-icon');
+    
+    messageElement.textContent = message;
+    
+    // Set icon and title based on type
+    switch (type) {
+        case 'error':
+            iconElement.name = 'alert-circle';
+            iconElement.className = 'error-icon';
+            titleElement.textContent = title || 'Error';
+            break;
+        case 'success':
+            iconElement.name = 'checkmark-circle';
+            iconElement.className = 'success-icon';
+            titleElement.textContent = title || 'Success';
+            break;
+        case 'warning':
+            iconElement.name = 'warning';
+            iconElement.className = 'warning-icon';
+            titleElement.textContent = title || 'Warning';
+            break;
+        default:
+            iconElement.name = 'information-circle';
+            iconElement.className = 'info-icon';
+            titleElement.textContent = title || 'Information';
+    }
+    
+    modal.classList.add('active');
+    
+    // Close on escape key
+    document.addEventListener('keydown', handleAlertEscape);
+};
+
+window.closeAlertModal = () => {
+    const modal = document.getElementById('alert-modal');
+    modal.classList.remove('active');
+    document.removeEventListener('keydown', handleAlertEscape);
+};
+
+const handleAlertEscape = (e) => {
+    if (e.key === 'Escape') {
+        closeAlertModal();
+    }
+};
+
+// Custom login prompt modal functions
+let loginPromptCallback = null;
+
+window.showLoginPromptModal = (message, callback) => {
+    const modal = document.getElementById('login-prompt-modal');
+    const messageElement = document.getElementById('login-prompt-message');
+    const loginBtn = document.getElementById('login-prompt-btn');
+    
+    messageElement.textContent = message;
+    loginPromptCallback = callback;
+    
+    // Remove existing event listener and add new one
+    loginBtn.onclick = () => {
+        if (loginPromptCallback) {
+            loginPromptCallback();
+            loginPromptCallback = null;
+        }
+        closeLoginPromptModal();
+    };
+    
+    modal.classList.add('active');
+    
+    // Close on escape key
+    document.addEventListener('keydown', handleLoginPromptEscape);
+};
+
+window.closeLoginPromptModal = () => {
+    const modal = document.getElementById('login-prompt-modal');
+    modal.classList.remove('active');
+    loginPromptCallback = null;
+    document.removeEventListener('keydown', handleLoginPromptEscape);
+};
+
+const handleLoginPromptEscape = (e) => {
+    if (e.key === 'Escape') {
+        closeLoginPromptModal();
+    }
+};
+
 // Close modal when clicking outside
 document.addEventListener('click', (e) => {
-    const modal = document.getElementById('confirmation-modal');
-    if (e.target === modal) {
+    const confirmationModal = document.getElementById('confirmation-modal');
+    const alertModal = document.getElementById('alert-modal');
+    const loginPromptModal = document.getElementById('login-prompt-modal');
+    
+    if (e.target === confirmationModal) {
         closeConfirmationModal();
+    } else if (e.target === alertModal) {
+        closeAlertModal();
+    } else if (e.target === loginPromptModal) {
+        closeLoginPromptModal();
     }
 });
 
@@ -2487,15 +2592,18 @@ const saveNewsArticle = async (region, index) => {
     
     // Check if user is guest
     if (isGuestMode) {
-        if (confirm('You need to create an account or login to save news articles. Would you like to go to the login page?')) {
-            logout();
-        }
+        showLoginPromptModal(
+            'You need to create an account or login to save news articles. Would you like to go to the login page?',
+            () => {
+                logout();
+            }
+        );
         return;
     }
     
     const token = localStorage.getItem('auth_token');
     if (!token) {
-        alert("Please login to save news articles.");
+        showAlertModal("Please login to save news articles.", 'warning');
         return;
     }
     
@@ -2528,11 +2636,11 @@ const saveNewsArticle = async (region, index) => {
             showToast('Article saved successfully!', 'success');
         } else {
             const errData = await response.json();
-            alert(`Could not save article: ${errData.error || 'Server error'}`);
+            showAlertModal(`Could not save article: ${errData.error || 'Server error'}`, 'error');
         }
     } catch (error) {
         console.error("Error saving news article:", error);
-        alert("Network error. Make sure the server is running.");
+        showAlertModal("Network error. Make sure the server is running.", 'error');
     }
 };
 
@@ -2561,7 +2669,7 @@ const shareNewsArticle = async (region, index) => {
             await navigator.clipboard.writeText(article.url);
             showToast('Article link copied to clipboard!', 'success');
         } catch (clipboardError) {
-            alert('Unable to share article. Please copy the link manually.');
+            showAlertModal('Unable to share article. Please copy the link manually.', 'warning');
         }
     }
 };
@@ -2694,30 +2802,31 @@ const displaySavedNews = (savedNews) => {
 };
 
 const deleteSavedNews = async (newsId) => {
-    if (!confirm('Are you sure you want to delete this saved article?')) {
-        return;
-    }
-    
-    const token = localStorage.getItem('auth_token');
-    if (!token) return;
-    
-    try {
-        const response = await fetch(`/api/saved-news/${newsId}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (response.ok) {
-            showToast('Article deleted successfully!', 'success');
-            loadSavedNews(); // Refresh the list
-        } else {
-            const errData = await response.json();
-            alert(`Could not delete article: ${errData.error || 'Server error'}`);
+    showConfirmationModal(
+        'Are you sure you want to delete this saved article? This action cannot be undone.',
+        async () => {
+            const token = localStorage.getItem('auth_token');
+            if (!token) return;
+            
+            try {
+                const response = await fetch(`/api/saved-news/${newsId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    showToast('Article deleted successfully!', 'success');
+                    loadSavedNews(); // Refresh the list
+                } else {
+                    const errData = await response.json();
+                    showAlertModal(`Could not delete article: ${errData.error || 'Server error'}`, 'error');
+                }
+            } catch (error) {
+                console.error("Error deleting saved news:", error);
+                showAlertModal("Network error. Make sure the server is running.", 'error');
+            }
         }
-    } catch (error) {
-        console.error("Error deleting saved news:", error);
-        alert("Network error. Make sure the server is running.");
-    }
+    );
 };
 
 const shareNewsUrl = async (url, title) => {
@@ -2730,7 +2839,7 @@ const shareNewsUrl = async (url, title) => {
         }
     } catch (error) {
         console.error('Error sharing article:', error);
-        alert('Unable to share article. Please copy the link manually.');
+        showAlertModal('Unable to share article. Please copy the link manually.', 'warning');
     }
 };
 
@@ -2930,9 +3039,12 @@ window.handleStickyKeydown = (event, noteId) => {
 };
 
 window.showLoginPromptForNotes = () => {
-    if (confirm('Create an account or login to save your notes permanently and access them from any device. Continue?')) {
-        logout();
-    }
+    showLoginPromptModal(
+        'Create an account or login to save your notes permanently and access them from any device. Continue?',
+        () => {
+            logout();
+        }
+    );
 };
 
 const initNotesSection = () => {

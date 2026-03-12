@@ -155,6 +155,39 @@
         </div>
     </div>
 
+    <!-- Custom Alert Modal -->
+    <div id="alert-modal" class="modal-overlay">
+        <div class="modal-content alert-modal">
+            <div class="modal-header">
+                <ion-icon id="alert-icon" name="information-circle" class="info-icon"></ion-icon>
+                <h3 id="alert-title">Information</h3>
+            </div>
+            <div class="modal-body">
+                <p id="alert-message">This is an alert message.</p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-primary" onclick="closeAlertModal()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Login Prompt Modal -->
+    <div id="login-prompt-modal" class="modal-overlay">
+        <div class="modal-content login-prompt-modal">
+            <div class="modal-header">
+                <ion-icon name="log-in" class="login-icon"></ion-icon>
+                <h3>Login Required</h3>
+            </div>
+            <div class="modal-body">
+                <p id="login-prompt-message">You need to create an account or login to access this feature.</p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeLoginPromptModal()">Cancel</button>
+                <button class="btn-primary" id="login-prompt-btn">Login / Sign Up</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Main App UI -->
     <div class="app-container" id="app-container" style="display: none;">
         <!-- Sidebar Navigation -->
