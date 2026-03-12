@@ -93,11 +93,19 @@ app.post('/api/forgot-password', async (req, res) => {
         return res.status(400).json({ error: 'Please provide an email address.' });
     }
 
+    // Determine the correct redirect URL based on environment
+    const isDevelopment = process.env.NODE_ENV !== 'production';
+    const baseUrl = isDevelopment ? 'http://localhost:3000' : (process.env.SITE_URL || 'https://jyotirajborah.github.io/financial-calculator');
+    const redirectUrl = `${baseUrl}/reset-password`;
+
+    console.log('Sending password reset email with redirect URL:', redirectUrl);
+
     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${process.env.SITE_URL || 'https://your-domain.com'}/reset-password`
+        redirectTo: redirectUrl
     });
 
     if (error) {
+        console.error('Password reset error:', error);
         return res.status(400).json({ error: error.message });
     }
 
