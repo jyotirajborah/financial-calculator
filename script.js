@@ -2078,64 +2078,79 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // --- Finance News Functions ---
 const loadFinanceNews = async () => {
-    const newsList = document.getElementById('news-list');
+    const indianNewsList = document.getElementById('indian-news-list');
+    const globalNewsList = document.getElementById('global-news-list');
     const category = document.getElementById('news-category').value;
     
-    // Show loading state
-    newsList.innerHTML = `
+    // Show loading state for both sections
+    const loadingHTML = `
         <div class="news-loading">
-            <ion-icon name="newspaper-outline" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></ion-icon>
-            <p>Loading latest ${category} news...</p>
+            <ion-icon name="newspaper-outline" style="font-size: 2rem; color: var(--text-muted); margin-bottom: 0.5rem;"></ion-icon>
+            <p>Loading ${category} news...</p>
         </div>
     `;
+    
+    indianNewsList.innerHTML = loadingHTML;
+    globalNewsList.innerHTML = loadingHTML.replace('Loading', 'Loading global');
 
     try {
-        // Search for finance news using web search
-        const searchQuery = `${category} news latest financial markets India`;
-        const response = await fetch('/api/search-news', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query: searchQuery })
-        });
+        // Fetch both Indian and Global news
+        const [indianResponse, globalResponse] = await Promise.all([
+            fetch('/api/search-news', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: category, region: 'indian' })
+            }),
+            fetch('/api/search-news', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: category, region: 'global' })
+            })
+        ]);
 
-        if (!response.ok) {
+        if (!indianResponse.ok || !globalResponse.ok) {
             throw new Error('Failed to fetch news');
         }
 
-        const newsData = await response.json();
-        displayFinanceNews(newsData.results || []);
+        const indianData = await indianResponse.json();
+        const globalData = await globalResponse.json();
+        
+        displayFinanceNews(indianData.results || [], 'indian-news-list', 'indian-news-count');
+        displayFinanceNews(globalData.results || [], 'global-news-list', 'global-news-count');
         
     } catch (error) {
         console.error('Error loading finance news:', error);
-        showNewsError();
+        showNewsError('indian-news-list');
+        showNewsError('global-news-list');
     }
 };
 
-const displayFinanceNews = (newsItems) => {
-    const newsList = document.getElementById('news-list');
+const displayFinanceNews = (newsItems, listId, countId) => {
+    const newsList = document.getElementById(listId);
+    const countElement = document.getElementById(countId);
     
     if (!newsItems || newsItems.length === 0) {
         newsList.innerHTML = `
             <div class="news-error">
                 <ion-icon name="newspaper-outline"></ion-icon>
                 <h3>No News Found</h3>
-                <p>Unable to fetch finance news at the moment. Please try again later.</p>
+                <p>Unable to fetch news at the moment. Please try again later.</p>
                 <button class="btn-secondary" onclick="loadFinanceNews()">
                     <ion-icon name="refresh"></ion-icon> Try Again
                 </button>
             </div>
         `;
+        countElement.textContent = '0 articles';
         return;
     }
 
     newsList.innerHTML = '';
     
-    // Filter and sort news items
-    const filteredNews = newsItems
-        .filter(item => item.title && item.snippet)
-        .slice(0, 10); // Show top 10 news items
+    // Show exactly 5 news items
+    const displayNews = newsItems.slice(0, 5);
+    countElement.textContent = `${displayNews.length} articles`;
 
-    filteredNews.forEach(item => {
+    displayNews.forEach(item => {
         const newsItem = document.createElement('div');
         newsItem.className = 'news-item';
         
@@ -2176,8 +2191,8 @@ const displayFinanceNews = (newsItems) => {
     });
 };
 
-const showNewsError = () => {
-    const newsList = document.getElementById('news-list');
+const showNewsError = (listId) => {
+    const newsList = document.getElementById(listId);
     newsList.innerHTML = `
         <div class="news-error">
             <ion-icon name="warning-outline"></ion-icon>
