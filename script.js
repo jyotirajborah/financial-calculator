@@ -1792,6 +1792,36 @@ window.login = login;
 window.logout = logout;
 window.showLoginPrompt = showLoginPrompt;
 
+// Custom dropdown functions for sticky notes
+window.toggleStickyDropdown = () => {
+    const dropdown = document.getElementById('sticky-category-dropdown');
+    dropdown.classList.toggle('open');
+    
+    // Close dropdown when clicking outside
+    if (dropdown.classList.contains('open')) {
+        document.addEventListener('click', closeStickyDropdownOutside);
+    } else {
+        document.removeEventListener('click', closeStickyDropdownOutside);
+    }
+};
+
+window.selectStickyCategory = (value, text) => {
+    document.getElementById('sticky-selected-text').textContent = text;
+    document.getElementById('sticky-category-dropdown').classList.remove('open');
+    document.removeEventListener('click', closeStickyDropdownOutside);
+    
+    // Filter sticky notes by category
+    filterStickyNotesByCategory(value);
+};
+
+const closeStickyDropdownOutside = (event) => {
+    const dropdown = document.getElementById('sticky-category-dropdown');
+    if (!dropdown.contains(event.target)) {
+        dropdown.classList.remove('open');
+        document.removeEventListener('click', closeStickyDropdownOutside);
+    }
+};
+
 initAuth = () => {
     console.log('Initializing authentication...'); // Debug log
     
@@ -2863,11 +2893,8 @@ const initNotesSection = () => {
         });
     });
     
-    // Initialize sticky notes category filter
-    const categoryFilter = document.getElementById('sticky-category-filter');
-    if (categoryFilter) {
-        categoryFilter.addEventListener('change', filterStickyNotes);
-    }
+    // Initialize sticky notes category filter - now using custom dropdown
+    // No event listener needed as it's handled by onclick in HTML
     
     // Load existing notes
     loadNotesData();
@@ -3075,8 +3102,18 @@ const renderStickyNotes = () => {
         return;
     }
     
-    const filterElement = document.getElementById('sticky-category-filter');
-    const filter = filterElement ? filterElement.value : 'all';
+    const filterElement = document.getElementById('sticky-selected-text');
+    let filter = 'all';
+    if (filterElement) {
+        const selectedText = filterElement.textContent.toLowerCase();
+        if (selectedText === 'all categories') filter = 'all';
+        else if (selectedText === 'financial') filter = 'financial';
+        else if (selectedText === 'investment') filter = 'investment';
+        else if (selectedText === 'budget') filter = 'budget';
+        else if (selectedText === 'goals') filter = 'goals';
+        else if (selectedText === 'ideas') filter = 'ideas';
+        else if (selectedText === 'reminders') filter = 'reminders';
+    }
     
     console.log('Current filter:', filter, 'Notes data:', notesData.sticky); // Debug log
     
@@ -3143,6 +3180,18 @@ const renderStickyNotes = () => {
 
 const filterStickyNotes = () => {
     renderStickyNotes();
+};
+
+// Update the global filtering function to work with new dropdown
+window.filterStickyNotesByCategory = (category) => {
+    const notes = document.querySelectorAll('.sticky-note');
+    notes.forEach(note => {
+        if (category === 'all' || note.dataset.category === category) {
+            note.style.display = 'block';
+        } else {
+            note.style.display = 'none';
+        }
+    });
 };
 
 // Auto-save Functions
