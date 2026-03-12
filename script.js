@@ -1662,9 +1662,6 @@ const loginAsGuest = () => {
     const overlay = document.getElementById('auth-overlay');
     const appContainer = document.getElementById('app-container');
     
-    // UI Updates
-    document.getElementById('user-display-name').textContent = 'Guest User';
-    
     // Update profile avatar for guest
     const guestIcon = document.getElementById('guest-icon');
     const userInitials = document.getElementById('user-initials');
@@ -1706,9 +1703,6 @@ const login = (user, token) => {
     const signupError = document.getElementById('signup-error');
     const loginForm = document.getElementById('login-form');
     const signupForm = document.getElementById('signup-form');
-    
-    // UI Updates
-    document.getElementById('user-display-name').textContent = user.name;
     
     // Update profile avatar for logged-in user
     const guestIcon = document.getElementById('guest-icon');
