@@ -22,8 +22,18 @@ FinCalc is a modern, responsive web application offering a suite of financial ca
    npm install
    ```
 3. **Set up Environment Variables**:
-   - Rename `.env.example` to `.env`.
-   - Add your Supabase URL and Anon Key.
+   - Copy `.env.example` to `.env`:
+     ```bash
+     cp .env.example .env
+     ```
+   - Update the following variables in `.env`:
+     - `SUPABASE_URL`: Your Supabase project URL
+     - `SUPABASE_KEY`: Your Supabase anon key
+     - `SITE_URL`: Your production domain (for password reset emails)
+       - For GitHub Pages: `https://yourusername.github.io/financial-calculator`
+       - For Vercel: `https://your-app.vercel.app`
+       - For Netlify: `https://your-app.netlify.app`
+       - For custom domain: `https://your-domain.com`
 4. **Start the server**:
    ```bash
    npm start
