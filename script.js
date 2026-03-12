@@ -1664,6 +1664,12 @@ const loginAsGuest = () => {
     
     // UI Updates
     document.getElementById('user-display-name').textContent = 'Guest User';
+    
+    // Update profile avatar for guest
+    const guestIcon = document.getElementById('guest-icon');
+    const userInitials = document.getElementById('user-initials');
+    guestIcon.style.display = 'block';
+    userInitials.style.display = 'none';
     overlay.classList.remove('active');
     appContainer.style.display = 'flex';
     appContainer.style.opacity = '0';
@@ -1703,6 +1709,17 @@ const login = (user, token) => {
     
     // UI Updates
     document.getElementById('user-display-name').textContent = user.name;
+    
+    // Update profile avatar for logged-in user
+    const guestIcon = document.getElementById('guest-icon');
+    const userInitials = document.getElementById('user-initials');
+    
+    // Extract initials from user name
+    const initials = user.name.split(' ').map(word => word.charAt(0)).join('').substring(0, 2);
+    userInitials.textContent = initials;
+    
+    guestIcon.style.display = 'none';
+    userInitials.style.display = 'block';
     overlay.classList.remove('active');
     appContainer.style.display = 'flex';
     appContainer.style.opacity = '0';
@@ -2481,6 +2498,14 @@ function initProjection() {
 
 // Initialize all calculators on load
 window.addEventListener('DOMContentLoaded', () => {
+    // Initialize profile avatar for guest state (default)
+    const guestIcon = document.getElementById('guest-icon');
+    const userInitials = document.getElementById('user-initials');
+    if (guestIcon && userInitials) {
+        guestIcon.style.display = 'block';
+        userInitials.style.display = 'none';
+    }
+    
     // Chart.js global defaults
     Chart.defaults.color = '#94a3b8';
     Chart.defaults.font.family = "'Outfit', sans-serif";
