@@ -1683,57 +1683,107 @@ const initAuth = () => {
     // Login Handler
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        console.log('Login form submitted'); // Debug log
+        
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
         
+        console.log('Login attempt for email:', email); // Debug log
+        
+        // Clear previous errors
+        loginError.textContent = "";
+        
+        // Show loading state
+        const submitBtn = loginForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<ion-icon name="sync"></ion-icon> Signing In...';
+        submitBtn.disabled = true;
+        
         try {
+            console.log('Sending login request to /api/login'); // Debug log
             const response = await fetch('/api/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
             });
+            
+            console.log('Login response status:', response.status); // Debug log
             const data = await response.json();
+            console.log('Login response data:', data); // Debug log
             
             if (response.ok) {
+                console.log('Login successful, calling login function'); // Debug log
                 login(data.user, data.token);
             } else {
+                console.error('Login failed:', data.error); // Debug log
                 loginError.textContent = data.error || "Login failed.";
             }
         } catch (error) {
-            loginError.textContent = "Unable to connect to server.";
+            console.error('Login network error:', error); // Debug log
+            loginError.textContent = "Unable to connect to server. Make sure the server is running.";
+        } finally {
+            // Restore button state
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
         }
     });
 
     // Signup Handler
     signupForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        console.log('Signup form submitted'); // Debug log
+        
         const name = document.getElementById('signup-name').value;
         const email = document.getElementById('signup-email').value;
         const password = document.getElementById('signup-password').value;
         
+        console.log('Signup attempt for:', { name, email }); // Debug log
+        
+        // Clear previous errors
+        signupError.textContent = "";
+        signupError.style.color = "#ef4444"; // Reset to error color
+        
+        // Show loading state
+        const submitBtn = signupForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<ion-icon name="sync"></ion-icon> Creating Account...';
+        submitBtn.disabled = true;
+        
         try {
+            console.log('Sending signup request to /api/signup'); // Debug log
             const response = await fetch('/api/signup', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, email, password })
             });
+            
+            console.log('Signup response status:', response.status); // Debug log
             const data = await response.json();
+            console.log('Signup response data:', data); // Debug log
             
             if (response.ok) {
                 if (data.user) {
+                    console.log('Signup successful with auto-login'); // Debug log
                     login(data.user, data.token);
                 } else {
+                    console.log('Signup successful, email verification required'); // Debug log
                     // Email confirmation is pending
                     signupError.style.color = "#10b981"; // Success green
                     signupError.textContent = "Account created! Please check your email to verify.";
                     signupForm.reset();
                 }
             } else {
+                console.error('Signup failed:', data.error); // Debug log
                 signupError.style.color = "#ef4444"; // Error red
                 signupError.textContent = data.error || "Signup failed.";
             }
         } catch (error) {
-            signupError.textContent = "Unable to connect to server.";
+            console.error('Signup network error:', error); // Debug log
+            signupError.textContent = "Unable to connect to server. Make sure the server is running.";
+        } finally {
+            // Restore button state
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
         }
     });
 
@@ -1868,19 +1918,44 @@ const initAuth = () => {
     // Check existing session via token verification
     const token = localStorage.getItem('auth_token');
     if (token) {
+        console.log('Found existing token, verifying...'); // Debug log
         fetch('/api/verify', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
-        .then(res => res.json())
+        .then(res => {
+            console.log('Token verification response status:', res.status); // Debug log
+            return res.json();
+        })
         .then(data => {
+            console.log('Token verification data:', data); // Debug log
             if (data.user) {
+                console.log('Token valid, logging in user'); // Debug log
                 login(data.user, null); // Token is already stored
             } else {
+                console.log('Token invalid, logging out'); // Debug log
                 logout();
             }
         })
-        .catch(() => logout());
+        .catch((error) => {
+            console.error('Token verification error:', error); // Debug log
+            logout();
+        });
+    } else {
+        console.log('No existing token found'); // Debug log
     }
+    
+    // Test server connectivity
+    fetch('/api/verify', { method: 'GET' })
+        .then(res => {
+            console.log('Server connectivity test - status:', res.status);
+            if (res.status === 401) {
+                console.log('Server is running and responding (401 expected without token)');
+            }
+        })
+        .catch(error => {
+            console.error('Server connectivity test failed:', error);
+            console.error('Make sure the server is running on the correct port');
+        });
 };
 
 // ---- PROJECTION CALCULATOR ----
