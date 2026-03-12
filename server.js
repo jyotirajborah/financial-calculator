@@ -19,6 +19,14 @@ const PDF_SECRET = process.env.PDF_SECRET || null;
 // Initialize Supabase Client
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+    console.error('❌ Missing Supabase configuration');
+    console.error('SUPABASE_URL:', !!SUPABASE_URL);
+    console.error('SUPABASE_KEY:', !!SUPABASE_KEY);
+    process.exit(1);
+}
+
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Middleware
@@ -30,21 +38,7 @@ app.use(express.static(path.join(__dirname)));
 // Serve reset password page
 app.get('/reset-password', (req, res) => {
     console.log('Reset password page requested');
-    const resetPagePath = path.join(__dirname, 'reset-password.html');
-    console.log('Serving reset page from:', resetPagePath);
-    res.sendFile(resetPagePath);
-});
-
-// Fallback route for SPA (serve index.html for any unmatched routes)
-app.get('*', (req, res) => {
-    // Don't serve index.html for API routes
-    if (req.path.startsWith('/api/')) {
-        return res.status(404).json({ error: 'API endpoint not found' });
-    }
-    
-    // For any other route, serve index.html (SPA behavior)
-    console.log('Serving index.html for route:', req.path);
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, 'reset-password.html'));
 });
 
 // Authentication Endpoints
