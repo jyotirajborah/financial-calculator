@@ -2965,6 +2965,12 @@ const renderBoardColumn = (status) => {
                 <p>No cards yet. Click the + button to add one.</p>
             </div>
         `;
+        
+        // Ensure empty columns can still accept drops
+        container.removeEventListener('dragover', handleDragOver);
+        container.removeEventListener('drop', handleDrop);
+        container.addEventListener('dragover', handleDragOver);
+        container.addEventListener('drop', handleDrop);
         return;
     }
     
@@ -2995,14 +3001,19 @@ const renderBoardColumn = (status) => {
             </div>
         `;
         
-        // Add drag and drop event listeners
+        // Add drag event listeners to the card
         cardElement.addEventListener('dragstart', handleDragStart);
         cardElement.addEventListener('dragend', handleDragEnd);
         
         container.appendChild(cardElement);
     });
     
-    // Add drop zone listeners to columns
+    // Ensure drop zone listeners are set up for the container
+    // Remove existing listeners first to avoid duplicates
+    container.removeEventListener('dragover', handleDragOver);
+    container.removeEventListener('drop', handleDrop);
+    
+    // Add fresh listeners
     container.addEventListener('dragover', handleDragOver);
     container.addEventListener('drop', handleDrop);
 };
@@ -3051,27 +3062,37 @@ const handleCardKeydown = (event, cardId) => {
 let draggedCard = null;
 
 const handleDragStart = (e) => {
+    console.log('Drag started:', e.target); // Debug log
     draggedCard = e.target;
     e.target.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
 };
 
 const handleDragEnd = (e) => {
+    console.log('Drag ended'); // Debug log
     e.target.classList.remove('dragging');
     draggedCard = null;
 };
 
 const handleDragOver = (e) => {
     e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
 };
 
 const handleDrop = (e) => {
     e.preventDefault();
+    console.log('Drop event triggered on:', e.currentTarget); // Debug log
     
-    if (!draggedCard) return;
+    if (!draggedCard) {
+        console.log('No dragged card found'); // Debug log
+        return;
+    }
     
     const targetColumn = e.currentTarget;
     const newStatus = targetColumn.id.replace('-cards', '');
     const cardId = draggedCard.getAttribute('data-card-id');
+    
+    console.log('Moving card:', cardId, 'to status:', newStatus); // Debug log
     
     // Find the card and move it
     let cardData = null;
@@ -3079,6 +3100,7 @@ const handleDrop = (e) => {
         const cardIndex = notesData.board[status].findIndex(card => card.id === cardId);
         if (cardIndex !== -1) {
             cardData = notesData.board[status].splice(cardIndex, 1)[0];
+            console.log('Found card in status:', status); // Debug log
             break;
         }
     }
@@ -3088,8 +3110,11 @@ const handleDrop = (e) => {
         cardData.updatedAt = new Date().toISOString();
         notesData.board[newStatus].push(cardData);
         
+        console.log('Card moved successfully'); // Debug log
         renderBoardNotes();
         autoSaveNotes();
+    } else {
+        console.error('Card data not found for ID:', cardId); // Debug log
     }
 };
 
