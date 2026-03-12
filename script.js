@@ -1648,7 +1648,153 @@ function updateChart(canvasId, chartObjInstance, labels, data, colors, varName, 
 // --- Auth Logic (Real API calls to /api) ---
 let isGuestMode = false;
 
-const initAuth = () => {
+// Global authentication functions
+const loginAsGuest = () => {
+    isGuestMode = true;
+    currentUser = { name: 'Guest', email: null };
+    
+    const overlay = document.getElementById('auth-overlay');
+    const appContainer = document.getElementById('app-container');
+    
+    // UI Updates
+    document.getElementById('user-display-name').textContent = 'Guest User';
+    overlay.classList.remove('active');
+    appContainer.style.display = 'flex';
+    appContainer.style.opacity = '0';
+    setTimeout(() => {
+        appContainer.style.transition = 'opacity 0.5s ease';
+        appContainer.style.opacity = '1';
+    }, 50);
+    
+    // Lock history section for guests
+    const historySection = document.getElementById('calc-history');
+    if (historySection) {
+        historySection.classList.add('history-locked');
+    }
+    
+    // Update save buttons to show login prompt for guests
+    updateSaveButtonsForGuest();
+    
+    // Refresh charts now that container is visible
+    calculateSIP();
+    calculateEMI();
+    calculateCI();
+    calculateBudget();
+    calculateTax();
+};
+
+const login = (user, token) => {
+    isGuestMode = false;
+    currentUser = user;
+    if (token) localStorage.setItem('auth_token', token);
+    
+    const overlay = document.getElementById('auth-overlay');
+    const appContainer = document.getElementById('app-container');
+    const loginError = document.getElementById('login-error');
+    const signupError = document.getElementById('signup-error');
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+    
+    // UI Updates
+    document.getElementById('user-display-name').textContent = user.name;
+    overlay.classList.remove('active');
+    appContainer.style.display = 'flex';
+    appContainer.style.opacity = '0';
+    setTimeout(() => {
+        appContainer.style.transition = 'opacity 0.5s ease';
+        appContainer.style.opacity = '1';
+    }, 50);
+    
+    // Unlock history section
+    const historySection = document.getElementById('calc-history');
+    if (historySection) {
+        historySection.classList.remove('history-locked');
+    }
+    
+    // Restore normal save buttons
+    updateSaveButtonsForUser();
+    
+    // Cleanup errors
+    if (loginError) loginError.textContent = "";
+    if (signupError) signupError.textContent = "";
+    if (loginForm) loginForm.reset();
+    if (signupForm) signupForm.reset();
+    
+    // Refresh charts now that container is visible
+    calculateSIP();
+    calculateEMI();
+    calculateCI();
+    calculateBudget();
+    calculateTax();
+};
+
+const logout = () => {
+    isGuestMode = false;
+    currentUser = null;
+    localStorage.removeItem('auth_token');
+    
+    const overlay = document.getElementById('auth-overlay');
+    const appContainer = document.getElementById('app-container');
+    
+    appContainer.style.display = 'none';
+    overlay.classList.add('active');
+    
+    // Reset to login tab
+    document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+    document.querySelector('.auth-tab[data-form="login"]').classList.add('active');
+    document.getElementById('login-form').classList.add('active');
+};
+
+// Update save buttons for guest users
+const updateSaveButtonsForGuest = () => {
+    document.querySelectorAll('.btn-save').forEach(btn => {
+        btn.innerHTML = '<ion-icon name="log-in-outline"></ion-icon> Login to Save';
+        btn.onclick = (e) => {
+            e.preventDefault();
+            showLoginPrompt();
+        };
+    });
+};
+
+// Restore save buttons for logged-in users
+const updateSaveButtonsForUser = () => {
+    document.querySelectorAll('.btn-save').forEach(btn => {
+        btn.innerHTML = '<ion-icon name="bookmark-outline"></ion-icon> Save to History';
+        // Restore original onclick handlers
+        const calcType = btn.closest('.calculator-view').id;
+        if (calcType.includes('sip')) {
+            btn.onclick = (e) => saveCalculation('SIP', e);
+        } else if (calcType.includes('emi')) {
+            btn.onclick = (e) => saveCalculation('EMI', e);
+        } else if (calcType.includes('ci')) {
+            btn.onclick = (e) => saveCalculation('CI', e);
+        } else if (calcType.includes('budget')) {
+            btn.onclick = (e) => saveCalculation('BUDGET', e);
+        } else if (calcType.includes('tax')) {
+            btn.onclick = (e) => saveCalculation('TAX', e);
+        } else if (calcType.includes('net-worth')) {
+            btn.onclick = (e) => saveCalculation('NETWORTH', e);
+        }
+    });
+};
+
+// Show login prompt for guest users
+const showLoginPrompt = () => {
+    if (confirm('You need to create an account or login to save calculations. Would you like to go to the login page?')) {
+        logout();
+    }
+};
+
+// Make functions globally accessible for HTML onclick handlers
+window.loginAsGuest = loginAsGuest;
+window.login = login;
+window.logout = logout;
+window.showLoginPrompt = showLoginPrompt;
+
+initAuth = () => {
+    console.log('Initializing authentication...'); // Debug log
+    
     const overlay = document.getElementById('auth-overlay');
     const appContainer = document.getElementById('app-container');
     const loginForm = document.getElementById('login-form');
@@ -1657,9 +1803,30 @@ const initAuth = () => {
     const loginError = document.getElementById('login-error');
     const signupError = document.getElementById('signup-error');
     
+    console.log('Auth elements found:', {
+        overlay: !!overlay,
+        appContainer: !!appContainer,
+        loginForm: !!loginForm,
+        signupForm: !!signupForm,
+        guestForm: !!guestForm,
+        loginError: !!loginError,
+        signupError: !!signupError
+    }); // Debug log
+    
+    if (!overlay || !appContainer || !loginForm || !signupForm) {
+        console.error('Critical auth elements missing!');
+        return;
+    }
+    
     // Tab switching
-    document.querySelectorAll('.auth-tab').forEach(btn => {
+    const authTabs = document.querySelectorAll('.auth-tab');
+    console.log('Found auth tabs:', authTabs.length); // Debug log
+    
+    authTabs.forEach((btn, index) => {
+        console.log(`Setting up tab ${index}:`, btn.dataset.form); // Debug log
         btn.addEventListener('click', (e) => {
+            console.log('Tab clicked:', e.currentTarget.dataset.form); // Debug log
+            
             document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
             
@@ -1667,253 +1834,163 @@ const initAuth = () => {
             targetBtn.classList.add('active');
             const targetForm = targetBtn.dataset.form;
             
+            console.log('Switching to form:', targetForm); // Debug log
+            
             if (targetForm === 'guest') {
-                guestForm.classList.add('active');
+                if (guestForm) {
+                    guestForm.classList.add('active');
+                } else {
+                    console.error('Guest form not found!');
+                }
             } else {
-                document.getElementById(`${targetForm}-form`).classList.add('active');
+                const formElement = document.getElementById(`${targetForm}-form`);
+                if (formElement) {
+                    formElement.classList.add('active');
+                } else {
+                    console.error(`Form ${targetForm}-form not found!`);
+                }
             }
         });
     });
 
     // Guest Continue Handler
-    document.getElementById('guest-continue-btn').addEventListener('click', () => {
-        loginAsGuest();
-    });
+    const guestContinueBtn = document.getElementById('guest-continue-btn');
+    if (guestContinueBtn) {
+        guestContinueBtn.addEventListener('click', () => {
+            console.log('Guest continue clicked'); // Debug log
+            loginAsGuest();
+        });
+    } else {
+        console.error('Guest continue button not found!');
+    }
 
     // Login Handler
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        console.log('Login form submitted'); // Debug log
-        
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
-        
-        console.log('Login attempt for email:', email); // Debug log
-        
-        // Clear previous errors
-        loginError.textContent = "";
-        
-        // Show loading state
-        const submitBtn = loginForm.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<ion-icon name="sync"></ion-icon> Signing In...';
-        submitBtn.disabled = true;
-        
-        try {
-            console.log('Sending login request to /api/login'); // Debug log
-            const response = await fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
+    if (loginForm) {
+        console.log('Setting up login form handler'); // Debug log
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            console.log('Login form submitted'); // Debug log
             
-            console.log('Login response status:', response.status); // Debug log
-            const data = await response.json();
-            console.log('Login response data:', data); // Debug log
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
             
-            if (response.ok) {
-                console.log('Login successful, calling login function'); // Debug log
-                login(data.user, data.token);
-            } else {
-                console.error('Login failed:', data.error); // Debug log
-                loginError.textContent = data.error || "Login failed.";
-            }
-        } catch (error) {
-            console.error('Login network error:', error); // Debug log
-            loginError.textContent = "Unable to connect to server. Make sure the server is running.";
-        } finally {
-            // Restore button state
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
-        }
-    });
-
-    // Signup Handler
-    signupForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        console.log('Signup form submitted'); // Debug log
-        
-        const name = document.getElementById('signup-name').value;
-        const email = document.getElementById('signup-email').value;
-        const password = document.getElementById('signup-password').value;
-        
-        console.log('Signup attempt for:', { name, email }); // Debug log
-        
-        // Clear previous errors
-        signupError.textContent = "";
-        signupError.style.color = "#ef4444"; // Reset to error color
-        
-        // Show loading state
-        const submitBtn = signupForm.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<ion-icon name="sync"></ion-icon> Creating Account...';
-        submitBtn.disabled = true;
-        
-        try {
-            console.log('Sending signup request to /api/signup'); // Debug log
-            const response = await fetch('/api/signup', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, email, password })
-            });
+            console.log('Login attempt for email:', email); // Debug log
             
-            console.log('Signup response status:', response.status); // Debug log
-            const data = await response.json();
-            console.log('Signup response data:', data); // Debug log
+            // Clear previous errors
+            if (loginError) loginError.textContent = "";
             
-            if (response.ok) {
-                if (data.user) {
-                    console.log('Signup successful with auto-login'); // Debug log
+            // Show loading state
+            const submitBtn = loginForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<ion-icon name="sync"></ion-icon> Signing In...';
+            submitBtn.disabled = true;
+            
+            try {
+                console.log('Sending login request to /api/login'); // Debug log
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                console.log('Login response status:', response.status); // Debug log
+                const data = await response.json();
+                console.log('Login response data:', data); // Debug log
+                
+                if (response.ok) {
+                    console.log('Login successful, calling login function'); // Debug log
                     login(data.user, data.token);
                 } else {
-                    console.log('Signup successful, email verification required'); // Debug log
-                    // Email confirmation is pending
-                    signupError.style.color = "#10b981"; // Success green
-                    signupError.textContent = "Account created! Please check your email to verify.";
-                    signupForm.reset();
+                    console.error('Login failed:', data.error); // Debug log
+                    if (loginError) loginError.textContent = data.error || "Login failed.";
                 }
-            } else {
-                console.error('Signup failed:', data.error); // Debug log
-                signupError.style.color = "#ef4444"; // Error red
-                signupError.textContent = data.error || "Signup failed.";
+            } catch (error) {
+                console.error('Login network error:', error); // Debug log
+                if (loginError) loginError.textContent = "Unable to connect to server. Make sure the server is running.";
+            } finally {
+                // Restore button state
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
             }
-        } catch (error) {
-            console.error('Signup network error:', error); // Debug log
-            signupError.textContent = "Unable to connect to server. Make sure the server is running.";
-        } finally {
-            // Restore button state
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
-        }
-    });
+        });
+    } else {
+        console.error('Login form not found!');
+    }
+
+    // Signup Handler
+    if (signupForm) {
+        console.log('Setting up signup form handler'); // Debug log
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            console.log('Signup form submitted'); // Debug log
+            
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            
+            console.log('Signup attempt for:', { name, email }); // Debug log
+            
+            // Clear previous errors
+            if (signupError) {
+                signupError.textContent = "";
+                signupError.style.color = "#ef4444"; // Reset to error color
+            }
+            
+            // Show loading state
+            const submitBtn = signupForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<ion-icon name="sync"></ion-icon> Creating Account...';
+            submitBtn.disabled = true;
+            
+            try {
+                console.log('Sending signup request to /api/signup'); // Debug log
+                const response = await fetch('/api/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                
+                console.log('Signup response status:', response.status); // Debug log
+                const data = await response.json();
+                console.log('Signup response data:', data); // Debug log
+                
+                if (response.ok) {
+                    if (data.user) {
+                        console.log('Signup successful with auto-login'); // Debug log
+                        login(data.user, data.token);
+                    } else {
+                        console.log('Signup successful, email verification required'); // Debug log
+                        // Email confirmation is pending
+                        if (signupError) {
+                            signupError.style.color = "#10b981"; // Success green
+                            signupError.textContent = "Account created! Please check your email to verify.";
+                        }
+                        signupForm.reset();
+                    }
+                } else {
+                    console.error('Signup failed:', data.error); // Debug log
+                    if (signupError) {
+                        signupError.style.color = "#ef4444"; // Error red
+                        signupError.textContent = data.error || "Signup failed.";
+                    }
+                }
+            } catch (error) {
+                console.error('Signup network error:', error); // Debug log
+                if (signupError) signupError.textContent = "Unable to connect to server. Make sure the server is running.";
+            } finally {
+                // Restore button state
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+    } else {
+        console.error('Signup form not found!');
+    }
 
     // Logout Handler
     document.getElementById('logout-btn').addEventListener('click', () => {
         logout();
     });
-
-    const loginAsGuest = () => {
-        isGuestMode = true;
-        currentUser = { name: 'Guest', email: null };
-        
-        // UI Updates
-        document.getElementById('user-display-name').textContent = 'Guest User';
-        overlay.classList.remove('active');
-        appContainer.style.display = 'flex';
-        appContainer.style.opacity = '0';
-        setTimeout(() => {
-            appContainer.style.transition = 'opacity 0.5s ease';
-            appContainer.style.opacity = '1';
-        }, 50);
-        
-        // Lock history section for guests
-        const historySection = document.getElementById('calc-history');
-        if (historySection) {
-            historySection.classList.add('history-locked');
-        }
-        
-        // Update save buttons to show login prompt for guests
-        updateSaveButtonsForGuest();
-        
-        // Refresh charts now that container is visible
-        calculateSIP();
-        calculateEMI();
-        calculateCI();
-        calculateBudget();
-        calculateTax();
-    };
-
-    const login = (user, token) => {
-        isGuestMode = false;
-        currentUser = user;
-        if (token) localStorage.setItem('auth_token', token);
-        
-        // UI Updates
-        document.getElementById('user-display-name').textContent = user.name;
-        overlay.classList.remove('active');
-        appContainer.style.display = 'flex';
-        appContainer.style.opacity = '0';
-        setTimeout(() => {
-            appContainer.style.transition = 'opacity 0.5s ease';
-            appContainer.style.opacity = '1';
-        }, 50);
-        
-        // Unlock history section
-        const historySection = document.getElementById('calc-history');
-        if (historySection) {
-            historySection.classList.remove('history-locked');
-        }
-        
-        // Restore normal save buttons
-        updateSaveButtonsForUser();
-        
-        // Cleanup errors
-        loginError.textContent = "";
-        signupError.textContent = "";
-        loginForm.reset();
-        signupForm.reset();
-        
-        // Refresh charts now that container is visible
-        calculateSIP();
-        calculateEMI();
-        calculateCI();
-        calculateBudget();
-        calculateTax();
-    };
-
-    const logout = () => {
-        isGuestMode = false;
-        currentUser = null;
-        localStorage.removeItem('auth_token');
-        appContainer.style.display = 'none';
-        overlay.classList.add('active');
-        
-        // Reset to login tab
-        document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
-        document.querySelector('.auth-tab[data-form="login"]').classList.add('active');
-        document.getElementById('login-form').classList.add('active');
-    };
-
-    // Update save buttons for guest users
-    const updateSaveButtonsForGuest = () => {
-        document.querySelectorAll('.btn-save').forEach(btn => {
-            btn.innerHTML = '<ion-icon name="log-in-outline"></ion-icon> Login to Save';
-            btn.onclick = (e) => {
-                e.preventDefault();
-                showLoginPrompt();
-            };
-        });
-    };
-
-    // Restore save buttons for logged-in users
-    const updateSaveButtonsForUser = () => {
-        document.querySelectorAll('.btn-save').forEach(btn => {
-            btn.innerHTML = '<ion-icon name="bookmark-outline"></ion-icon> Save to History';
-            // Restore original onclick handlers
-            const calcType = btn.closest('.calculator-view').id;
-            if (calcType.includes('sip')) {
-                btn.onclick = (e) => saveCalculation('SIP', e);
-            } else if (calcType.includes('emi')) {
-                btn.onclick = (e) => saveCalculation('EMI', e);
-            } else if (calcType.includes('ci')) {
-                btn.onclick = (e) => saveCalculation('CI', e);
-            } else if (calcType.includes('budget')) {
-                btn.onclick = (e) => saveCalculation('BUDGET', e);
-            } else if (calcType.includes('tax')) {
-                btn.onclick = (e) => saveCalculation('TAX', e);
-            } else if (calcType.includes('net-worth')) {
-                btn.onclick = (e) => saveCalculation('NETWORTH', e);
-            }
-        });
-    };
-
-    // Show login prompt for guest users
-    const showLoginPrompt = () => {
-        if (confirm('You need to create an account or login to save calculations. Would you like to go to the login page?')) {
-            logout();
-        }
-    };
 
     // Check existing session via token verification
     const token = localStorage.getItem('auth_token');
@@ -2775,7 +2852,7 @@ window.showLoginPromptForNotes = () => {
     }
 };
 
-const const initNotesSection = () => {
+const initNotesSection = () => {
     console.log('Initializing notes section...'); // Debug log
     
     // Initialize tabs
@@ -2838,12 +2915,6 @@ const showGuestNotesPrompt = () => {
             showToast('💡 Login to save your notes permanently across devices!', 'info');
         }
     }, 2000);
-};
-
-const showLoginPromptForNotes = () => {
-    if (confirm('Create an account or login to save your notes permanently and access them from any device. Continue?')) {
-        logout();
-    }
 };
 
 // Board Notes Functions
