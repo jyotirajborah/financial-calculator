@@ -1663,7 +1663,7 @@ const loginAsGuest = () => {
     const appContainer = document.getElementById('app-container');
     
     // UI Updates
-    document.getElementById('user-display-name').textContent = 'Guest User';
+    document.getElementById('user-display-name').textContent = 'G';
     overlay.classList.remove('active');
     appContainer.style.display = 'flex';
     appContainer.style.opacity = '0';
@@ -1702,7 +1702,7 @@ const login = (user, token) => {
     const signupForm = document.getElementById('signup-form');
     
     // UI Updates
-    document.getElementById('user-display-name').textContent = user.name;
+    document.getElementById('user-display-name').textContent = user.name ? user.name.charAt(0).toUpperCase() : 'U';
     overlay.classList.remove('active');
     appContainer.style.display = 'flex';
     appContainer.style.opacity = '0';
