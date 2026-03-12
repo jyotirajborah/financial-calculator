@@ -559,6 +559,7 @@ input[type=range]::-webkit-slider-thumb:hover {
     backdrop-filter: blur(20px);
     transform: scale(0.9) translateY(20px);
     transition: transform 0.3s ease;
+    margin: 1rem;
 }
 
 .modal-overlay.active .modal-content {
@@ -569,7 +570,7 @@ input[type=range]::-webkit-slider-thumb:hover {
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 1.5rem;
+    padding: 2rem 2rem 1.5rem 2rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -586,7 +587,7 @@ input[type=range]::-webkit-slider-thumb:hover {
 }
 
 .confirmation-modal .modal-body {
-    padding: 1.5rem;
+    padding: 2rem;
 }
 
 .confirmation-modal .modal-body p {
@@ -598,7 +599,7 @@ input[type=range]::-webkit-slider-thumb:hover {
 .confirmation-modal .modal-actions {
     display: flex;
     gap: 1rem;
-    padding: 1.5rem;
+    padding: 1.5rem 2rem 2rem 2rem;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     justify-content: flex-end;
 }
@@ -628,6 +629,32 @@ input[type=range]::-webkit-slider-thumb:hover {
 }
 
 /* Alert Modal Styles */
+.alert-modal .modal-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 2rem 2rem 1.5rem 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.alert-modal .modal-body {
+    padding: 2rem;
+}
+
+.alert-modal .modal-body p {
+    margin: 0;
+    color: #94a3b8;
+    line-height: 1.6;
+}
+
+.alert-modal .modal-actions {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem 2rem 2rem 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    justify-content: flex-end;
+}
+
 .alert-modal .modal-header .info-icon {
     color: #3b82f6;
 }
@@ -645,6 +672,32 @@ input[type=range]::-webkit-slider-thumb:hover {
 }
 
 /* Login Prompt Modal Styles */
+.login-prompt-modal .modal-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 2rem 2rem 1.5rem 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.login-prompt-modal .modal-body {
+    padding: 2rem;
+}
+
+.login-prompt-modal .modal-body p {
+    margin: 0;
+    color: #94a3b8;
+    line-height: 1.6;
+}
+
+.login-prompt-modal .modal-actions {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem 2rem 2rem 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    justify-content: flex-end;
+}
+
 .login-prompt-modal .modal-header .login-icon {
     color: #3b82f6;
 }
@@ -652,6 +705,36 @@ input[type=range]::-webkit-slider-thumb:hover {
 /* Forgot Password Modal Styles */
 .forgot-password-modal .modal-header .key-icon {
     color: #8b5cf6;
+}
+
+.forgot-password-modal .modal-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 2rem 2rem 1.5rem 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.forgot-password-modal .modal-body {
+    padding: 2rem;
+}
+
+.forgot-password-modal .modal-body p {
+    margin: 0 0 1.5rem 0;
+    color: #94a3b8;
+    line-height: 1.6;
+}
+
+.forgot-password-modal .input-group {
+    margin-bottom: 1rem;
+}
+
+.forgot-password-modal .modal-actions {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem 2rem 2rem 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    justify-content: flex-end;
 }
 
 .forgot-error {
