@@ -1342,6 +1342,33 @@ input[type=range]::-webkit-slider-thumb:hover {
     min-height: 20px;
 }
 
+.forgot-link {
+    display: block;
+    text-align: center;
+    color: var(--accent-color);
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.forgot-link:hover {
+    color: var(--accent-hover);
+    text-decoration: underline;
+}
+
+.forgot-modal .key-icon {
+    font-size: 2rem;
+    color: var(--accent-color);
+}
+
+.forgot-success {
+    color: var(--success);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    text-align: center;
+}
+
 /* Guest Access Styles */
 .guest-tab {
     background: rgba(16, 185, 129, 0.1) !important;
