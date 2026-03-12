@@ -1792,6 +1792,53 @@ window.login = login;
 window.logout = logout;
 window.showLoginPrompt = showLoginPrompt;
 
+// Custom confirmation modal functions
+let confirmationCallback = null;
+
+window.showConfirmationModal = (message, callback) => {
+    const modal = document.getElementById('confirmation-modal');
+    const messageElement = document.getElementById('confirmation-message');
+    const confirmBtn = document.getElementById('confirm-delete-btn');
+    
+    messageElement.textContent = message;
+    confirmationCallback = callback;
+    
+    // Remove existing event listener and add new one
+    confirmBtn.onclick = () => {
+        if (confirmationCallback) {
+            confirmationCallback();
+            confirmationCallback = null;
+        }
+        closeConfirmationModal();
+    };
+    
+    modal.classList.add('active');
+    
+    // Close on escape key
+    document.addEventListener('keydown', handleConfirmationEscape);
+};
+
+window.closeConfirmationModal = () => {
+    const modal = document.getElementById('confirmation-modal');
+    modal.classList.remove('active');
+    confirmationCallback = null;
+    document.removeEventListener('keydown', handleConfirmationEscape);
+};
+
+const handleConfirmationEscape = (e) => {
+    if (e.key === 'Escape') {
+        closeConfirmationModal();
+    }
+};
+
+// Close modal when clicking outside
+document.addEventListener('click', (e) => {
+    const modal = document.getElementById('confirmation-modal');
+    if (e.target === modal) {
+        closeConfirmationModal();
+    }
+});
+
 // Custom dropdown functions for sticky notes
 window.toggleStickyDropdown = () => {
     const dropdown = document.getElementById('sticky-category-dropdown');
@@ -2861,11 +2908,17 @@ window.updateStickyCategory = (noteId, newCategory) => {
 };
 
 window.deleteStickyNote = (noteId) => {
-    if (!confirm('Are you sure you want to delete this note?')) return;
-    
-    notesData.sticky = notesData.sticky.filter(note => note.id !== noteId);
-    renderStickyNotes();
-    autoSaveNotes();
+    showConfirmationModal(
+        'Are you sure you want to delete this sticky note? This action cannot be undone.',
+        () => {
+            notesData.sticky = notesData.sticky.filter(note => note.id !== noteId);
+            renderStickyNotes();
+            autoSaveNotes();
+            
+            // Show success message
+            showToast('Sticky note deleted successfully', 'success');
+        }
+    );
 };
 
 window.handleStickyKeydown = (event, noteId) => {
@@ -3038,17 +3091,26 @@ const updateBoardCard = (cardId) => {
 };
 
 const deleteBoardCard = (cardId) => {
-    if (!confirm('Are you sure you want to delete this card?')) return;
-    
-    // Remove from data
-    for (const status in notesData.board) {
-        notesData.board[status] = notesData.board[status].filter(card => card.id !== cardId);
-    }
-    
-    // Re-render all columns
-    renderBoardNotes();
-    autoSaveNotes();
+    showConfirmationModal(
+        'Are you sure you want to delete this task card? This action cannot be undone.',
+        () => {
+            // Remove from data
+            for (const status in notesData.board) {
+                notesData.board[status] = notesData.board[status].filter(card => card.id !== cardId);
+            }
+            
+            // Re-render all columns
+            renderBoardNotes();
+            autoSaveNotes();
+            
+            // Show success message
+            showToast('Task card deleted successfully', 'success');
+        }
+    );
 };
+
+// Make deleteBoardCard globally accessible
+window.deleteBoardCard = deleteBoardCard;
 
 const handleCardKeydown = (event, cardId) => {
     if (event.key === 'Enter' && event.ctrlKey) {
