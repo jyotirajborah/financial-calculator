@@ -1013,10 +1013,9 @@
                 <section class="calculator-view" id="finance-news">
                     <div class="news-container glass-card">
                         <div class="news-header">
-                            <h2>Latest Finance News</h2>
+                            <h2>Finance News</h2>
                             <div class="news-controls">
                                 <select id="news-category" class="custom-select">
-                                    <option value="finance">General Finance</option>
                                     <option value="stock market">Stock Market</option>
                                     <option value="cryptocurrency">Cryptocurrency</option>
                                     <option value="banking">Banking</option>
@@ -1029,10 +1028,26 @@
                             </div>
                         </div>
                         
-                        <!-- Indian News Section -->
-                        <div class="news-section">
+                        <!-- News Tabs -->
+                        <div class="news-tabs">
+                            <button class="news-tab active" data-region="indian">
+                                <ion-icon name="flag"></ion-icon>
+                                <span>Indian Markets</span>
+                            </button>
+                            <button class="news-tab" data-region="global">
+                                <ion-icon name="globe"></ion-icon>
+                                <span>Global Markets</span>
+                            </button>
+                            <button class="news-tab" data-region="saved">
+                                <ion-icon name="bookmark"></ion-icon>
+                                <span>Saved News</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Indian News Tab Content -->
+                        <div class="news-tab-content active" id="indian-news-content">
                             <div class="news-section-header">
-                                <h3><ion-icon name="flag"></ion-icon> Indian Markets</h3>
+                                <h3>Latest Indian Market News</h3>
                                 <span class="news-count" id="indian-news-count">5 articles</span>
                             </div>
                             <div id="indian-news-list" class="news-list">
@@ -1043,16 +1058,40 @@
                             </div>
                         </div>
                         
-                        <!-- Global News Section -->
-                        <div class="news-section">
+                        <!-- Global News Tab Content -->
+                        <div class="news-tab-content" id="global-news-content">
                             <div class="news-section-header">
-                                <h3><ion-icon name="globe"></ion-icon> Global Markets</h3>
+                                <h3>Latest Global Market News</h3>
                                 <span class="news-count" id="global-news-count">5 articles</span>
                             </div>
                             <div id="global-news-list" class="news-list">
                                 <div class="news-loading">
                                     <ion-icon name="newspaper-outline" style="font-size: 2rem; color: var(--text-muted); margin-bottom: 0.5rem;"></ion-icon>
                                     <p>Loading global finance news...</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Saved News Tab Content -->
+                        <div class="news-tab-content" id="saved-news-content">
+                            <div class="saved-news-header">
+                                <h3>Your Saved News</h3>
+                                <div class="saved-news-filters">
+                                    <select id="saved-news-filter" class="custom-select">
+                                        <option value="all">All Saved</option>
+                                        <option value="indian">Indian Markets</option>
+                                        <option value="global">Global Markets</option>
+                                    </select>
+                                    <button class="btn-icon-text" onclick="loadSavedNews()">
+                                        <ion-icon name="refresh"></ion-icon> Refresh
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="saved-news-list" class="saved-news-list">
+                                <div class="empty-saved-news">
+                                    <ion-icon name="bookmark-outline" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></ion-icon>
+                                    <h4>No Saved News</h4>
+                                    <p>Save interesting articles to read them later. Use the bookmark icon on any news article.</p>
                                 </div>
                             </div>
                         </div>

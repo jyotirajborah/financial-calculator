@@ -514,6 +514,110 @@ app.post('/api/search-news', async (req, res) => {
     }
 });
 
+// Save News Article Endpoint
+app.post('/api/save-news', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: 'No token provided' });
+
+    const token = authHeader.split(' ')[1];
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) return res.status(401).json({ error: 'Invalid token' });
+
+    const { title, snippet, url, domain, region, category, published_date } = req.body;
+
+    // Check if article is already saved by this user
+    const userSupabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+        global: { headers: { Authorization: `Bearer ${token}` } }
+    });
+
+    const { data: existing } = await userSupabase
+        .from('saved_news')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('url', url)
+        .single();
+
+    if (existing) {
+        return res.status(400).json({ error: 'Article already saved' });
+    }
+
+    const { data, error } = await userSupabase
+        .from('saved_news')
+        .insert([{ 
+            user_id: user.id, 
+            title, 
+            snippet, 
+            url, 
+            domain, 
+            region, 
+            category, 
+            published_date 
+        }])
+        .select();
+
+    if (error) return res.status(400).json({ error: error.message });
+    res.status(201).json(data[0]);
+});
+
+// Get Saved News Endpoint
+app.get('/api/saved-news', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: 'No token provided' });
+
+    const token = authHeader.split(' ')[1];
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) return res.status(401).json({ error: 'Invalid token' });
+
+    const { filter } = req.query;
+
+    const userSupabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+        global: { headers: { Authorization: `Bearer ${token}` } }
+    });
+
+    let query = userSupabase
+        .from('saved_news')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+    if (filter && filter !== 'all') {
+        query = query.eq('region', filter);
+    }
+
+    const { data, error } = await query;
+
+    if (error) return res.status(400).json({ error: error.message });
+    res.json(data);
+});
+
+// Delete Saved News Endpoint
+app.delete('/api/saved-news/:id', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: 'No token provided' });
+
+    const token = authHeader.split(' ')[1];
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) return res.status(401).json({ error: 'Invalid token' });
+
+    const { id } = req.params;
+
+    const userSupabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+        global: { headers: { Authorization: `Bearer ${token}` } }
+    });
+
+    const { error } = await userSupabase
+        .from('saved_news')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+    if (error) return res.status(400).json({ error: error.message });
+    res.status(200).json({ message: 'Deleted successfully' });
+});
+
 // [DEPRECATED] Server-side PDF rendering endpoint removed - Puppeteer dependency removed to speed up builds
 // The /api/render-pdf endpoint is no longer available. Use client-side Excel export (exportToExcel) instead.
 

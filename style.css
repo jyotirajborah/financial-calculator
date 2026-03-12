@@ -1209,12 +1209,57 @@ input[type=range]::-webkit-slider-thumb:hover {
     min-width: 150px;
 }
 
-.news-section {
-    margin-bottom: 3rem;
+/* News Tabs */
+.news-tabs {
+    display: flex;
+    background: rgba(15, 23, 42, 0.6);
+    border-radius: 12px;
+    padding: 0.5rem;
+    margin-bottom: 2rem;
+    gap: 0.5rem;
 }
 
-.news-section:last-child {
-    margin-bottom: 0;
+.news-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.news-tab:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-main);
+}
+
+.news-tab.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.news-tab ion-icon {
+    font-size: 1.1rem;
+}
+
+/* Tab Content */
+.news-tab-content {
+    display: none;
+}
+
+.news-tab-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease-out;
 }
 
 .news-section-header {
@@ -1230,14 +1275,6 @@ input[type=range]::-webkit-slider-thumb:hover {
     color: var(--text-main);
     font-size: 1.3rem;
     margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.news-section-header h3 ion-icon {
-    font-size: 1.2rem;
-    color: var(--accent-color);
 }
 
 .news-count {
@@ -1247,6 +1284,127 @@ input[type=range]::-webkit-slider-thumb:hover {
     padding: 0.25rem 0.75rem;
     border-radius: 12px;
     border: 1px solid var(--border-color);
+}
+
+/* Saved News Styles */
+.saved-news-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--border-color);
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.saved-news-header h3 {
+    color: var(--text-main);
+    font-size: 1.3rem;
+    margin: 0;
+}
+
+.saved-news-filters {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.saved-news-filters .custom-select {
+    min-width: 120px;
+}
+
+.saved-news-list {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.empty-saved-news {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--text-muted);
+}
+
+.empty-saved-news h4 {
+    color: var(--text-main);
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+}
+
+.empty-saved-news p {
+    line-height: 1.6;
+    margin: 0;
+}
+
+.saved-news-item {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: var(--transition);
+    position: relative;
+}
+
+.saved-news-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--accent-color);
+}
+
+.saved-news-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    gap: 1rem;
+}
+
+.saved-news-region {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--accent-gradient);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.saved-news-date {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.saved-news-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.btn-news-action {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-news-action:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+    border-color: var(--accent-color);
+}
+
+.btn-news-action.delete:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+    border-color: var(--danger);
 }
 
 .news-list {
@@ -1332,6 +1490,11 @@ input[type=range]::-webkit-slider-thumb:hover {
     gap: 1rem;
 }
 
+.news-actions-left {
+    display: flex;
+    gap: 0.75rem;
+}
+
 .news-link {
     display: inline-flex;
     align-items: center;
@@ -1345,6 +1508,39 @@ input[type=range]::-webkit-slider-thumb:hover {
 
 .news-link:hover {
     color: var(--accent-hover);
+}
+
+.btn-news-save, .btn-news-share {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    padding: 0.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+}
+
+.btn-news-save:hover {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+    border-color: var(--success);
+}
+
+.btn-news-save.saved {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--success);
+    border-color: var(--success);
+}
+
+.btn-news-share:hover {
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--accent-color);
+    border-color: var(--accent-color);
 }
 
 .news-domain {
@@ -1385,6 +1581,15 @@ input[type=range]::-webkit-slider-thumb:hover {
         justify-content: space-between;
     }
     
+    .news-tabs {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .news-tab {
+        padding: 0.75rem 1rem;
+    }
+    
     .news-item-header {
         flex-direction: column;
         gap: 0.5rem;
@@ -1394,6 +1599,47 @@ input[type=range]::-webkit-slider-thumb:hover {
         flex-direction: column;
         align-items: stretch;
         gap: 0.75rem;
+    }
+    
+    .news-actions-left {
+        justify-content: center;
+    }
+    
+    .saved-news-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .saved-news-filters {
+        justify-content: space-between;
+    }
+    
+    .saved-news-actions {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+}
+
+/* Toast Animations */
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
     }
 }
 

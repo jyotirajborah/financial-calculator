@@ -216,6 +216,7 @@ document.querySelectorAll('.nav-item').forEach(btn => {
         
         // Load finance news if target is finance news
         if (targetId === 'finance-news') {
+            initNewsTab();
             loadFinanceNews();
         }
 
@@ -2077,55 +2078,95 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // --- Finance News Functions ---
-const loadFinanceNews = async () => {
-    const indianNewsList = document.getElementById('indian-news-list');
-    const globalNewsList = document.getElementById('global-news-list');
-    const category = document.getElementById('news-category').value;
+let currentNewsRegion = 'indian';
+let currentNewsData = { indian: [], global: [] };
+
+const initNewsTab = () => {
+    // Tab switching
+    document.querySelectorAll('.news-tab').forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            const targetRegion = e.currentTarget.getAttribute('data-region');
+            switchNewsTab(targetRegion);
+        });
+    });
     
-    // Show loading state for both sections
-    const loadingHTML = `
-        <div class="news-loading">
-            <ion-icon name="newspaper-outline" style="font-size: 2rem; color: var(--text-muted); margin-bottom: 0.5rem;"></ion-icon>
-            <p>Loading ${category} news...</p>
-        </div>
-    `;
-    
-    indianNewsList.innerHTML = loadingHTML;
-    globalNewsList.innerHTML = loadingHTML.replace('Loading', 'Loading global');
-
-    try {
-        // Fetch both Indian and Global news
-        const [indianResponse, globalResponse] = await Promise.all([
-            fetch('/api/search-news', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query: category, region: 'indian' })
-            }),
-            fetch('/api/search-news', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query: category, region: 'global' })
-            })
-        ]);
-
-        if (!indianResponse.ok || !globalResponse.ok) {
-            throw new Error('Failed to fetch news');
-        }
-
-        const indianData = await indianResponse.json();
-        const globalData = await globalResponse.json();
-        
-        displayFinanceNews(indianData.results || [], 'indian-news-list', 'indian-news-count');
-        displayFinanceNews(globalData.results || [], 'global-news-list', 'global-news-count');
-        
-    } catch (error) {
-        console.error('Error loading finance news:', error);
-        showNewsError('indian-news-list');
-        showNewsError('global-news-list');
+    // Saved news filter
+    const savedFilter = document.getElementById('saved-news-filter');
+    if (savedFilter) {
+        savedFilter.addEventListener('change', loadSavedNews);
     }
 };
 
-const displayFinanceNews = (newsItems, listId, countId) => {
+const switchNewsTab = (region) => {
+    // Update tab buttons
+    document.querySelectorAll('.news-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelector(`[data-region="${region}"]`).classList.add('active');
+    
+    // Update tab content
+    document.querySelectorAll('.news-tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    if (region === 'saved') {
+        document.getElementById('saved-news-content').classList.add('active');
+        loadSavedNews();
+    } else {
+        document.getElementById(`${region}-news-content`).classList.add('active');
+        currentNewsRegion = region;
+        
+        // Load news if not already loaded
+        if (currentNewsData[region].length === 0) {
+            loadFinanceNews();
+        }
+    }
+};
+
+const loadFinanceNews = async () => {
+    const category = document.getElementById('news-category').value;
+    
+    if (currentNewsRegion === 'indian') {
+        await loadRegionNews('indian', 'indian-news-list', 'indian-news-count');
+    } else if (currentNewsRegion === 'global') {
+        await loadRegionNews('global', 'global-news-list', 'global-news-count');
+    }
+};
+
+const loadRegionNews = async (region, listId, countId) => {
+    const newsList = document.getElementById(listId);
+    const category = document.getElementById('news-category').value;
+    
+    // Show loading state
+    newsList.innerHTML = `
+        <div class="news-loading">
+            <ion-icon name="newspaper-outline" style="font-size: 2rem; color: var(--text-muted); margin-bottom: 0.5rem;"></ion-icon>
+            <p>Loading ${region} ${category} news...</p>
+        </div>
+    `;
+
+    try {
+        const response = await fetch('/api/search-news', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: category, region: region })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch news');
+        }
+
+        const newsData = await response.json();
+        currentNewsData[region] = newsData.results || [];
+        displayFinanceNews(newsData.results || [], listId, countId, region);
+        
+    } catch (error) {
+        console.error('Error loading finance news:', error);
+        showNewsError(listId);
+    }
+};
+
+const displayFinanceNews = (newsItems, listId, countId, region) => {
     const newsList = document.getElementById(listId);
     const countElement = document.getElementById(countId);
     
@@ -2150,7 +2191,7 @@ const displayFinanceNews = (newsItems, listId, countId) => {
     const displayNews = newsItems.slice(0, 5);
     countElement.textContent = `${displayNews.length} articles`;
 
-    displayNews.forEach(item => {
+    displayNews.forEach((item, index) => {
         const newsItem = document.createElement('div');
         newsItem.className = 'news-item';
         
@@ -2167,6 +2208,10 @@ const displayFinanceNews = (newsItems, listId, countId) => {
         // Extract domain from URL
         const domain = item.domain || (item.url ? new URL(item.url).hostname : 'Unknown Source');
         
+        // Check if news is already saved
+        const savedNews = getSavedNews();
+        const isAlreadySaved = savedNews.some(saved => saved.url === item.url);
+        
         newsItem.innerHTML = `
             <div class="news-item-header">
                 <div class="news-source">${domain}</div>
@@ -2179,16 +2224,310 @@ const displayFinanceNews = (newsItems, listId, countId) => {
                 ${item.snippet}
             </div>
             <div class="news-actions">
-                <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="news-link">
-                    <ion-icon name="open-outline"></ion-icon>
-                    Read Full Article
-                </a>
-                <div class="news-domain">${domain}</div>
+                <div class="news-actions-left">
+                    <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="news-link">
+                        <ion-icon name="open-outline"></ion-icon>
+                        Read Full Article
+                    </a>
+                </div>
+                <div class="news-actions-right">
+                    <button class="btn-news-save ${isAlreadySaved ? 'saved' : ''}" 
+                            onclick="saveNewsArticle('${region}', ${index})" 
+                            title="${isAlreadySaved ? 'Already saved' : 'Save article'}">
+                        <ion-icon name="${isAlreadySaved ? 'bookmark' : 'bookmark-outline'}"></ion-icon>
+                    </button>
+                    <button class="btn-news-share" onclick="shareNewsArticle('${region}', ${index})" title="Share article">
+                        <ion-icon name="share-outline"></ion-icon>
+                    </button>
+                </div>
             </div>
         `;
         
         newsList.appendChild(newsItem);
     });
+};
+
+const saveNewsArticle = async (region, index) => {
+    const article = currentNewsData[region][index];
+    if (!article) return;
+    
+    // Check if user is guest
+    if (isGuestMode) {
+        if (confirm('You need to create an account or login to save news articles. Would you like to go to the login page?')) {
+            logout();
+        }
+        return;
+    }
+    
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        alert("Please login to save news articles.");
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/save-news', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                title: article.title,
+                snippet: article.snippet,
+                url: article.url,
+                domain: article.domain,
+                region: region,
+                category: document.getElementById('news-category').value,
+                published_date: article.publishedDate
+            })
+        });
+        
+        if (response.ok) {
+            // Update UI to show saved state
+            const saveBtn = event.target.closest('.btn-news-save');
+            saveBtn.classList.add('saved');
+            saveBtn.querySelector('ion-icon').setAttribute('name', 'bookmark');
+            saveBtn.title = 'Already saved';
+            
+            // Show success message
+            showToast('Article saved successfully!', 'success');
+        } else {
+            const errData = await response.json();
+            alert(`Could not save article: ${errData.error || 'Server error'}`);
+        }
+    } catch (error) {
+        console.error("Error saving news article:", error);
+        alert("Network error. Make sure the server is running.");
+    }
+};
+
+const shareNewsArticle = async (region, index) => {
+    const article = currentNewsData[region][index];
+    if (!article) return;
+    
+    const shareData = {
+        title: article.title,
+        text: article.snippet,
+        url: article.url
+    };
+    
+    try {
+        if (navigator.share) {
+            await navigator.share(shareData);
+        } else {
+            // Fallback: copy to clipboard
+            await navigator.clipboard.writeText(`${article.title}\n\n${article.snippet}\n\nRead more: ${article.url}`);
+            showToast('Article link copied to clipboard!', 'success');
+        }
+    } catch (error) {
+        console.error('Error sharing article:', error);
+        // Fallback: copy to clipboard
+        try {
+            await navigator.clipboard.writeText(article.url);
+            showToast('Article link copied to clipboard!', 'success');
+        } catch (clipboardError) {
+            alert('Unable to share article. Please copy the link manually.');
+        }
+    }
+};
+
+const loadSavedNews = async () => {
+    const savedNewsList = document.getElementById('saved-news-list');
+    const filter = document.getElementById('saved-news-filter').value;
+    
+    // Check if user is guest
+    if (isGuestMode) {
+        savedNewsList.innerHTML = `
+            <div class="empty-saved-news">
+                <ion-icon name="lock-closed-outline" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></ion-icon>
+                <h4>Login Required</h4>
+                <p>Create an account or login to save and view your favorite news articles.</p>
+                <button class="btn-primary" onclick="logout()" style="margin-top: 1rem;">
+                    <ion-icon name="log-in-outline"></ion-icon> Login / Sign Up
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        savedNewsList.innerHTML = `
+            <div class="empty-saved-news">
+                <ion-icon name="lock-closed-outline" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></ion-icon>
+                <h4>Login Required</h4>
+                <p>Please login to view your saved news articles.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    savedNewsList.innerHTML = `
+        <div class="news-loading">
+            <ion-icon name="newspaper-outline" style="font-size: 2rem; color: var(--text-muted); margin-bottom: 0.5rem;"></ion-icon>
+            <p>Loading saved news...</p>
+        </div>
+    `;
+    
+    try {
+        const response = await fetch(`/api/saved-news?filter=${filter}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch saved news');
+        }
+        
+        const savedNews = await response.json();
+        displaySavedNews(savedNews);
+        
+    } catch (error) {
+        console.error('Error loading saved news:', error);
+        savedNewsList.innerHTML = `
+            <div class="news-error">
+                <ion-icon name="warning-outline"></ion-icon>
+                <h3>Unable to Load Saved News</h3>
+                <p>There was an error loading your saved articles. Please try again.</p>
+                <button class="btn-secondary" onclick="loadSavedNews()">
+                    <ion-icon name="refresh"></ion-icon> Try Again
+                </button>
+            </div>
+        `;
+    }
+};
+
+const displaySavedNews = (savedNews) => {
+    const savedNewsList = document.getElementById('saved-news-list');
+    
+    if (!savedNews || savedNews.length === 0) {
+        savedNewsList.innerHTML = `
+            <div class="empty-saved-news">
+                <ion-icon name="bookmark-outline" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></ion-icon>
+                <h4>No Saved News</h4>
+                <p>Save interesting articles to read them later. Use the bookmark icon on any news article.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    savedNewsList.innerHTML = '';
+    
+    savedNews.forEach(item => {
+        const savedItem = document.createElement('div');
+        savedItem.className = 'saved-news-item';
+        
+        const savedDate = new Date(item.created_at).toLocaleDateString('en-IN', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        savedItem.innerHTML = `
+            <div class="saved-news-meta">
+                <div class="saved-news-region">
+                    <ion-icon name="${item.region === 'indian' ? 'flag' : 'globe'}"></ion-icon>
+                    ${item.region === 'indian' ? 'Indian Markets' : 'Global Markets'}
+                </div>
+                <div class="saved-news-date">Saved on ${savedDate}</div>
+            </div>
+            <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="news-title">
+                ${item.title}
+            </a>
+            <div class="news-snippet">
+                ${item.snippet}
+            </div>
+            <div class="saved-news-actions">
+                <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="btn-news-action">
+                    <ion-icon name="open-outline"></ion-icon>
+                    Read Article
+                </a>
+                <button class="btn-news-action" onclick="shareNewsUrl('${item.url}', '${item.title}')">
+                    <ion-icon name="share-outline"></ion-icon>
+                    Share
+                </button>
+                <button class="btn-news-action delete" onclick="deleteSavedNews('${item.id}')">
+                    <ion-icon name="trash-outline"></ion-icon>
+                    Delete
+                </button>
+            </div>
+        `;
+        
+        savedNewsList.appendChild(savedItem);
+    });
+};
+
+const deleteSavedNews = async (newsId) => {
+    if (!confirm('Are you sure you want to delete this saved article?')) {
+        return;
+    }
+    
+    const token = localStorage.getItem('auth_token');
+    if (!token) return;
+    
+    try {
+        const response = await fetch(`/api/saved-news/${newsId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            showToast('Article deleted successfully!', 'success');
+            loadSavedNews(); // Refresh the list
+        } else {
+            const errData = await response.json();
+            alert(`Could not delete article: ${errData.error || 'Server error'}`);
+        }
+    } catch (error) {
+        console.error("Error deleting saved news:", error);
+        alert("Network error. Make sure the server is running.");
+    }
+};
+
+const shareNewsUrl = async (url, title) => {
+    try {
+        if (navigator.share) {
+            await navigator.share({ title, url });
+        } else {
+            await navigator.clipboard.writeText(url);
+            showToast('Article link copied to clipboard!', 'success');
+        }
+    } catch (error) {
+        console.error('Error sharing article:', error);
+        alert('Unable to share article. Please copy the link manually.');
+    }
+};
+
+const getSavedNews = () => {
+    // This would typically fetch from server, but for now return empty array
+    return [];
+};
+
+const showToast = (message, type = 'info') => {
+    // Simple toast notification
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? 'var(--success)' : 'var(--accent-color)'};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        z-index: 10000;
+        animation: slideIn 0.3s ease-out;
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => document.body.removeChild(toast), 300);
+    }, 3000);
 };
 
 const showNewsError = (listId) => {
