@@ -5,7 +5,7 @@ const cors = require('cors');
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 // For server-side PDF rendering fallback
 const PDF_SECRET = process.env.PDF_SECRET || null;
