@@ -7,6 +7,12 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Log environment information
+console.log('🚀 Starting FinCalc Server...');
+console.log('📍 Environment:', process.env.NODE_ENV || 'development');
+console.log('🌐 Site URL:', process.env.SITE_URL || 'Not configured');
+console.log('🔗 Port:', PORT);
+
 // For server-side PDF rendering fallback
 const PDF_SECRET = process.env.PDF_SECRET || null;
 
