@@ -97,6 +97,28 @@ app.get('/api/verify', async (req, res) => {
     res.json({ user: { name: user.user_metadata.name, email: user.email } });
 });
 
+// Forgot Password Endpoint
+app.post('/api/forgot-password', async (req, res) => {
+    const { email } = req.body;
+    
+    if (!email) {
+        return res.status(400).json({ error: 'Email is required' });
+    }
+    
+    try {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: `${req.protocol}://${req.get('host')}/reset-password`
+        });
+        
+        // Always return success to prevent email enumeration
+        res.json({ message: 'If an account exists with this email, a reset link has been sent.' });
+    } catch (error) {
+        console.error('Password reset error:', error);
+        // Still return success for security
+        res.json({ message: 'If an account exists with this email, a reset link has been sent.' });
+    }
+});
+
 // Calculation History Endpoints
 
 // 1. Save Calculation

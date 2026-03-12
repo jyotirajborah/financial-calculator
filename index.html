@@ -87,6 +87,7 @@
                         </div>
                     </div>
                     <button type="submit" class="btn-primary">Sign In</button>
+                    <a href="#" id="forgot-credentials-link" class="forgot-link" style="display:none;">Forgot email or password?</a>
                 </form>
                 
                 <!-- Signup Form -->
@@ -184,6 +185,31 @@
             <div class="modal-actions">
                 <button class="btn-secondary" onclick="closeLoginPromptModal()">Cancel</button>
                 <button class="btn-primary" id="login-prompt-btn">Login / Sign Up</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forgot Credentials Modal -->
+    <div id="forgot-modal" class="modal-overlay">
+        <div class="modal-content forgot-modal">
+            <div class="modal-header">
+                <ion-icon name="key" class="key-icon"></ion-icon>
+                <h3>Reset Credentials</h3>
+            </div>
+            <div class="modal-body">
+                <p>Enter your email address to receive a password reset link:</p>
+                <div class="input-group" style="margin-top: 1rem;">
+                    <div class="input-wrapper">
+                        <ion-icon name="mail-outline"></ion-icon>
+                        <input type="email" id="forgot-email" placeholder="user@example.com" required>
+                    </div>
+                </div>
+                <p class="auth-error" id="forgot-error"></p>
+                <p class="forgot-success" id="forgot-success"></p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeForgotModal()">Cancel</button>
+                <button class="btn-primary" id="forgot-submit-btn">Send Reset Link</button>
             </div>
         </div>
     </div>

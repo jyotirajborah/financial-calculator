@@ -1929,11 +1929,95 @@ const handleLoginPromptEscape = (e) => {
     }
 };
 
+// Forgot Credentials Modal Functions
+window.showForgotModal = () => {
+    const modal = document.getElementById('forgot-modal');
+    const forgotError = document.getElementById('forgot-error');
+    const forgotSuccess = document.getElementById('forgot-success');
+    const emailInput = document.getElementById('forgot-email');
+    
+    // Clear previous state
+    if (forgotError) forgotError.textContent = '';
+    if (forgotSuccess) forgotSuccess.textContent = '';
+    if (emailInput) emailInput.value = '';
+    
+    modal.classList.add('active');
+    document.addEventListener('keydown', handleForgotEscape);
+};
+
+window.closeForgotModal = () => {
+    const modal = document.getElementById('forgot-modal');
+    modal.classList.remove('active');
+    document.removeEventListener('keydown', handleForgotEscape);
+};
+
+const handleForgotEscape = (e) => {
+    if (e.key === 'Escape') {
+        closeForgotModal();
+    }
+};
+
+// Handle forgot password submit
+document.addEventListener('DOMContentLoaded', () => {
+    const forgotSubmitBtn = document.getElementById('forgot-submit-btn');
+    if (forgotSubmitBtn) {
+        forgotSubmitBtn.addEventListener('click', async () => {
+            const email = document.getElementById('forgot-email').value;
+            const forgotError = document.getElementById('forgot-error');
+            const forgotSuccess = document.getElementById('forgot-success');
+            
+            if (!email) {
+                forgotError.textContent = 'Please enter your email address.';
+                return;
+            }
+            
+            // Show loading state
+            const originalText = forgotSubmitBtn.innerHTML;
+            forgotSubmitBtn.innerHTML = '<ion-icon name="sync"></ion-icon> Sending...';
+            forgotSubmitBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/api/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    forgotError.textContent = '';
+                    forgotSuccess.textContent = 'If an account exists with this email, a reset link has been sent.';
+                } else {
+                    forgotSuccess.textContent = '';
+                    // Always show generic message for security
+                    forgotSuccess.textContent = 'If an account exists with this email, a reset link has been sent.';
+                }
+            } catch (error) {
+                forgotError.textContent = 'Unable to connect to server.';
+            } finally {
+                forgotSubmitBtn.innerHTML = originalText;
+                forgotSubmitBtn.disabled = false;
+            }
+        });
+    }
+    
+    // Handle forgot credentials link click
+    const forgotLink = document.getElementById('forgot-credentials-link');
+    if (forgotLink) {
+        forgotLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showForgotModal();
+        });
+    }
+});
+
 // Close modal when clicking outside
 document.addEventListener('click', (e) => {
     const confirmationModal = document.getElementById('confirmation-modal');
     const alertModal = document.getElementById('alert-modal');
     const loginPromptModal = document.getElementById('login-prompt-modal');
+    const forgotModal = document.getElementById('forgot-modal');
     
     if (e.target === confirmationModal) {
         closeConfirmationModal();
@@ -1941,6 +2025,8 @@ document.addEventListener('click', (e) => {
         closeAlertModal();
     } else if (e.target === loginPromptModal) {
         closeLoginPromptModal();
+    } else if (e.target === forgotModal) {
+        closeForgotModal();
     }
 });
 
@@ -2084,7 +2170,10 @@ initAuth = () => {
                     login(data.user, data.token);
                 } else {
                     console.error('Login failed:', data.error); // Debug log
-                    if (loginError) loginError.textContent = data.error || "Login failed.";
+                    if (loginError) loginError.textContent = "Invalid email or password.";
+                    // Show forgot credentials link on failed login
+                    const forgotLink = document.getElementById('forgot-credentials-link');
+                    if (forgotLink) forgotLink.style.display = 'block';
                 }
             } catch (error) {
                 console.error('Login network error:', error); // Debug log
