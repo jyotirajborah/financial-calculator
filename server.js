@@ -29,7 +29,22 @@ app.use(express.static(path.join(__dirname)));
 
 // Serve reset password page
 app.get('/reset-password', (req, res) => {
-    res.sendFile(path.join(__dirname, 'reset-password.html'));
+    console.log('Reset password page requested');
+    const resetPagePath = path.join(__dirname, 'reset-password.html');
+    console.log('Serving reset page from:', resetPagePath);
+    res.sendFile(resetPagePath);
+});
+
+// Fallback route for SPA (serve index.html for any unmatched routes)
+app.get('*', (req, res) => {
+    // Don't serve index.html for API routes
+    if (req.path.startsWith('/api/')) {
+        return res.status(404).json({ error: 'API endpoint not found' });
+    }
+    
+    // For any other route, serve index.html (SPA behavior)
+    console.log('Serving index.html for route:', req.path);
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Authentication Endpoints
