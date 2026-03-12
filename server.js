@@ -35,7 +35,7 @@ app.use(express.json());
 // Serve static frontend files
 app.use(express.static(path.join(__dirname)));
 
-// Serve reset password page
+// Serve reset password page - must come before other routes
 app.get('/reset-password', (req, res) => {
     console.log('Reset password page requested');
     res.sendFile(path.join(__dirname, 'reset-password.html'));
@@ -756,6 +756,17 @@ app.get('/api/get-notes', async (req, res) => {
 
 // [DEPRECATED] Server-side PDF rendering endpoint removed - Puppeteer dependency removed to speed up builds
 // The /api/render-pdf endpoint is no longer available. Use client-side Excel export (exportToExcel) instead.
+
+// Fallback route - serve index.html for any unmatched routes (SPA behavior)
+app.get('*', (req, res) => {
+    // Don't serve index.html for API routes
+    if (req.path.startsWith('/api/')) {
+        return res.status(404).json({ error: 'API endpoint not found' });
+    }
+    
+    console.log('Serving index.html for unmatched route:', req.path);
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 // Start Server
 app.listen(PORT, '0.0.0.0', () => {
