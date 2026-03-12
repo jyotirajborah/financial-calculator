@@ -1810,8 +1810,8 @@ window.selectStickyCategory = (value, text) => {
     document.getElementById('sticky-category-dropdown').classList.remove('open');
     document.removeEventListener('click', closeStickyDropdownOutside);
     
-    // Filter sticky notes by category
-    filterStickyNotesByCategory(value);
+    // Re-render sticky notes with the new filter
+    renderStickyNotes();
 };
 
 const closeStickyDropdownOutside = (event) => {
@@ -3140,6 +3140,7 @@ const renderStickyNotes = () => {
         const noteElement = document.createElement('div');
         noteElement.className = `sticky-note ${note.category}`;
         noteElement.setAttribute('data-note-id', note.id);
+        noteElement.setAttribute('data-category', note.category);
         
         const updatedDate = new Date(note.updatedAt).toLocaleDateString('en-IN', {
             day: '2-digit',
