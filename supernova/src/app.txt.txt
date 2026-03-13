@@ -1,0 +1,416 @@
+import { useMemo, useState, type FormEvent } from "react";
+import {
+  Calendar,
+  Check,
+  Clock,
+  List,
+  Plus,
+  Sparkles,
+  Target,
+} from "lucide-react";
+
+type WasteEvent = {
+  id: string;
+  time: string;
+  activity: string;
+  minutes: number;
+  note: string;
+};
+
+type PlanItem = {
+  id: string;
+  title: string;
+  minutes: number;
+  done: boolean;
+};
+
+const initialEvents: WasteEvent[] = [
+  {
+    id: "1",
+    time: "08:30",
+    activity: "Endless news scroll",
+    minutes: 35,
+    note: "Delayed morning focus by one task.",
+  },
+  {
+    id: "2",
+    time: "11:15",
+    activity: "Unplanned meeting drift",
+    minutes: 50,
+    note: "No agenda, lots of context switching.",
+  },
+  {
+    id: "3",
+    time: "14:40",
+    activity: "App hopping",
+    minutes: 25,
+    note: "Lost time between tools without a clear goal.",
+  },
+  {
+    id: "4",
+    time: "17:10",
+    activity: "Late-afternoon fatigue",
+    minutes: 40,
+    note: "Energy dip without a planned reset.",
+  },
+];
+
+const initialPlans: PlanItem[] = [
+  { id: "p1", title: "Inbox reset", minutes: 12, done: false },
+  { id: "p2", title: "Top task outline", minutes: 15, done: false },
+  { id: "p3", title: "15-min focus sprint", minutes: 15, done: false },
+];
+
+export default function App() {
+  const [events, setEvents] = useState<WasteEvent[]>(initialEvents);
+  const [plans, setPlans] = useState<PlanItem[]>(initialPlans);
+  const [newEvent, setNewEvent] = useState({
+    time: "",
+    activity: "",
+    minutes: "",
+    note: "",
+  });
+  const [newPlan, setNewPlan] = useState({ title: "", minutes: "" });
+
+  const totalWasted = useMemo(
+    () => events.reduce((sum, event) => sum + event.minutes, 0),
+    [events]
+  );
+
+  const topLeak = useMemo(() => {
+    return events.reduce((largest, event) =>
+      event.minutes > largest.minutes ? event : largest
+    );
+  }, [events]);
+
+  const plannedMinutes = useMemo(
+    () => plans.reduce((sum, plan) => sum + plan.minutes, 0),
+    [plans]
+  );
+
+  const completionRate = useMemo(() => {
+    if (plans.length === 0) return 0;
+    const doneCount = plans.filter((plan) => plan.done).length;
+    return Math.round((doneCount / plans.length) * 100);
+  }, [plans]);
+
+  const handleAddEvent = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!newEvent.time || !newEvent.activity || !newEvent.minutes) return;
+
+    const minutes = Number(newEvent.minutes);
+    if (Number.isNaN(minutes) || minutes <= 0) return;
+
+    setEvents((prev) => [
+      {
+        id: crypto.randomUUID(),
+        time: newEvent.time,
+        activity: newEvent.activity,
+        minutes,
+        note: newEvent.note || "Noted for improvement.",
+      },
+      ...prev,
+    ]);
+    setNewEvent({ time: "", activity: "", minutes: "", note: "" });
+  };
+
+  const handleAddPlan = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!newPlan.title || !newPlan.minutes) return;
+
+    const minutes = Number(newPlan.minutes);
+    if (Number.isNaN(minutes) || minutes <= 0) return;
+
+    setPlans((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        title: newPlan.title,
+        minutes,
+        done: false,
+      },
+    ]);
+    setNewPlan({ title: "", minutes: "" });
+  };
+
+  const togglePlan = (planId: string) => {
+    setPlans((prev) =>
+      prev.map((plan) =>
+        plan.id === planId ? { ...plan, done: !plan.done } : plan
+      )
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-10">
+        <header className="flex flex-col gap-3">
+          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <Calendar className="h-4 w-4" />
+            Today’s time reflection
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h1 className="text-3xl font-semibold tracking-tight">
+                Your wasted time timeline
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                Track the moments that drained your day and turn them into
+                pocket-size plans you can handle tomorrow.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm">
+              <Sparkles className="h-4 w-4 text-primary" />
+              Progress beats perfection
+            </div>
+          </div>
+        </header>
+
+        <section className="grid gap-4 md:grid-cols-3">
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">Total wasted</div>
+              <Clock className="h-4 w-4 text-primary" />
+            </div>
+            <div className="mt-2 text-2xl font-semibold">{totalWasted} min</div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Focus recovery target: {Math.max(totalWasted - 45, 10)} min
+              tomorrow.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">Biggest leak</div>
+              <Target className="h-4 w-4 text-primary" />
+            </div>
+            <div className="mt-2 text-lg font-semibold">{topLeak.activity}</div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {topLeak.minutes} minutes lost. Replace it with a 10-minute reset
+              break.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">
+                Tomorrow’s plan
+              </div>
+              <List className="h-4 w-4 text-primary" />
+            </div>
+            <div className="mt-2 text-lg font-semibold">
+              {plannedMinutes} min planned
+            </div>
+            <div className="mt-3 h-2 w-full rounded-full bg-muted">
+              <div
+                className="h-2 rounded-full bg-primary transition-all"
+                style={{ width: `${completionRate}%` }}
+              />
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {completionRate}% of pocket tasks completed
+            </p>
+          </div>
+        </section>
+
+        <main className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+          <section className="rounded-2xl border border-border bg-card p-6">
+            <div className="flex flex-col gap-2">
+              <h2 className="text-xl font-semibold">Wasted time timeline</h2>
+              <p className="text-sm text-muted-foreground">
+                Add moments you want to reclaim. The timeline reshapes your day
+                instantly.
+              </p>
+            </div>
+
+            <form
+              className="mt-5 grid gap-3 rounded-xl border border-dashed border-border bg-muted/30 p-4 md:grid-cols-[120px_1fr_110px]"
+              onSubmit={handleAddEvent}
+            >
+              <input
+                type="time"
+                value={newEvent.time}
+                onChange={(event) =>
+                  setNewEvent((prev) => ({ ...prev, time: event.target.value }))
+                }
+                className="h-10 rounded-lg border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                aria-label="Time"
+              />
+              <input
+                type="text"
+                value={newEvent.activity}
+                onChange={(event) =>
+                  setNewEvent((prev) => ({
+                    ...prev,
+                    activity: event.target.value,
+                  }))
+                }
+                placeholder="What stole your time?"
+                className="h-10 rounded-lg border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  min="1"
+                  value={newEvent.minutes}
+                  onChange={(event) =>
+                    setNewEvent((prev) => ({
+                      ...prev,
+                      minutes: event.target.value,
+                    }))
+                  }
+                  placeholder="Minutes"
+                  className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+                <button
+                  type="submit"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground transition hover:opacity-90"
+                  aria-label="Add event"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
+              <textarea
+                value={newEvent.note}
+                onChange={(event) =>
+                  setNewEvent((prev) => ({ ...prev, note: event.target.value }))
+                }
+                placeholder="Optional insight"
+                className="md:col-span-3 min-h-[80px] rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </form>
+
+            <div className="mt-6 space-y-5">
+              <div className="relative">
+                <div className="absolute left-4 top-0 h-full w-px bg-border" />
+                <div className="space-y-6">
+                  {events.map((event) => (
+                    <div key={event.id} className="relative pl-10">
+                      <div className="absolute left-0 top-1 flex h-8 w-8 items-center justify-center rounded-full border border-border bg-background">
+                        <Clock className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="rounded-xl border border-border bg-background p-4">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="text-sm font-semibold">
+                            {event.activity}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {event.time} · {event.minutes} min
+                          </div>
+                        </div>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          {event.note}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="flex flex-col gap-6">
+            <div className="rounded-2xl border border-border bg-card p-6">
+              <div className="flex items-center gap-2">
+                <Target className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-semibold">Pocket-size plan</h2>
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Keep each task under 20 minutes so it feels doable tomorrow.
+              </p>
+
+              <form
+                className="mt-4 flex flex-col gap-3"
+                onSubmit={handleAddPlan}
+              >
+                <input
+                  type="text"
+                  value={newPlan.title}
+                  onChange={(event) =>
+                    setNewPlan((prev) => ({
+                      ...prev,
+                      title: event.target.value,
+                    }))
+                  }
+                  placeholder="Small task"
+                  className="h-10 rounded-lg border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    min="5"
+                    value={newPlan.minutes}
+                    onChange={(event) =>
+                      setNewPlan((prev) => ({
+                        ...prev,
+                        minutes: event.target.value,
+                      }))
+                    }
+                    placeholder="Minutes"
+                    className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                  <button
+                    type="submit"
+                    className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition hover:opacity-90"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add
+                  </button>
+                </div>
+              </form>
+
+              <div className="mt-5 space-y-3">
+                {plans.map((plan) => (
+                  <button
+                    key={plan.id}
+                    type="button"
+                    onClick={() => togglePlan(plan.id)}
+                    className="flex w-full items-center justify-between rounded-xl border border-border bg-background px-4 py-3 text-left transition hover:border-primary"
+                  >
+                    <div>
+                      <div className="text-sm font-medium">{plan.title}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {plan.minutes} minutes
+                      </div>
+                    </div>
+                    <div
+                      className={`flex h-8 w-8 items-center justify-center rounded-full border border-border transition ${
+                        plan.done
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted"
+                      }`}
+                    >
+                      <Check className="h-4 w-4" />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-border bg-card p-6">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-semibold">Tomorrow’s cue</h2>
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Use these gentle prompts to reset focus during the day.
+              </p>
+              <ul className="mt-4 space-y-3 text-sm">
+                <li className="flex items-start gap-3">
+                  <span className="mt-1 h-2 w-2 rounded-full bg-primary" />
+                  Start with a 2-minute plan before opening any apps.
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="mt-1 h-2 w-2 rounded-full bg-primary" />
+                  Block a 10-minute recovery break after the top leak moment.
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="mt-1 h-2 w-2 rounded-full bg-primary" />
+                  Celebrate every pocket task finished, even the smallest one.
+                </li>
+              </ul>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+  );
+}
