@@ -3216,13 +3216,33 @@ const initWorldClocks = () => {
                 <span>Checking...</span>
             </div>
         </div>
-    `).join('');
+    `).join('') + `
+        <div class="clock-card glass-card hindu-calendar-card">
+            <div class="clock-city">
+                <ion-icon name="moon"></ion-icon>
+                <span>Hindu Calendar</span>
+            </div>
+            <div class="clock-timezone">Vikram Samvat</div>
+            <div class="hindu-year" id="hindu-year">----</div>
+            <div class="hindu-month" id="hindu-month">---</div>
+            <div class="hindu-tithi" id="hindu-tithi">---</div>
+            <div class="hindu-paksha" id="hindu-paksha">---</div>
+            <div class="market-status" style="background: rgba(168, 85, 247, 0.1); color: #a855f7; border-color: rgba(168, 85, 247, 0.3);">
+                <ion-icon name="calendar"></ion-icon>
+                <span id="hindu-gregorian">---</span>
+            </div>
+        </div>
+    `;
     
     // Update clocks immediately
     updateWorldClocks();
+    updateHinduCalendar();
     
     // Update every second
-    clockInterval = setInterval(updateWorldClocks, 1000);
+    clockInterval = setInterval(() => {
+        updateWorldClocks();
+        updateHinduCalendar();
+    }, 1000);
 };
 
 const updateWorldClocks = () => {
@@ -3346,6 +3366,81 @@ const updateMarketStatus = (market, timezone) => {
     } else {
         statusElement.className = 'market-status closed';
         statusElement.innerHTML = '<ion-icon name="moon"></ion-icon> <span>Market Closed</span>';
+    }
+};
+
+// Hindu Calendar calculation
+const updateHinduCalendar = () => {
+    try {
+        const now = new Date();
+        
+        // Hindu months (Chaitra to Phalguna)
+        const hinduMonths = [
+            'Chaitra', 'Vaishakha', 'Jyeshtha', 'Ashadha',
+            'Shravana', 'Bhadrapada', 'Ashwin', 'Kartika',
+            'Margashirsha', 'Pausha', 'Magha', 'Phalguna'
+        ];
+        
+        // Calculate Vikram Samvat year (approximately Gregorian year + 57)
+        // Vikram Samvat starts around mid-April
+        const gregorianYear = now.getFullYear();
+        const gregorianMonth = now.getMonth(); // 0-11
+        const gregorianDay = now.getDate();
+        
+        // If before mid-April, use previous Vikram Samvat year
+        let vikramYear = gregorianYear + 57;
+        if (gregorianMonth < 3 || (gregorianMonth === 3 && gregorianDay < 15)) {
+            vikramYear = gregorianYear + 56;
+        }
+        
+        // Approximate Hindu month based on Gregorian month
+        // This is a simplified calculation
+        let hinduMonthIndex = gregorianMonth;
+        if (gregorianDay >= 15) {
+            hinduMonthIndex = (gregorianMonth + 1) % 12;
+        }
+        
+        // Calculate Tithi (lunar day) - simplified approximation
+        // Full lunar cycle is approximately 29.5 days
+        const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
+        const lunarCycle = 29.53;
+        const tithi = Math.floor((dayOfYear % lunarCycle) + 1);
+        
+        // Determine Paksha (fortnight)
+        const paksha = tithi <= 15 ? 'Shukla Paksha' : 'Krishna Paksha';
+        const tithiInPaksha = tithi <= 15 ? tithi : tithi - 15;
+        
+        // Tithi names
+        const tithiNames = [
+            'Pratipada', 'Dwitiya', 'Tritiya', 'Chaturthi', 'Panchami',
+            'Shashthi', 'Saptami', 'Ashtami', 'Navami', 'Dashami',
+            'Ekadashi', 'Dwadashi', 'Trayodashi', 'Chaturdashi', 'Purnima/Amavasya'
+        ];
+        
+        const tithiName = tithiNames[Math.min(tithiInPaksha - 1, 14)];
+        
+        // Update Hindu Calendar display
+        const yearElement = document.getElementById('hindu-year');
+        const monthElement = document.getElementById('hindu-month');
+        const tithiElement = document.getElementById('hindu-tithi');
+        const pakshaElement = document.getElementById('hindu-paksha');
+        const gregorianElement = document.getElementById('hindu-gregorian');
+        
+        if (yearElement) yearElement.textContent = `${vikramYear} VS`;
+        if (monthElement) monthElement.textContent = hinduMonths[hinduMonthIndex];
+        if (tithiElement) tithiElement.textContent = tithiName;
+        if (pakshaElement) pakshaElement.textContent = paksha;
+        if (gregorianElement) {
+            const gregorianDate = now.toLocaleDateString('en-IN', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            });
+            gregorianElement.textContent = gregorianDate;
+        }
+        
+    } catch (error) {
+        console.error('Error updating Hindu calendar:', error);
     }
 };
 

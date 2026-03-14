@@ -3735,6 +3735,50 @@ body, html {
     border: 1px solid rgba(148, 163, 184, 0.3);
 }
 
+/* Hindu Calendar Card Styles */
+.hindu-calendar-card {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.05), rgba(99, 102, 241, 0.05));
+    border-color: rgba(168, 85, 247, 0.3);
+}
+
+.hindu-calendar-card:hover {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.08), rgba(99, 102, 241, 0.08));
+    border-color: rgba(168, 85, 247, 0.5);
+}
+
+.hindu-calendar-card::before {
+    background: linear-gradient(90deg, #a855f7, #6366f1);
+}
+
+.hindu-year {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #a855f7;
+    margin-bottom: 0.75rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.hindu-month {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+}
+
+.hindu-tithi {
+    font-size: 1rem;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+}
+
+.hindu-paksha {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
 /* =============================================
    HELP & SHORTCUTS SECTION
    ============================================= */
