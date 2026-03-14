@@ -285,6 +285,16 @@ const calculateSIP = () => {
     const investedAmount = P * n;
     const estReturns = expectedAmount - investedAmount;
     
+    // Add subtle animation to results
+    const resultElements = ['sip-invested', 'sip-returns', 'sip-total'];
+    resultElements.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.classList.add('result-updated');
+            setTimeout(() => element.classList.remove('result-updated'), 600);
+        }
+    });
+    
     document.getElementById('sip-invested').textContent = '₹' + formatCurrency(investedAmount);
     document.getElementById('sip-returns').textContent = '₹' + formatCurrency(estReturns);
     document.getElementById('sip-total').textContent = '₹' + formatCurrency(expectedAmount);
@@ -2883,6 +2893,37 @@ window.addEventListener('DOMContentLoaded', () => {
     openViewFromQuery();
     updateDashboard();
     
+    // Add keyboard shortcuts for better UX
+    document.addEventListener('keydown', (e) => {
+        // Alt + 1-9 for quick navigation
+        if (e.altKey && e.key >= '1' && e.key <= '9') {
+            e.preventDefault();
+            const navItems = document.querySelectorAll('.nav-item');
+            const index = parseInt(e.key) - 1;
+            if (navItems[index]) {
+                navItems[index].click();
+            }
+        }
+        
+        // Ctrl/Cmd + S to save current calculation (if logged in)
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            const activeView = document.querySelector('.calculator-view.active');
+            if (activeView && !isGuestMode) {
+                const saveBtn = activeView.querySelector('.btn-save');
+                if (saveBtn) saveBtn.click();
+            }
+        }
+        
+        // Escape to close modals
+        if (e.key === 'Escape') {
+            const activeModal = document.querySelector('.modal.active');
+            if (activeModal) {
+                closeModal();
+            }
+        }
+    });
+    
     // Add event listener for news category change
     const categorySelect = document.getElementById('news-category');
     if (categorySelect) {
@@ -3952,4 +3993,31 @@ const loadNotesData = async () => {
     
     renderBoardNotes();
     renderStickyNotes();
+};
+
+// Toast Notification System
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    // Show toast
+    setTimeout(() => toast.classList.add('show'), 100);
+    
+    // Hide and remove toast
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => document.body.removeChild(toast), 300);
+    }, 3000);
+}
+
+// Enhanced save success feedback
+const originalSaveCalculation = saveCalculation;
+window.saveCalculation = async (type, e) => {
+    const result = await originalSaveCalculation(type, e);
+    if (!isGuestMode) {
+        showToast(`${type} calculation saved successfully!`, 'success');
+    }
+    return result;
 };
