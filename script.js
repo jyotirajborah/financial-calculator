@@ -2179,6 +2179,11 @@ const loginAsGuest = () => {
     calculateCI();
     calculateBudget();
     calculateTax();
+    
+    // Show welcome notification after entering as guest
+    setTimeout(() => {
+        showToast('Welcome! Press Alt+1-9 for quick navigation or Ctrl+S to save calculations', 'success');
+    }, 500);
 };
 
 const login = (user, token) => {
@@ -2260,6 +2265,11 @@ const login = (user, token) => {
     calculateCI();
     calculateBudget();
     calculateTax();
+    
+    // Show welcome notification after successful login
+    setTimeout(() => {
+        showToast(`Welcome back, ${user.name}! Use keyboard shortcuts for faster navigation`, 'success');
+    }, 500);
 };
 
 const logout = () => {
@@ -3115,14 +3125,8 @@ window.addEventListener('DOMContentLoaded', () => {
     
     console.log('=== FinCalc App Initialization Complete ===');
     
-    // Show welcome toast for new users
-    setTimeout(() => {
-        if (isGuestMode) {
-            showToast('Welcome! Press Alt+1-9 for quick navigation or Ctrl+S to save calculations', 'success');
-        } else {
-            showToast('Welcome back! Use keyboard shortcuts for faster navigation', 'success');
-        }
-    }, 1000);
+    // Welcome toast will be shown after successful login/guest access
+    // (moved to login() and loginAsGuest() functions)
     
     // Add keyboard shortcuts for better UX
     document.addEventListener('keydown', (e) => {
