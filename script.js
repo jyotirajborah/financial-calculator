@@ -60,6 +60,32 @@ window.switchAuthTab = function(button, formType) {
     }
 };
 
+// Debug function to test authentication
+window.debugAuth = function() {
+    console.log('=== AUTH DEBUG INFO ===');
+    console.log('Auth overlay:', document.getElementById('auth-overlay'));
+    console.log('Auth tabs:', document.querySelectorAll('.auth-tab'));
+    console.log('Auth forms:', document.querySelectorAll('.auth-form'));
+    console.log('Guest continue btn:', document.getElementById('guest-continue-btn'));
+    console.log('Login form:', document.getElementById('login-form'));
+    console.log('Signup form:', document.getElementById('signup-form'));
+    console.log('Guest form:', document.getElementById('guest-form'));
+    console.log('Current user:', currentUser);
+    console.log('Guest mode:', isGuestMode);
+    console.log('=== END DEBUG INFO ===');
+};
+
+// Force guest login for testing
+window.forceGuestLogin = function() {
+    console.log('Forcing guest login...');
+    try {
+        loginAsGuest();
+        console.log('Guest login successful');
+    } catch (err) {
+        console.error('Guest login failed:', err);
+    }
+};
+
 // Format numbers as Indian Currency
 const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-IN').format(Math.round(amount));
@@ -2993,9 +3019,13 @@ function initProjection() {
 
 // Initialize all calculators on load
 window.addEventListener('DOMContentLoaded', () => {
+    console.log('=== FinCalc App Starting ===');
+    
     // Initialize profile avatar for guest state (default)
     const guestIcon = document.getElementById('guest-icon');
     const userInitials = document.getElementById('user-initials');
+    console.log('Profile elements found:', { guestIcon: !!guestIcon, userInitials: !!userInitials });
+    
     if (guestIcon && userInitials) {
         guestIcon.style.display = 'block';
         userInitials.style.display = 'none';
@@ -3006,15 +3036,44 @@ window.addEventListener('DOMContentLoaded', () => {
         if (window.Chart && Chart.defaults) {
             Chart.defaults.color = '#94a3b8';
             Chart.defaults.font.family = "'Outfit', sans-serif";
+            console.log('Chart.js defaults set successfully');
+        } else {
+            console.warn('Chart.js not available');
         }
     } catch (err) {
         console.error('Chart.js not available, continuing without chart defaults:', err);
     }
     
-    initAuth();
-    initProjection();
-    openViewFromQuery();
-    updateDashboard();
+    console.log('Initializing components...');
+    try {
+        initAuth();
+        console.log('Auth initialized');
+    } catch (err) {
+        console.error('Auth initialization failed:', err);
+    }
+    
+    try {
+        initProjection();
+        console.log('Projection initialized');
+    } catch (err) {
+        console.error('Projection initialization failed:', err);
+    }
+    
+    try {
+        openViewFromQuery();
+        console.log('View from query opened');
+    } catch (err) {
+        console.error('View from query failed:', err);
+    }
+    
+    try {
+        updateDashboard();
+        console.log('Dashboard updated');
+    } catch (err) {
+        console.error('Dashboard update failed:', err);
+    }
+    
+    console.log('=== FinCalc App Initialization Complete ===');
     
     // Show welcome toast for new users
     setTimeout(() => {
