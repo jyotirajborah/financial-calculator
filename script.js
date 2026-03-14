@@ -1528,8 +1528,9 @@ const loadHistory = async () => {
                 <ion-icon name="lock-closed-outline"></ion-icon>
                 <h3>Timeline Locked</h3>
                 <p>Create an account or login to save and view your financial planning timeline.</p>
-                <button class="btn-primary" onclick="logout()" style="margin-top: 1rem;">
-                    <ion-icon name="log-in-outline"></ion-icon> Login / Sign Up
+                <button class="btn-primary" onclick="logout()">
+                    <ion-icon name="log-in-outline"></ion-icon>
+                    <span>Login / Sign Up</span>
                 </button>
             </div>
         `;
@@ -1693,8 +1694,9 @@ const loadTimeline = async () => {
                 <ion-icon name="lock-closed-outline"></ion-icon>
                 <h3>Timeline Locked</h3>
                 <p>Create an account or login to save and view your detailed financial timeline.</p>
-                <button class="btn-primary" onclick="logout()" style="margin-top: 1rem;">
-                    <ion-icon name="log-in-outline"></ion-icon> Login / Sign Up
+                <button class="btn-primary" onclick="logout()">
+                    <ion-icon name="log-in-outline"></ion-icon>
+                    <span>Login / Sign Up</span>
                 </button>
             </div>
         `;
@@ -3432,11 +3434,12 @@ const loadSavedNews = async () => {
     if (isGuestMode) {
         savedNewsList.innerHTML = `
             <div class="empty-saved-news">
-                <ion-icon name="lock-closed-outline" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></ion-icon>
+                <ion-icon name="lock-closed-outline"></ion-icon>
                 <h4>Login Required</h4>
                 <p>Create an account or login to save and view your favorite news articles.</p>
-                <button class="btn-primary" onclick="logout()" style="margin-top: 1rem;">
-                    <ion-icon name="log-in-outline"></ion-icon> Login / Sign Up
+                <button class="btn-primary" onclick="logout()">
+                    <ion-icon name="log-in-outline"></ion-icon>
+                    <span>Login / Sign Up</span>
                 </button>
             </div>
         `;

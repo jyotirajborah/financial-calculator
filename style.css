@@ -1734,6 +1734,12 @@ body, html {
     color: var(--text-muted);
 }
 
+.guest-history-message ion-icon {
+    font-size: 3rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+}
+
 .guest-history-message h3 {
     color: var(--text-main);
     margin-bottom: 1rem;
@@ -1893,6 +1899,12 @@ body, html {
     color: var(--text-muted);
 }
 
+.empty-saved-news ion-icon {
+    font-size: 3rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+}
+
 .empty-saved-news h4 {
     color: var(--text-main);
     margin-bottom: 1rem;
@@ -1902,6 +1914,33 @@ body, html {
 .empty-saved-news p {
     line-height: 1.6;
     margin: 0;
+    margin-bottom: 1.5rem;
+}
+
+.empty-saved-news .btn-primary {
+    margin-top: 1.5rem;
+    padding: 0.875rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--accent-gradient);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.empty-saved-news .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+
+.empty-saved-news .btn-primary ion-icon {
+    font-size: 1.25rem;
 }
 
 .saved-news-item {
@@ -3020,6 +3059,38 @@ body, html {
     margin-bottom: 1.5rem;
     line-height: 1.6;
     color: var(--text-muted);
+}
+
+.guest-timeline-message .btn-primary,
+.guest-history-message .btn-primary,
+.tl-empty-state .btn-primary {
+    margin-top: 1.5rem;
+    padding: 0.875rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--accent-gradient);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.guest-timeline-message .btn-primary:hover,
+.guest-history-message .btn-primary:hover,
+.tl-empty-state .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+
+.guest-timeline-message .btn-primary ion-icon,
+.guest-history-message .btn-primary ion-icon,
+.tl-empty-state .btn-primary ion-icon {
+    font-size: 1.25rem;
 }
 
 /* Responsive Design */
@@ -4521,33 +4592,6 @@ body, html {
 .tl-type-networth .tl-node ion-icon { color: #10b981; }
 .tl-type-networth .tl-card-badge { background: rgba(16,185,129,0.15); color: #34d399; }
 .tl-type-networth .tl-card-value { color: #34d399; }
-
-/* Empty state */
-.tl-empty-state {
-    text-align: center;
-    padding: 4rem 2rem;
-    color: var(--text-muted);
-}
-
-.tl-empty-state ion-icon {
-    font-size: 3.5rem;
-    color: rgba(99, 102, 241, 0.4);
-    margin-bottom: 1rem;
-    display: block;
-}
-
-.tl-empty-state h3 {
-    color: var(--text-main);
-    font-size: 1.3rem;
-    margin-bottom: 0.75rem;
-}
-
-.tl-empty-state p {
-    font-size: 0.9rem;
-    line-height: 1.6;
-    max-width: 360px;
-    margin: 0 auto;
-}
 
 /* Guest locked state */
 .tl-guest-message {
