@@ -1444,7 +1444,7 @@ const loadHistory = async () => {
                     <p>Start your financial planning journey by trying our calculators</p>
                     <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap;">
                         <button class="btn-primary" onclick="openView('sip-calculator')" style="display: flex; align-items: center; gap: 0.5rem;">
-                            <ion-icon name="trending-up"></ion-icon> Try SIP Calculator
+                            <ion-icon name="repeat"></ion-icon> Try SIP Calculator
                         </button>
                         <button class="btn-secondary" onclick="openView('emi-calculator')" style="display: flex; align-items: center; gap: 0.5rem;">
                             <ion-icon name="card"></ion-icon> Try EMI Calculator
@@ -1476,7 +1476,7 @@ const loadHistory = async () => {
                 label = "SIP Investment Plan";
                 subtext = `₹${item.input_data.amount}/mo @ ${item.input_data.rate}% for ${item.input_data.time}yr`;
                 mainVal = item.result_data.total;
-                icon = "trending-up";
+                icon = "repeat";
                 description = `Systematic Investment Plan with ${item.input_data.rate}% annual return`;
             } else if (item.calc_type === 'EMI') {
                 label = "EMI Calculation";
@@ -1507,7 +1507,7 @@ const loadHistory = async () => {
                 label = "Net Worth Assessment";
                 subtext = `Assets: ${item.input_data.assets} | Liabilities: ${item.input_data.liabilities}`;
                 mainVal = item.result_data.networth;
-                icon = "pie-chart";
+                icon = "diamond";
                 description = "Complete financial portfolio analysis";
             }
 
@@ -1607,7 +1607,7 @@ const loadTimeline = async () => {
                     <h3>No calculations saved yet</h3>
                     <p>Save a calculation from any tool and it will appear here as a timeline entry.</p>
                     <button class="btn-primary" onclick="openView('sip-calculator')" style="margin-top: 1rem;">
-                        <ion-icon name="trending-up-outline"></ion-icon> Try SIP Calculator
+                        <ion-icon name="repeat-outline"></ion-icon> Try SIP Calculator
                     </button>
                 </div>
             `;
@@ -1703,7 +1703,7 @@ const createTimelineItem = (item, index) => {
         label = "SIP Investment Plan";
         subtext = `₹${item.input_data.amount}/mo @ ${item.input_data.rate}% for ${item.input_data.time}yr`;
         mainVal = item.result_data.total;
-        icon = "trending-up";
+        icon = "repeat";
         description = `Systematic Investment Plan with ${item.input_data.rate}% annual return`;
         color = "#3b82f6";
     } else if (item.calc_type === 'EMI') {
@@ -1739,7 +1739,7 @@ const createTimelineItem = (item, index) => {
         label = "Net Worth Assessment";
         subtext = `Assets: ${item.input_data.assets} | Liabilities: ${item.input_data.liabilities}`;
         mainVal = item.result_data.networth;
-        icon = "pie-chart";
+        icon = "diamond";
         description = "Complete financial portfolio analysis";
         color = "#10b981";
     }
