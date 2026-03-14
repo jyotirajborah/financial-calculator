@@ -7,6 +7,17 @@
 // 
 // Please use exportToExcel(elementId) for data export instead.
 
+// EMERGENCY JAVASCRIPT TEST
+console.log('🚨 EMERGENCY: JavaScript file is loading...');
+window.jsWorking = true;
+
+// Test if DOM is ready
+if (document.readyState === 'loading') {
+    console.log('🚨 EMERGENCY: DOM is still loading...');
+} else {
+    console.log('🚨 EMERGENCY: DOM is ready!');
+}
+
 // State Management
 let currentUser = null;
 
@@ -132,6 +143,35 @@ window.emergencyBypass = function() {
         console.error('❌ EMERGENCY BYPASS FAILED:', err);
         alert('Emergency bypass failed. Please refresh the page and try again.');
     }
+};
+
+// EMERGENCY FUNCTION - Test if buttons work
+window.testButtonClick = function() {
+    alert('🎉 Button clicks are working! JavaScript is functional.');
+    console.log('✅ Button click test successful');
+};
+
+// EMERGENCY FUNCTION - Force enable all buttons
+window.forceEnableButtons = function() {
+    console.log('🔧 Force enabling all buttons...');
+    
+    // Remove pointer-events: none from all elements
+    const allElements = document.querySelectorAll('*');
+    allElements.forEach(el => {
+        el.style.pointerEvents = 'auto';
+    });
+    
+    // Ensure all buttons are clickable
+    const buttons = document.querySelectorAll('button, .btn-primary, .btn-secondary, .auth-tab');
+    buttons.forEach(btn => {
+        btn.style.pointerEvents = 'auto';
+        btn.style.cursor = 'pointer';
+        btn.style.zIndex = '1000';
+        btn.style.position = 'relative';
+    });
+    
+    console.log('✅ All buttons force-enabled');
+    alert('All buttons have been force-enabled. Try clicking now!');
 };
 
 // Format numbers as Indian Currency
