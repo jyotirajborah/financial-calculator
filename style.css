@@ -1400,7 +1400,7 @@ input[type=range]::-webkit-slider-thumb:hover {
     }
 }
 
-/* --- Authentication UI --- */
+/* Auth overlay - ensure it's always on top and clickable */
 .auth-overlay {
     position: fixed;
     top: 0;
@@ -1415,11 +1415,13 @@ input[type=range]::-webkit-slider-thumb:hover {
     justify-content: center;
     align-items: center;
     z-index: 9999;
+    pointer-events: auto;
 }
 
 .auth-overlay.active {
     display: flex;
     animation: fadeIn 0.4s ease-out;
+    pointer-events: auto;
 }
 
 .auth-card-wrapper {
@@ -1547,13 +1549,21 @@ input[type=range]::-webkit-slider-thumb:hover {
     cursor: pointer;
     transition: var(--transition);
     position: relative;
-    z-index: 1;
+    z-index: 10;
     pointer-events: auto;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 .auth-tab:hover {
     background: rgba(255, 255, 255, 0.05);
     color: var(--text-main);
+}
+
+.auth-tab:active {
+    transform: scale(0.98);
 }
 
 .auth-tab.active {
@@ -1604,11 +1614,19 @@ input[type=range]::-webkit-slider-thumb:hover {
     margin-top: 1rem;
     box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
     transition: var(--transition);
+    position: relative;
+    z-index: 10;
+    pointer-events: auto;
+    user-select: none;
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
 }
 
 .auth-error {
@@ -3451,11 +3469,22 @@ input[type=range]::-webkit-slider-thumb:hover {
     box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.1);
 }
 
-/* Enhanced Glass Card Hover */
-.glass-card:hover {
+/* Enhanced Glass Card Hover - Exclude auth cards */
+.glass-card:hover:not(.auth-card-wrapper) {
     background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(var(--primary-color-rgb), 0.3);
+    border-color: rgba(99, 102, 241, 0.3);
     transform: translateY(-2px);
+}
+
+/* Auth card specific styling - no hover effects to prevent interference */
+.auth-card-wrapper {
+    transition: none;
+}
+
+.auth-card-wrapper:hover {
+    transform: none;
+    background: var(--bg-card);
+    border-color: var(--border-color);
 }
 
 /* Subtle Result Animation */
