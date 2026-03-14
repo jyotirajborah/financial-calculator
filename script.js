@@ -86,6 +86,54 @@ window.forceGuestLogin = function() {
     }
 };
 
+// Emergency bypass function
+window.emergencyBypass = function() {
+    console.log('🚨 EMERGENCY BYPASS ACTIVATED');
+    
+    try {
+        // Force guest mode
+        isGuestMode = true;
+        currentUser = { name: 'Guest', email: null };
+        
+        // Hide auth overlay
+        const overlay = document.getElementById('auth-overlay');
+        if (overlay) {
+            overlay.classList.remove('active');
+            overlay.style.display = 'none';
+        }
+        
+        // Show app container
+        const appContainer = document.getElementById('app-container');
+        if (appContainer) {
+            appContainer.style.display = 'flex';
+            appContainer.style.opacity = '1';
+        }
+        
+        // Set guest profile
+        const guestIcon = document.getElementById('guest-icon');
+        const userInitials = document.getElementById('user-initials');
+        if (guestIcon && userInitials) {
+            guestIcon.style.display = 'block';
+            userInitials.style.display = 'none';
+        }
+        
+        // Initialize calculators
+        calculateSIP();
+        calculateEMI();
+        calculateCI();
+        calculateBudget();
+        calculateTax();
+        calculateNetWorth();
+        
+        showToast('🚨 Emergency bypass successful! You are now in the app as a guest.', 'success');
+        console.log('✅ EMERGENCY BYPASS SUCCESSFUL');
+        
+    } catch (err) {
+        console.error('❌ EMERGENCY BYPASS FAILED:', err);
+        alert('Emergency bypass failed. Please refresh the page and try again.');
+    }
+};
+
 // Format numbers as Indian Currency
 const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-IN').format(Math.round(amount));
@@ -3020,6 +3068,39 @@ function initProjection() {
 // Initialize all calculators on load
 window.addEventListener('DOMContentLoaded', () => {
     console.log('=== FinCalc App Starting ===');
+    
+    // EMERGENCY BYPASS - Auto-login as guest after 2 seconds if auth fails
+    setTimeout(() => {
+        const overlay = document.getElementById('auth-overlay');
+        const appContainer = document.getElementById('app-container');
+        
+        if (overlay && overlay.classList.contains('active') && appContainer) {
+            console.log('🚨 EMERGENCY BYPASS: Auto-logging in as guest...');
+            try {
+                // Force guest login
+                isGuestMode = true;
+                currentUser = { name: 'Guest', email: null };
+                
+                // Hide auth overlay and show app
+                overlay.classList.remove('active');
+                appContainer.style.display = 'flex';
+                appContainer.style.opacity = '1';
+                
+                // Set guest profile
+                const guestIcon = document.getElementById('guest-icon');
+                const userInitials = document.getElementById('user-initials');
+                if (guestIcon && userInitials) {
+                    guestIcon.style.display = 'block';
+                    userInitials.style.display = 'none';
+                }
+                
+                console.log('✅ EMERGENCY BYPASS: Successfully entered as guest!');
+                showToast('Entered as Guest - Authentication bypassed', 'success');
+            } catch (err) {
+                console.error('❌ EMERGENCY BYPASS FAILED:', err);
+            }
+        }
+    }, 2000);
     
     // Initialize profile avatar for guest state (default)
     const guestIcon = document.getElementById('guest-icon');
