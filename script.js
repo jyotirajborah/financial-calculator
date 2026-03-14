@@ -36,6 +36,30 @@ function showToast(message, type = 'success') {
     }, 3000);
 }
 
+// Global auth tab switcher as backup
+window.switchAuthTab = function(button, formType) {
+    console.log('Backup switchAuthTab called:', formType);
+    
+    // Remove active from all tabs and forms
+    document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+    
+    // Add active to clicked tab
+    button.classList.add('active');
+    
+    // Show corresponding form
+    const targetForm = formType === 'guest' 
+        ? document.getElementById('guest-form')
+        : document.getElementById(formType + '-form');
+        
+    if (targetForm) {
+        targetForm.classList.add('active');
+        console.log('Successfully switched to:', formType);
+    } else {
+        console.error('Target form not found:', formType);
+    }
+};
+
 // Format numbers as Indian Currency
 const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-IN').format(Math.round(amount));
@@ -2555,40 +2579,54 @@ initAuth = () => {
         return;
     }
     
-    // Tab switching
+    // Tab switching - only set up if not already handled by fallback
     const authTabs = document.querySelectorAll('.auth-tab');
     console.log('Found auth tabs:', authTabs.length); // Debug log
     
-    authTabs.forEach((btn, index) => {
-        console.log(`Setting up tab ${index}:`, btn.dataset.form); // Debug log
-        btn.addEventListener('click', (e) => {
-            console.log('Tab clicked:', e.currentTarget.dataset.form); // Debug log
-            
-            document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
-            
-            const targetBtn = e.currentTarget;
-            targetBtn.classList.add('active');
-            const targetForm = targetBtn.dataset.form;
-            
-            console.log('Switching to form:', targetForm); // Debug log
-            
-            if (targetForm === 'guest') {
-                if (guestForm) {
-                    guestForm.classList.add('active');
-                } else {
-                    console.error('Guest form not found!');
-                }
-            } else {
-                const formElement = document.getElementById(`${targetForm}-form`);
-                if (formElement) {
-                    formElement.classList.add('active');
-                } else {
-                    console.error(`Form ${targetForm}-form not found!`);
-                }
-            }
-        });
+    // Check if tabs already have event listeners (from fallback)
+    let hasExistingListeners = false;
+    authTabs.forEach(tab => {
+        if (tab._hasAuthListener) {
+            hasExistingListeners = true;
+        }
     });
+    
+    if (!hasExistingListeners) {
+        console.log('Setting up main auth tab handlers...');
+        authTabs.forEach((btn, index) => {
+            console.log(`Setting up main tab ${index}:`, btn.dataset.form); // Debug log
+            btn.addEventListener('click', (e) => {
+                console.log('Main tab clicked:', e.currentTarget.dataset.form); // Debug log
+                
+                document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+                
+                const targetBtn = e.currentTarget;
+                targetBtn.classList.add('active');
+                const targetForm = targetBtn.dataset.form;
+                
+                console.log('Switching to form:', targetForm); // Debug log
+                
+                if (targetForm === 'guest') {
+                    if (guestForm) {
+                        guestForm.classList.add('active');
+                    } else {
+                        console.error('Guest form not found!');
+                    }
+                } else {
+                    const formElement = document.getElementById(`${targetForm}-form`);
+                    if (formElement) {
+                        formElement.classList.add('active');
+                    } else {
+                        console.error(`Form ${targetForm}-form not found!`);
+                    }
+                }
+            });
+            btn._hasAuthListener = true; // Mark as having listener
+        });
+    } else {
+        console.log('Auth tabs already have listeners from fallback');
+    }
 
     // Guest Continue Handler
     const guestContinueBtn = document.getElementById('guest-continue-btn');

@@ -63,9 +63,9 @@
             </div>
             
             <div class="auth-tabs">
-                <button class="auth-tab active" data-form="login">Login</button>
-                <button class="auth-tab" data-form="signup">Sign Up</button>
-                <button class="auth-tab guest-tab" data-form="guest">Continue as Guest</button>
+                <button class="auth-tab active" data-form="login" onclick="switchAuthTab(this, 'login')">Login</button>
+                <button class="auth-tab" data-form="signup" onclick="switchAuthTab(this, 'signup')">Sign Up</button>
+                <button class="auth-tab guest-tab" data-form="guest" onclick="switchAuthTab(this, 'guest')">Continue as Guest</button>
             </div>
             
             <div class="auth-forms">
@@ -144,26 +144,47 @@
          even if main script initialization fails -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            console.log('Fallback auth handler initializing...');
             try {
                 var authTabs = document.querySelectorAll('.auth-tab');
                 var authForms = document.querySelectorAll('.auth-form');
-                if (!authTabs.length || !authForms.length) return;
+                console.log('Found auth tabs:', authTabs.length, 'forms:', authForms.length);
+                
+                if (!authTabs.length || !authForms.length) {
+                    console.error('Auth elements not found!');
+                    return;
+                }
 
-                authTabs.forEach(function (btn) {
-                    btn.addEventListener('click', function () {
+                authTabs.forEach(function (btn, index) {
+                    console.log('Setting up tab', index, 'with data-form:', btn.getAttribute('data-form'));
+                    btn.addEventListener('click', function (e) {
+                        console.log('Auth tab clicked:', this.getAttribute('data-form'));
+                        e.preventDefault();
+                        
+                        // Remove active from all tabs and forms
                         authTabs.forEach(function (b) { b.classList.remove('active'); });
                         authForms.forEach(function (f) { f.classList.remove('active'); });
 
+                        // Add active to clicked tab
                         this.classList.add('active');
+                        
+                        // Show corresponding form
                         var formKey = this.getAttribute('data-form');
                         var targetForm = formKey === 'guest'
                             ? document.getElementById('guest-form')
                             : document.getElementById(formKey + '-form');
+                            
+                        console.log('Switching to form:', formKey, 'element found:', !!targetForm);
+                        
                         if (targetForm) {
                             targetForm.classList.add('active');
+                        } else {
+                            console.error('Target form not found:', formKey);
                         }
                     });
                 });
+                
+                console.log('Fallback auth handler setup complete');
             } catch (e) {
                 console.error('Fallback auth tab handler failed:', e);
             }

@@ -1546,6 +1546,14 @@ input[type=range]::-webkit-slider-thumb:hover {
     border-radius: 8px;
     cursor: pointer;
     transition: var(--transition);
+    position: relative;
+    z-index: 1;
+    pointer-events: auto;
+}
+
+.auth-tab:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-main);
 }
 
 .auth-tab.active {
