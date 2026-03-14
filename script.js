@@ -3222,94 +3222,142 @@ const initWorldClocks = () => {
     
     // Create calendar cards (ethnic calendars)
     calendarsGrid.innerHTML = `
-        <div class="clock-card glass-card calendar-card hindu-calendar">
-            <div class="clock-city">
-                <ion-icon name="moon"></ion-icon>
-                <span>Hindu Calendar</span>
+        <div class="clock-card glass-card calendar-card hindu-calendar" data-calendar="hindu">
+            <button class="calendar-expand-btn" onclick="toggleCalendarView('hindu')" title="View full year">
+                <ion-icon name="expand-outline"></ion-icon>
+            </button>
+            <div class="calendar-summary">
+                <div class="clock-city">
+                    <ion-icon name="moon"></ion-icon>
+                    <span>Hindu Calendar</span>
+                </div>
+                <div class="clock-timezone">Vikram Samvat</div>
+                <div class="calendar-year" id="hindu-year">----</div>
+                <div class="calendar-month" id="hindu-month">---</div>
+                <div class="calendar-detail" id="hindu-tithi">---</div>
+                <div class="calendar-detail" id="hindu-paksha">---</div>
+                <div class="calendar-badge hindu-badge">
+                    <ion-icon name="calendar"></ion-icon>
+                    <span id="hindu-gregorian">---</span>
+                </div>
             </div>
-            <div class="clock-timezone">Vikram Samvat</div>
-            <div class="calendar-year" id="hindu-year">----</div>
-            <div class="calendar-month" id="hindu-month">---</div>
-            <div class="calendar-detail" id="hindu-tithi">---</div>
-            <div class="calendar-detail" id="hindu-paksha">---</div>
-            <div class="calendar-badge hindu-badge">
-                <ion-icon name="calendar"></ion-icon>
-                <span id="hindu-gregorian">---</span>
-            </div>
-        </div>
-        <div class="clock-card glass-card calendar-card islamic-calendar">
-            <div class="clock-city">
-                <ion-icon name="moon-outline"></ion-icon>
-                <span>Islamic Calendar</span>
-            </div>
-            <div class="clock-timezone">Hijri</div>
-            <div class="calendar-year" id="islamic-year">----</div>
-            <div class="calendar-month" id="islamic-month">---</div>
-            <div class="calendar-detail" id="islamic-day">---</div>
-            <div class="calendar-detail" id="islamic-weekday">---</div>
-            <div class="calendar-badge islamic-badge">
-                <ion-icon name="calendar"></ion-icon>
-                <span id="islamic-gregorian">---</span>
+            <div class="calendar-expanded" id="hindu-expanded">
+                <div class="calendar-year-view" id="hindu-year-view"></div>
             </div>
         </div>
-        <div class="clock-card glass-card calendar-card hebrew-calendar">
-            <div class="clock-city">
-                <ion-icon name="star-outline"></ion-icon>
-                <span>Hebrew Calendar</span>
+        <div class="clock-card glass-card calendar-card islamic-calendar" data-calendar="islamic">
+            <button class="calendar-expand-btn" onclick="toggleCalendarView('islamic')" title="View full year">
+                <ion-icon name="expand-outline"></ion-icon>
+            </button>
+            <div class="calendar-summary">
+                <div class="clock-city">
+                    <ion-icon name="moon-outline"></ion-icon>
+                    <span>Islamic Calendar</span>
+                </div>
+                <div class="clock-timezone">Hijri</div>
+                <div class="calendar-year" id="islamic-year">----</div>
+                <div class="calendar-month" id="islamic-month">---</div>
+                <div class="calendar-detail" id="islamic-day">---</div>
+                <div class="calendar-detail" id="islamic-weekday">---</div>
+                <div class="calendar-badge islamic-badge">
+                    <ion-icon name="calendar"></ion-icon>
+                    <span id="islamic-gregorian">---</span>
+                </div>
             </div>
-            <div class="clock-timezone">Jewish Calendar</div>
-            <div class="calendar-year" id="hebrew-year">----</div>
-            <div class="calendar-month" id="hebrew-month">---</div>
-            <div class="calendar-detail" id="hebrew-day">---</div>
-            <div class="calendar-detail" id="hebrew-weekday">---</div>
-            <div class="calendar-badge hebrew-badge">
-                <ion-icon name="calendar"></ion-icon>
-                <span id="hebrew-gregorian">---</span>
-            </div>
-        </div>
-        <div class="clock-card glass-card calendar-card chinese-calendar">
-            <div class="clock-city">
-                <ion-icon name="planet-outline"></ion-icon>
-                <span>Chinese Calendar</span>
-            </div>
-            <div class="clock-timezone">Lunar Calendar</div>
-            <div class="calendar-year" id="chinese-year">----</div>
-            <div class="calendar-month" id="chinese-month">---</div>
-            <div class="calendar-detail" id="chinese-zodiac">---</div>
-            <div class="calendar-detail" id="chinese-element">---</div>
-            <div class="calendar-badge chinese-badge">
-                <ion-icon name="calendar"></ion-icon>
-                <span id="chinese-gregorian">---</span>
+            <div class="calendar-expanded" id="islamic-expanded">
+                <div class="calendar-year-view" id="islamic-year-view"></div>
             </div>
         </div>
-        <div class="clock-card glass-card calendar-card persian-calendar">
-            <div class="clock-city">
-                <ion-icon name="sunny-outline"></ion-icon>
-                <span>Persian Calendar</span>
+        <div class="clock-card glass-card calendar-card hebrew-calendar" data-calendar="hebrew">
+            <button class="calendar-expand-btn" onclick="toggleCalendarView('hebrew')" title="View full year">
+                <ion-icon name="expand-outline"></ion-icon>
+            </button>
+            <div class="calendar-summary">
+                <div class="clock-city">
+                    <ion-icon name="star-outline"></ion-icon>
+                    <span>Hebrew Calendar</span>
+                </div>
+                <div class="clock-timezone">Jewish Calendar</div>
+                <div class="calendar-year" id="hebrew-year">----</div>
+                <div class="calendar-month" id="hebrew-month">---</div>
+                <div class="calendar-detail" id="hebrew-day">---</div>
+                <div class="calendar-detail" id="hebrew-weekday">---</div>
+                <div class="calendar-badge hebrew-badge">
+                    <ion-icon name="calendar"></ion-icon>
+                    <span id="hebrew-gregorian">---</span>
+                </div>
             </div>
-            <div class="clock-timezone">Solar Hijri</div>
-            <div class="calendar-year" id="persian-year">----</div>
-            <div class="calendar-month" id="persian-month">---</div>
-            <div class="calendar-detail" id="persian-day">---</div>
-            <div class="calendar-detail" id="persian-season">---</div>
-            <div class="calendar-badge persian-badge">
-                <ion-icon name="calendar"></ion-icon>
-                <span id="persian-gregorian">---</span>
+            <div class="calendar-expanded" id="hebrew-expanded">
+                <div class="calendar-year-view" id="hebrew-year-view"></div>
             </div>
         </div>
-        <div class="clock-card glass-card calendar-card ethiopian-calendar">
-            <div class="clock-city">
-                <ion-icon name="earth-outline"></ion-icon>
-                <span>Ethiopian Calendar</span>
+        <div class="clock-card glass-card calendar-card chinese-calendar" data-calendar="chinese">
+            <button class="calendar-expand-btn" onclick="toggleCalendarView('chinese')" title="View full year">
+                <ion-icon name="expand-outline"></ion-icon>
+            </button>
+            <div class="calendar-summary">
+                <div class="clock-city">
+                    <ion-icon name="planet-outline"></ion-icon>
+                    <span>Chinese Calendar</span>
+                </div>
+                <div class="clock-timezone">Lunar Calendar</div>
+                <div class="calendar-year" id="chinese-year">----</div>
+                <div class="calendar-month" id="chinese-month">---</div>
+                <div class="calendar-detail" id="chinese-zodiac">---</div>
+                <div class="calendar-detail" id="chinese-element">---</div>
+                <div class="calendar-badge chinese-badge">
+                    <ion-icon name="calendar"></ion-icon>
+                    <span id="chinese-gregorian">---</span>
+                </div>
             </div>
-            <div class="clock-timezone">Ge'ez Calendar</div>
-            <div class="calendar-year" id="ethiopian-year">----</div>
-            <div class="calendar-month" id="ethiopian-month">---</div>
-            <div class="calendar-detail" id="ethiopian-day">---</div>
-            <div class="calendar-detail" id="ethiopian-era">---</div>
-            <div class="calendar-badge ethiopian-badge">
-                <ion-icon name="calendar"></ion-icon>
-                <span id="ethiopian-gregorian">---</span>
+            <div class="calendar-expanded" id="chinese-expanded">
+                <div class="calendar-year-view" id="chinese-year-view"></div>
+            </div>
+        </div>
+        <div class="clock-card glass-card calendar-card persian-calendar" data-calendar="persian">
+            <button class="calendar-expand-btn" onclick="toggleCalendarView('persian')" title="View full year">
+                <ion-icon name="expand-outline"></ion-icon>
+            </button>
+            <div class="calendar-summary">
+                <div class="clock-city">
+                    <ion-icon name="sunny-outline"></ion-icon>
+                    <span>Persian Calendar</span>
+                </div>
+                <div class="clock-timezone">Solar Hijri</div>
+                <div class="calendar-year" id="persian-year">----</div>
+                <div class="calendar-month" id="persian-month">---</div>
+                <div class="calendar-detail" id="persian-day">---</div>
+                <div class="calendar-detail" id="persian-season">---</div>
+                <div class="calendar-badge persian-badge">
+                    <ion-icon name="calendar"></ion-icon>
+                    <span id="persian-gregorian">---</span>
+                </div>
+            </div>
+            <div class="calendar-expanded" id="persian-expanded">
+                <div class="calendar-year-view" id="persian-year-view"></div>
+            </div>
+        </div>
+        <div class="clock-card glass-card calendar-card ethiopian-calendar" data-calendar="ethiopian">
+            <button class="calendar-expand-btn" onclick="toggleCalendarView('ethiopian')" title="View full year">
+                <ion-icon name="expand-outline"></ion-icon>
+            </button>
+            <div class="calendar-summary">
+                <div class="clock-city">
+                    <ion-icon name="earth-outline"></ion-icon>
+                    <span>Ethiopian Calendar</span>
+                </div>
+                <div class="clock-timezone">Ge'ez Calendar</div>
+                <div class="calendar-year" id="ethiopian-year">----</div>
+                <div class="calendar-month" id="ethiopian-month">---</div>
+                <div class="calendar-detail" id="ethiopian-day">---</div>
+                <div class="calendar-detail" id="ethiopian-era">---</div>
+                <div class="calendar-badge ethiopian-badge">
+                    <ion-icon name="calendar"></ion-icon>
+                    <span id="ethiopian-gregorian">---</span>
+                </div>
+            </div>
+            <div class="calendar-expanded" id="ethiopian-expanded">
+                <div class="calendar-year-view" id="ethiopian-year-view"></div>
             </div>
         </div>
     `;
@@ -3351,6 +3399,147 @@ const setupGlobalTimeTabs = () => {
             }
         });
     });
+};
+
+// Toggle calendar year view
+window.toggleCalendarView = (calendarType) => {
+    const card = document.querySelector(`[data-calendar="${calendarType}"]`);
+    const expandedSection = document.getElementById(`${calendarType}-expanded`);
+    const expandBtn = card.querySelector('.calendar-expand-btn ion-icon');
+    
+    if (!card || !expandedSection) return;
+    
+    const isExpanded = card.classList.contains('expanded');
+    
+    if (isExpanded) {
+        // Collapse
+        card.classList.remove('expanded');
+        expandBtn.setAttribute('name', 'expand-outline');
+    } else {
+        // Expand
+        card.classList.add('expanded');
+        expandBtn.setAttribute('name', 'contract-outline');
+        
+        // Generate year view if not already generated
+        if (!expandedSection.querySelector('.calendar-months')) {
+            generateYearView(calendarType);
+        }
+    }
+};
+
+// Generate yearly calendar view
+const generateYearView = (calendarType) => {
+    const yearViewContainer = document.getElementById(`${calendarType}-year-view`);
+    if (!yearViewContainer) return;
+    
+    const monthsData = getMonthsForCalendar(calendarType);
+    
+    let html = '<div class="calendar-months">';
+    
+    monthsData.forEach((month, index) => {
+        html += `
+            <div class="calendar-month-card">
+                <div class="month-header">${month.name}</div>
+                <div class="month-info">${month.info}</div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    yearViewContainer.innerHTML = html;
+};
+
+// Get months data for each calendar type
+const getMonthsForCalendar = (calendarType) => {
+    const calendars = {
+        hindu: [
+            { name: 'Chaitra', info: 'Mar-Apr' },
+            { name: 'Vaishakha', info: 'Apr-May' },
+            { name: 'Jyeshtha', info: 'May-Jun' },
+            { name: 'Ashadha', info: 'Jun-Jul' },
+            { name: 'Shravana', info: 'Jul-Aug' },
+            { name: 'Bhadrapada', info: 'Aug-Sep' },
+            { name: 'Ashwin', info: 'Sep-Oct' },
+            { name: 'Kartika', info: 'Oct-Nov' },
+            { name: 'Margashirsha', info: 'Nov-Dec' },
+            { name: 'Pausha', info: 'Dec-Jan' },
+            { name: 'Magha', info: 'Jan-Feb' },
+            { name: 'Phalguna', info: 'Feb-Mar' }
+        ],
+        islamic: [
+            { name: 'Muharram', info: '29-30 days' },
+            { name: 'Safar', info: '29-30 days' },
+            { name: 'Rabi al-Awwal', info: '29-30 days' },
+            { name: 'Rabi al-Thani', info: '29-30 days' },
+            { name: 'Jumada al-Awwal', info: '29-30 days' },
+            { name: 'Jumada al-Thani', info: '29-30 days' },
+            { name: 'Rajab', info: '29-30 days' },
+            { name: 'Sha\'ban', info: '29-30 days' },
+            { name: 'Ramadan', info: '29-30 days' },
+            { name: 'Shawwal', info: '29-30 days' },
+            { name: 'Dhu al-Qi\'dah', info: '29-30 days' },
+            { name: 'Dhu al-Hijjah', info: '29-30 days' }
+        ],
+        hebrew: [
+            { name: 'Nisan', info: '30 days' },
+            { name: 'Iyar', info: '29 days' },
+            { name: 'Sivan', info: '30 days' },
+            { name: 'Tammuz', info: '29 days' },
+            { name: 'Av', info: '30 days' },
+            { name: 'Elul', info: '29 days' },
+            { name: 'Tishrei', info: '30 days' },
+            { name: 'Cheshvan', info: '29-30 days' },
+            { name: 'Kislev', info: '29-30 days' },
+            { name: 'Tevet', info: '29 days' },
+            { name: 'Shevat', info: '30 days' },
+            { name: 'Adar', info: '29 days' }
+        ],
+        chinese: [
+            { name: 'First Month', info: 'Tiger' },
+            { name: 'Second Month', info: 'Rabbit' },
+            { name: 'Third Month', info: 'Dragon' },
+            { name: 'Fourth Month', info: 'Snake' },
+            { name: 'Fifth Month', info: 'Horse' },
+            { name: 'Sixth Month', info: 'Goat' },
+            { name: 'Seventh Month', info: 'Monkey' },
+            { name: 'Eighth Month', info: 'Rooster' },
+            { name: 'Ninth Month', info: 'Dog' },
+            { name: 'Tenth Month', info: 'Pig' },
+            { name: 'Eleventh Month', info: 'Rat' },
+            { name: 'Twelfth Month', info: 'Ox' }
+        ],
+        persian: [
+            { name: 'Farvardin', info: '31 days' },
+            { name: 'Ordibehesht', info: '31 days' },
+            { name: 'Khordad', info: '31 days' },
+            { name: 'Tir', info: '31 days' },
+            { name: 'Mordad', info: '31 days' },
+            { name: 'Shahrivar', info: '31 days' },
+            { name: 'Mehr', info: '30 days' },
+            { name: 'Aban', info: '30 days' },
+            { name: 'Azar', info: '30 days' },
+            { name: 'Dey', info: '30 days' },
+            { name: 'Bahman', info: '30 days' },
+            { name: 'Esfand', info: '29-30 days' }
+        ],
+        ethiopian: [
+            { name: 'Meskerem', info: '30 days' },
+            { name: 'Tikimt', info: '30 days' },
+            { name: 'Hidar', info: '30 days' },
+            { name: 'Tahsas', info: '30 days' },
+            { name: 'Tir', info: '30 days' },
+            { name: 'Yekatit', info: '30 days' },
+            { name: 'Megabit', info: '30 days' },
+            { name: 'Miazia', info: '30 days' },
+            { name: 'Ginbot', info: '30 days' },
+            { name: 'Sene', info: '30 days' },
+            { name: 'Hamle', info: '30 days' },
+            { name: 'Nehase', info: '30 days' },
+            { name: 'Pagumen', info: '5-6 days' }
+        ]
+    };
+    
+    return calendars[calendarType] || [];
 };
 
 const updateWorldClocks = () => {

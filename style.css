@@ -3948,6 +3948,85 @@ body, html {
     border: 1px solid rgba(139, 92, 246, 0.3);
 }
 
+/* Calendar Expand Button */
+.calendar-expand-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.calendar-expand-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent-color);
+    transform: scale(1.1);
+}
+
+.calendar-expand-btn ion-icon {
+    font-size: 1.25rem;
+    color: var(--text-main);
+}
+
+/* Calendar Expanded View */
+.calendar-summary {
+    transition: all 0.3s ease;
+}
+
+.calendar-expanded {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease;
+}
+
+.calendar-card.expanded .calendar-expanded {
+    max-height: 1000px;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.calendar-months {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem;
+}
+
+.calendar-month-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.75rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.calendar-month-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+}
+
+.month-header {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 0.25rem;
+}
+
+.month-info {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
 /* =============================================
    HELP & SHORTCUTS SECTION
    ============================================= */
