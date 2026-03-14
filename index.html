@@ -368,6 +368,10 @@
                     <ion-icon name="git-branch"></ion-icon>
                     <span>Timeline</span>
                 </button>
+                <button class="nav-item" data-target="world-clocks">
+                    <ion-icon name="time"></ion-icon>
+                    <span>World Clocks</span>
+                </button>
                 <button class="nav-item" data-target="help-shortcuts">
                     <ion-icon name="help-circle"></ion-icon>
                     <span>Help & Shortcuts</span>
@@ -1545,6 +1549,23 @@
                             <div id="history-timeline" class="history-timeline">
                                 <p class="empty-timeline-msg">No calculations found. Start planning to see your timeline!</p>
                             </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- World Clocks View -->
+                <section class="calculator-view" id="world-clocks">
+                    <div class="clocks-container">
+                        <div class="clocks-header">
+                            <div class="clocks-title">
+                                <ion-icon name="time"></ion-icon>
+                                <h2>World Clocks</h2>
+                            </div>
+                            <p class="clocks-subtitle">Track time across major financial markets</p>
+                        </div>
+                        
+                        <div class="clocks-grid" id="clocks-grid">
+                            <!-- Clocks will be dynamically generated here -->
                         </div>
                     </div>
                 </section>

@@ -287,6 +287,11 @@ document.querySelectorAll('.nav-item').forEach(btn => {
             loadFinanceNews();
         }
         
+        // Initialize world clocks if target is world-clocks
+        if (targetId === 'world-clocks') {
+            initWorldClocks();
+        }
+        
         // Initialize notes if target is my notes
         if (targetId === 'my-notes') {
             initNotesSection();
@@ -3169,6 +3174,185 @@ window.addEventListener('DOMContentLoaded', () => {
     const categorySelect = document.getElementById('news-category');
     if (categorySelect) {
         categorySelect.addEventListener('change', loadFinanceNews);
+    }
+});
+
+// --- World Clocks Functions ---
+let clockInterval = null;
+
+const worldClocks = [
+    { city: 'New York', timezone: 'America/New_York', icon: 'business', market: 'NYSE' },
+    { city: 'London', timezone: 'Europe/London', icon: 'business', market: 'LSE' },
+    { city: 'Tokyo', timezone: 'Asia/Tokyo', icon: 'business', market: 'TSE' },
+    { city: 'Hong Kong', timezone: 'Asia/Hong_Kong', icon: 'business', market: 'HKEX' },
+    { city: 'Mumbai', timezone: 'Asia/Kolkata', icon: 'business', market: 'NSE' },
+    { city: 'Singapore', timezone: 'Asia/Singapore', icon: 'business', market: 'SGX' },
+    { city: 'Sydney', timezone: 'Australia/Sydney', icon: 'business', market: 'ASX' },
+    { city: 'Dubai', timezone: 'Asia/Dubai', icon: 'business', market: 'DFM' }
+];
+
+const initWorldClocks = () => {
+    const clocksGrid = document.getElementById('clocks-grid');
+    if (!clocksGrid) return;
+    
+    // Clear any existing interval
+    if (clockInterval) {
+        clearInterval(clockInterval);
+    }
+    
+    // Create clock cards
+    clocksGrid.innerHTML = worldClocks.map(clock => `
+        <div class="clock-card glass-card">
+            <div class="clock-city">
+                <ion-icon name="${clock.icon}"></ion-icon>
+                <span>${clock.city}</span>
+            </div>
+            <div class="clock-timezone">${clock.timezone.replace('_', ' ')}</div>
+            <div class="clock-time" data-timezone="${clock.timezone}">--:--:--</div>
+            <div class="clock-date" data-timezone="${clock.timezone}">---</div>
+            <div class="clock-day" data-timezone="${clock.timezone}">---</div>
+            <div class="market-status" data-market="${clock.market}">
+                <ion-icon name="pulse"></ion-icon>
+                <span>Checking...</span>
+            </div>
+        </div>
+    `).join('');
+    
+    // Update clocks immediately
+    updateWorldClocks();
+    
+    // Update every second
+    clockInterval = setInterval(updateWorldClocks, 1000);
+};
+
+const updateWorldClocks = () => {
+    worldClocks.forEach(clock => {
+        try {
+            const now = new Date();
+            
+            // Format time
+            const timeElement = document.querySelector(`[data-timezone="${clock.timezone}"].clock-time`);
+            if (timeElement) {
+                const timeStr = now.toLocaleTimeString('en-US', {
+                    timeZone: clock.timezone,
+                    hour12: false,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                timeElement.textContent = timeStr;
+            }
+            
+            // Format date
+            const dateElement = document.querySelector(`[data-timezone="${clock.timezone}"].clock-date`);
+            if (dateElement) {
+                const dateStr = now.toLocaleDateString('en-US', {
+                    timeZone: clock.timezone,
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+                dateElement.textContent = dateStr;
+            }
+            
+            // Format day
+            const dayElement = document.querySelector(`[data-timezone="${clock.timezone}"].clock-day`);
+            if (dayElement) {
+                const dayStr = now.toLocaleDateString('en-US', {
+                    timeZone: clock.timezone,
+                    weekday: 'long'
+                });
+                dayElement.textContent = dayStr;
+            }
+            
+            // Update market status
+            updateMarketStatus(clock.market, clock.timezone);
+            
+        } catch (error) {
+            console.error(`Error updating clock for ${clock.city}:`, error);
+        }
+    });
+};
+
+const updateMarketStatus = (market, timezone) => {
+    const statusElement = document.querySelector(`[data-market="${market}"]`);
+    if (!statusElement) return;
+    
+    const now = new Date();
+    const localTime = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
+    const day = localTime.getDay(); // 0 = Sunday, 6 = Saturday
+    const hours = localTime.getHours();
+    const minutes = localTime.getMinutes();
+    const timeInMinutes = hours * 60 + minutes;
+    
+    // Weekend check
+    if (day === 0 || day === 6) {
+        statusElement.className = 'market-status weekend';
+        statusElement.innerHTML = '<ion-icon name="calendar"></ion-icon> <span>Weekend</span>';
+        return;
+    }
+    
+    // Market hours (approximate)
+    let marketOpen = false;
+    let openTime = '';
+    let closeTime = '';
+    
+    switch (market) {
+        case 'NYSE': // 9:30 AM - 4:00 PM EST
+            marketOpen = timeInMinutes >= 570 && timeInMinutes < 960;
+            openTime = '9:30 AM';
+            closeTime = '4:00 PM';
+            break;
+        case 'LSE': // 8:00 AM - 4:30 PM GMT
+            marketOpen = timeInMinutes >= 480 && timeInMinutes < 1020;
+            openTime = '8:00 AM';
+            closeTime = '4:30 PM';
+            break;
+        case 'TSE': // 9:00 AM - 3:00 PM JST
+            marketOpen = timeInMinutes >= 540 && timeInMinutes < 900;
+            openTime = '9:00 AM';
+            closeTime = '3:00 PM';
+            break;
+        case 'HKEX': // 9:30 AM - 4:00 PM HKT
+            marketOpen = timeInMinutes >= 570 && timeInMinutes < 960;
+            openTime = '9:30 AM';
+            closeTime = '4:00 PM';
+            break;
+        case 'NSE': // 9:15 AM - 3:30 PM IST
+            marketOpen = timeInMinutes >= 555 && timeInMinutes < 930;
+            openTime = '9:15 AM';
+            closeTime = '3:30 PM';
+            break;
+        case 'SGX': // 9:00 AM - 5:00 PM SGT
+            marketOpen = timeInMinutes >= 540 && timeInMinutes < 1020;
+            openTime = '9:00 AM';
+            closeTime = '5:00 PM';
+            break;
+        case 'ASX': // 10:00 AM - 4:00 PM AEST
+            marketOpen = timeInMinutes >= 600 && timeInMinutes < 960;
+            openTime = '10:00 AM';
+            closeTime = '4:00 PM';
+            break;
+        case 'DFM': // 10:00 AM - 2:00 PM GST
+            marketOpen = timeInMinutes >= 600 && timeInMinutes < 840;
+            openTime = '10:00 AM';
+            closeTime = '2:00 PM';
+            break;
+    }
+    
+    if (marketOpen) {
+        statusElement.className = 'market-status open';
+        statusElement.innerHTML = '<ion-icon name="pulse"></ion-icon> <span>Market Open</span>';
+    } else {
+        statusElement.className = 'market-status closed';
+        statusElement.innerHTML = '<ion-icon name="moon"></ion-icon> <span>Market Closed</span>';
+    }
+};
+
+// Cleanup interval when leaving the page
+window.addEventListener('beforeunload', () => {
+    if (clockInterval) {
+        clearInterval(clockInterval);
     }
 });
 
