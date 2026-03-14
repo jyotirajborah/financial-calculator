@@ -3217,31 +3217,106 @@ const initWorldClocks = () => {
             </div>
         </div>
     `).join('') + `
-        <div class="clock-card glass-card hindu-calendar-card">
+        <div class="clock-card glass-card calendar-card hindu-calendar">
             <div class="clock-city">
                 <ion-icon name="moon"></ion-icon>
                 <span>Hindu Calendar</span>
             </div>
             <div class="clock-timezone">Vikram Samvat</div>
-            <div class="hindu-year" id="hindu-year">----</div>
-            <div class="hindu-month" id="hindu-month">---</div>
-            <div class="hindu-tithi" id="hindu-tithi">---</div>
-            <div class="hindu-paksha" id="hindu-paksha">---</div>
-            <div class="market-status" style="background: rgba(168, 85, 247, 0.1); color: #a855f7; border-color: rgba(168, 85, 247, 0.3);">
+            <div class="calendar-year" id="hindu-year">----</div>
+            <div class="calendar-month" id="hindu-month">---</div>
+            <div class="calendar-detail" id="hindu-tithi">---</div>
+            <div class="calendar-detail" id="hindu-paksha">---</div>
+            <div class="calendar-badge hindu-badge">
                 <ion-icon name="calendar"></ion-icon>
                 <span id="hindu-gregorian">---</span>
+            </div>
+        </div>
+        <div class="clock-card glass-card calendar-card islamic-calendar">
+            <div class="clock-city">
+                <ion-icon name="moon-outline"></ion-icon>
+                <span>Islamic Calendar</span>
+            </div>
+            <div class="clock-timezone">Hijri</div>
+            <div class="calendar-year" id="islamic-year">----</div>
+            <div class="calendar-month" id="islamic-month">---</div>
+            <div class="calendar-detail" id="islamic-day">---</div>
+            <div class="calendar-detail" id="islamic-weekday">---</div>
+            <div class="calendar-badge islamic-badge">
+                <ion-icon name="calendar"></ion-icon>
+                <span id="islamic-gregorian">---</span>
+            </div>
+        </div>
+        <div class="clock-card glass-card calendar-card hebrew-calendar">
+            <div class="clock-city">
+                <ion-icon name="star-outline"></ion-icon>
+                <span>Hebrew Calendar</span>
+            </div>
+            <div class="clock-timezone">Jewish Calendar</div>
+            <div class="calendar-year" id="hebrew-year">----</div>
+            <div class="calendar-month" id="hebrew-month">---</div>
+            <div class="calendar-detail" id="hebrew-day">---</div>
+            <div class="calendar-detail" id="hebrew-weekday">---</div>
+            <div class="calendar-badge hebrew-badge">
+                <ion-icon name="calendar"></ion-icon>
+                <span id="hebrew-gregorian">---</span>
+            </div>
+        </div>
+        <div class="clock-card glass-card calendar-card chinese-calendar">
+            <div class="clock-city">
+                <ion-icon name="planet-outline"></ion-icon>
+                <span>Chinese Calendar</span>
+            </div>
+            <div class="clock-timezone">Lunar Calendar</div>
+            <div class="calendar-year" id="chinese-year">----</div>
+            <div class="calendar-month" id="chinese-month">---</div>
+            <div class="calendar-detail" id="chinese-zodiac">---</div>
+            <div class="calendar-detail" id="chinese-element">---</div>
+            <div class="calendar-badge chinese-badge">
+                <ion-icon name="calendar"></ion-icon>
+                <span id="chinese-gregorian">---</span>
+            </div>
+        </div>
+        <div class="clock-card glass-card calendar-card persian-calendar">
+            <div class="clock-city">
+                <ion-icon name="sunny-outline"></ion-icon>
+                <span>Persian Calendar</span>
+            </div>
+            <div class="clock-timezone">Solar Hijri</div>
+            <div class="calendar-year" id="persian-year">----</div>
+            <div class="calendar-month" id="persian-month">---</div>
+            <div class="calendar-detail" id="persian-day">---</div>
+            <div class="calendar-detail" id="persian-season">---</div>
+            <div class="calendar-badge persian-badge">
+                <ion-icon name="calendar"></ion-icon>
+                <span id="persian-gregorian">---</span>
+            </div>
+        </div>
+        <div class="clock-card glass-card calendar-card ethiopian-calendar">
+            <div class="clock-city">
+                <ion-icon name="earth-outline"></ion-icon>
+                <span>Ethiopian Calendar</span>
+            </div>
+            <div class="clock-timezone">Ge'ez Calendar</div>
+            <div class="calendar-year" id="ethiopian-year">----</div>
+            <div class="calendar-month" id="ethiopian-month">---</div>
+            <div class="calendar-detail" id="ethiopian-day">---</div>
+            <div class="calendar-detail" id="ethiopian-era">---</div>
+            <div class="calendar-badge ethiopian-badge">
+                <ion-icon name="calendar"></ion-icon>
+                <span id="ethiopian-gregorian">---</span>
             </div>
         </div>
     `;
     
     // Update clocks immediately
     updateWorldClocks();
-    updateHinduCalendar();
+    updateAllCalendars();
     
     // Update every second
     clockInterval = setInterval(() => {
         updateWorldClocks();
-        updateHinduCalendar();
+        updateAllCalendars();
     }, 1000);
 };
 
@@ -3369,6 +3444,16 @@ const updateMarketStatus = (market, timezone) => {
     }
 };
 
+// Update all calendars
+const updateAllCalendars = () => {
+    updateHinduCalendar();
+    updateIslamicCalendar();
+    updateHebrewCalendar();
+    updateChineseCalendar();
+    updatePersianCalendar();
+    updateEthiopianCalendar();
+};
+
 // Hindu Calendar calculation
 const updateHinduCalendar = () => {
     try {
@@ -3441,6 +3526,183 @@ const updateHinduCalendar = () => {
         
     } catch (error) {
         console.error('Error updating Hindu calendar:', error);
+    }
+};
+
+// Islamic (Hijri) Calendar calculation
+const updateIslamicCalendar = () => {
+    try {
+        const now = new Date();
+        const gregorianYear = now.getFullYear();
+        const gregorianMonth = now.getMonth();
+        const gregorianDay = now.getDate();
+        
+        // Islamic months
+        const islamicMonths = [
+            'Muharram', 'Safar', 'Rabi al-Awwal', 'Rabi al-Thani',
+            'Jumada al-Awwal', 'Jumada al-Thani', 'Rajab', 'Sha\'ban',
+            'Ramadan', 'Shawwal', 'Dhu al-Qi\'dah', 'Dhu al-Hijjah'
+        ];
+        
+        // Approximate Hijri year (Islamic calendar started in 622 CE)
+        // Islamic year is about 354 days (lunar)
+        const daysSince622 = Math.floor((now - new Date(622, 6, 16)) / 86400000);
+        const hijriYear = Math.floor(daysSince622 / 354.36) + 1;
+        
+        // Approximate month (simplified)
+        const islamicMonthIndex = Math.floor((daysSince622 % 354) / 29.5) % 12;
+        const islamicDay = Math.floor((daysSince622 % 354) % 29.5) + 1;
+        
+        document.getElementById('islamic-year').textContent = `${hijriYear} AH`;
+        document.getElementById('islamic-month').textContent = islamicMonths[islamicMonthIndex];
+        document.getElementById('islamic-day').textContent = `Day ${islamicDay}`;
+        document.getElementById('islamic-weekday').textContent = now.toLocaleDateString('en-US', { weekday: 'long' });
+        document.getElementById('islamic-gregorian').textContent = now.toLocaleDateString('en-US', {
+            day: 'numeric', month: 'short', year: 'numeric'
+        });
+    } catch (error) {
+        console.error('Error updating Islamic calendar:', error);
+    }
+};
+
+// Hebrew Calendar calculation
+const updateHebrewCalendar = () => {
+    try {
+        const now = new Date();
+        
+        const hebrewMonths = [
+            'Nisan', 'Iyar', 'Sivan', 'Tammuz', 'Av', 'Elul',
+            'Tishrei', 'Cheshvan', 'Kislev', 'Tevet', 'Shevat', 'Adar'
+        ];
+        
+        // Hebrew calendar started in 3761 BCE
+        const gregorianYear = now.getFullYear();
+        const hebrewYear = gregorianYear + 3760; // Simplified
+        
+        // Approximate month
+        const gregorianMonth = now.getMonth();
+        const hebrewMonthIndex = (gregorianMonth + 6) % 12;
+        const hebrewDay = now.getDate();
+        
+        document.getElementById('hebrew-year').textContent = `${hebrewYear} AM`;
+        document.getElementById('hebrew-month').textContent = hebrewMonths[hebrewMonthIndex];
+        document.getElementById('hebrew-day').textContent = `Day ${hebrewDay}`;
+        document.getElementById('hebrew-weekday').textContent = now.toLocaleDateString('en-US', { weekday: 'long' });
+        document.getElementById('hebrew-gregorian').textContent = now.toLocaleDateString('en-US', {
+            day: 'numeric', month: 'short', year: 'numeric'
+        });
+    } catch (error) {
+        console.error('Error updating Hebrew calendar:', error);
+    }
+};
+
+// Chinese Calendar calculation
+const updateChineseCalendar = () => {
+    try {
+        const now = new Date();
+        const gregorianYear = now.getFullYear();
+        
+        const zodiacAnimals = ['Rat', 'Ox', 'Tiger', 'Rabbit', 'Dragon', 'Snake', 
+                               'Horse', 'Goat', 'Monkey', 'Rooster', 'Dog', 'Pig'];
+        const elements = ['Wood', 'Fire', 'Earth', 'Metal', 'Water'];
+        
+        // Chinese calendar year (approximate)
+        const chineseYear = gregorianYear + 2697; // Traditional start
+        const zodiacIndex = (gregorianYear - 4) % 12;
+        const elementIndex = Math.floor(((gregorianYear - 4) % 10) / 2);
+        
+        const chineseMonths = ['First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth',
+                               'Seventh', 'Eighth', 'Ninth', 'Tenth', 'Eleventh', 'Twelfth'];
+        const monthIndex = now.getMonth();
+        
+        document.getElementById('chinese-year').textContent = `Year ${chineseYear}`;
+        document.getElementById('chinese-month').textContent = `${chineseMonths[monthIndex]} Month`;
+        document.getElementById('chinese-zodiac').textContent = `Year of the ${zodiacAnimals[zodiacIndex]}`;
+        document.getElementById('chinese-element').textContent = `${elements[elementIndex]} Element`;
+        document.getElementById('chinese-gregorian').textContent = now.toLocaleDateString('en-US', {
+            day: 'numeric', month: 'short', year: 'numeric'
+        });
+    } catch (error) {
+        console.error('Error updating Chinese calendar:', error);
+    }
+};
+
+// Persian (Solar Hijri) Calendar calculation
+const updatePersianCalendar = () => {
+    try {
+        const now = new Date();
+        const gregorianYear = now.getFullYear();
+        const gregorianMonth = now.getMonth();
+        
+        const persianMonths = [
+            'Farvardin', 'Ordibehesht', 'Khordad', 'Tir', 'Mordad', 'Shahrivar',
+            'Mehr', 'Aban', 'Azar', 'Dey', 'Bahman', 'Esfand'
+        ];
+        
+        const seasons = ['Spring', 'Spring', 'Spring', 'Summer', 'Summer', 'Summer',
+                        'Autumn', 'Autumn', 'Autumn', 'Winter', 'Winter', 'Winter'];
+        
+        // Persian calendar year (starts around March 21)
+        let persianYear = gregorianYear - 621;
+        if (gregorianMonth < 2 || (gregorianMonth === 2 && now.getDate() < 21)) {
+            persianYear--;
+        }
+        
+        // Approximate month
+        let persianMonthIndex = gregorianMonth;
+        if (gregorianMonth >= 2) {
+            persianMonthIndex = gregorianMonth - 2;
+        } else {
+            persianMonthIndex = gregorianMonth + 10;
+        }
+        
+        document.getElementById('persian-year').textContent = `${persianYear} SH`;
+        document.getElementById('persian-month').textContent = persianMonths[persianMonthIndex];
+        document.getElementById('persian-day').textContent = `Day ${now.getDate()}`;
+        document.getElementById('persian-season').textContent = seasons[persianMonthIndex];
+        document.getElementById('persian-gregorian').textContent = now.toLocaleDateString('en-US', {
+            day: 'numeric', month: 'short', year: 'numeric'
+        });
+    } catch (error) {
+        console.error('Error updating Persian calendar:', error);
+    }
+};
+
+// Ethiopian Calendar calculation
+const updateEthiopianCalendar = () => {
+    try {
+        const now = new Date();
+        const gregorianYear = now.getFullYear();
+        const gregorianMonth = now.getMonth();
+        
+        const ethiopianMonths = [
+            'Meskerem', 'Tikimt', 'Hidar', 'Tahsas', 'Tir', 'Yekatit',
+            'Megabit', 'Miazia', 'Ginbot', 'Sene', 'Hamle', 'Nehase', 'Pagumen'
+        ];
+        
+        // Ethiopian calendar is about 7-8 years behind Gregorian
+        let ethiopianYear = gregorianYear - 7;
+        if (gregorianMonth < 8) {
+            ethiopianYear--;
+        }
+        
+        // Approximate month (Ethiopian new year is around Sept 11)
+        let ethiopianMonthIndex = gregorianMonth;
+        if (gregorianMonth >= 8) {
+            ethiopianMonthIndex = gregorianMonth - 8;
+        } else {
+            ethiopianMonthIndex = gregorianMonth + 4;
+        }
+        
+        document.getElementById('ethiopian-year').textContent = `${ethiopianYear} EC`;
+        document.getElementById('ethiopian-month').textContent = ethiopianMonths[ethiopianMonthIndex];
+        document.getElementById('ethiopian-day').textContent = `Day ${now.getDate()}`;
+        document.getElementById('ethiopian-era').textContent = 'Era of Mercy';
+        document.getElementById('ethiopian-gregorian').textContent = now.toLocaleDateString('en-US', {
+            day: 'numeric', month: 'short', year: 'numeric'
+        });
+    } catch (error) {
+        console.error('Error updating Ethiopian calendar:', error);
     }
 };
 

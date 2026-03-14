@@ -3736,47 +3736,166 @@ body, html {
 }
 
 /* Hindu Calendar Card Styles */
-.hindu-calendar-card {
+.calendar-card {
+    position: relative;
+}
+
+.hindu-calendar {
     background: linear-gradient(135deg, rgba(168, 85, 247, 0.05), rgba(99, 102, 241, 0.05));
     border-color: rgba(168, 85, 247, 0.3);
 }
 
-.hindu-calendar-card:hover {
+.hindu-calendar:hover {
     background: linear-gradient(135deg, rgba(168, 85, 247, 0.08), rgba(99, 102, 241, 0.08));
     border-color: rgba(168, 85, 247, 0.5);
 }
 
-.hindu-calendar-card::before {
+.hindu-calendar::before {
     background: linear-gradient(90deg, #a855f7, #6366f1);
 }
 
-.hindu-year {
+.islamic-calendar {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(5, 150, 105, 0.05));
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.islamic-calendar:hover {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(5, 150, 105, 0.08));
+    border-color: rgba(16, 185, 129, 0.5);
+}
+
+.islamic-calendar::before {
+    background: linear-gradient(90deg, #10b981, #059669);
+}
+
+.hebrew-calendar {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(37, 99, 235, 0.05));
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.hebrew-calendar:hover {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(37, 99, 235, 0.08));
+    border-color: rgba(59, 130, 246, 0.5);
+}
+
+.hebrew-calendar::before {
+    background: linear-gradient(90deg, #3b82f6, #2563eb);
+}
+
+.chinese-calendar {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.05), rgba(220, 38, 38, 0.05));
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.chinese-calendar:hover {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(220, 38, 38, 0.08));
+    border-color: rgba(239, 68, 68, 0.5);
+}
+
+.chinese-calendar::before {
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+.persian-calendar {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(217, 119, 6, 0.05));
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+.persian-calendar:hover {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(217, 119, 6, 0.08));
+    border-color: rgba(245, 158, 11, 0.5);
+}
+
+.persian-calendar::before {
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.ethiopian-calendar {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(124, 58, 237, 0.05));
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+.ethiopian-calendar:hover {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(124, 58, 237, 0.08));
+    border-color: rgba(139, 92, 246, 0.5);
+}
+
+.ethiopian-calendar::before {
+    background: linear-gradient(90deg, #8b5cf6, #7c3aed);
+}
+
+.calendar-year {
     font-size: 2.5rem;
     font-weight: 700;
-    color: #a855f7;
     margin-bottom: 0.75rem;
     font-variant-numeric: tabular-nums;
 }
 
-.hindu-month {
+.hindu-calendar .calendar-year { color: #a855f7; }
+.islamic-calendar .calendar-year { color: #10b981; }
+.hebrew-calendar .calendar-year { color: #3b82f6; }
+.chinese-calendar .calendar-year { color: #ef4444; }
+.persian-calendar .calendar-year { color: #f59e0b; }
+.ethiopian-calendar .calendar-year { color: #8b5cf6; }
+
+.calendar-month {
     font-size: 1.25rem;
     font-weight: 600;
     color: var(--text-main);
     margin-bottom: 0.5rem;
 }
 
-.hindu-tithi {
-    font-size: 1rem;
+.calendar-detail {
+    font-size: 0.95rem;
     color: var(--text-muted);
     margin-bottom: 0.25rem;
 }
 
-.hindu-paksha {
+.calendar-badge {
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
     font-size: 0.875rem;
-    color: var(--text-muted);
-    margin-bottom: 1rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.hindu-badge {
+    background: rgba(168, 85, 247, 0.1);
+    color: #a855f7;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.islamic-badge {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.hebrew-badge {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.chinese-badge {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.persian-badge {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.ethiopian-badge {
+    background: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
+    border: 1px solid rgba(139, 92, 246, 0.3);
 }
 
 /* =============================================
