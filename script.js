@@ -222,6 +222,11 @@ document.querySelectorAll('.nav-item').forEach(btn => {
             loadHistory();
         }
         
+        // Load timeline if target is timeline
+        if (targetId === 'calc-timeline') {
+            loadTimeline();
+        }
+        
         // Load finance news if target is finance news
         if (targetId === 'finance-news') {
             initNewsTab();
@@ -1560,6 +1565,248 @@ const loadHistory = async () => {
     }
 };
 
+// --- Timeline (Detailed View) Logic ---
+const loadTimeline = async () => {
+    const timelineFeed = document.getElementById('timeline-feed');
+    const token = localStorage.getItem('auth_token');
+    
+    console.log('Loading detailed timeline...', { timelineFeed: !!timelineFeed, token: !!token, isGuestMode });
+    
+    // Handle guest users
+    if (isGuestMode || !token) {
+        timelineFeed.innerHTML = `
+            <div class="tl-empty-state">
+                <ion-icon name="lock-closed-outline"></ion-icon>
+                <h3>Timeline Locked</h3>
+                <p>Create an account or login to save and view your detailed financial timeline.</p>
+                <button class="btn-primary" onclick="logout()" style="margin-top: 1rem;">
+                    <ion-icon name="log-in-outline"></ion-icon> Login / Sign Up
+                </button>
+            </div>
+        `;
+        return;
+    }
+
+    timelineFeed.innerHTML = '<div class="tl-empty-state"><p>Loading your detailed timeline...</p></div>';
+
+    try {
+        const response = await fetch('/api/history', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+
+        console.log('Timeline data received:', data);
+
+        window.__timelineCache = Array.isArray(data) ? data : [];
+        updateTimelineStats(window.__timelineCache);
+        
+        if (!Array.isArray(data) || data.length === 0) {
+            timelineFeed.innerHTML = `
+                <div class="tl-empty-state">
+                    <ion-icon name="git-branch-outline"></ion-icon>
+                    <h3>No calculations saved yet</h3>
+                    <p>Save a calculation from any tool and it will appear here as a timeline entry.</p>
+                    <button class="btn-primary" onclick="openView('sip-calculator')" style="margin-top: 1rem;">
+                        <ion-icon name="trending-up-outline"></ion-icon> Try SIP Calculator
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
+        renderTimelineItems(data);
+        setupTimelineFilters(data);
+        
+    } catch (error) {
+        window.__timelineCache = [];
+        updateTimelineStats(window.__timelineCache);
+        timelineFeed.innerHTML = '<div class="tl-empty-state"><p>Something went wrong while loading your timeline.</p></div>';
+        console.error('Error loading timeline:', error);
+    }
+};
+
+const updateTimelineStats = (items) => {
+    const totalCountElement = document.getElementById('tl-total-count');
+    
+    if (!Array.isArray(items) || items.length === 0) {
+        if (totalCountElement) totalCountElement.textContent = '0 entries';
+        
+        // Reset all individual counters
+        ['sip', 'emi', 'ci', 'budget', 'tax', 'networth'].forEach(type => {
+            const element = document.getElementById(`tl-count-${type}`);
+            if (element) element.textContent = '0';
+        });
+        return;
+    }
+
+    // Update total count
+    if (totalCountElement) {
+        totalCountElement.textContent = `${items.length} ${items.length === 1 ? 'entry' : 'entries'}`;
+    }
+
+    // Count by calculator type
+    const counts = {
+        sip: 0, emi: 0, ci: 0, budget: 0, tax: 0, networth: 0
+    };
+
+    items.forEach(item => {
+        const type = item.calc_type.toLowerCase();
+        if (counts.hasOwnProperty(type)) {
+            counts[type]++;
+        }
+    });
+
+    // Update individual counters
+    Object.keys(counts).forEach(type => {
+        const element = document.getElementById(`tl-count-${type}`);
+        if (element) element.textContent = counts[type].toString();
+    });
+};
+
+const renderTimelineItems = (items, filter = 'all') => {
+    const timelineFeed = document.getElementById('timeline-feed');
+    
+    // Filter items if needed
+    const filteredItems = filter === 'all' ? items : items.filter(item => item.calc_type === filter);
+    
+    if (filteredItems.length === 0) {
+        timelineFeed.innerHTML = `
+            <div class="tl-empty-state">
+                <ion-icon name="filter-outline"></ion-icon>
+                <h3>No ${filter === 'all' ? '' : filter + ' '}calculations found</h3>
+                <p>Try a different filter or save more calculations.</p>
+            </div>
+        `;
+        return;
+    }
+
+    timelineFeed.innerHTML = '';
+    
+    filteredItems.forEach((item, index) => {
+        const timelineItem = createTimelineItem(item, index);
+        timelineFeed.appendChild(timelineItem);
+    });
+};
+
+const createTimelineItem = (item, index) => {
+    const div = document.createElement('div');
+    div.className = 'tl-item';
+    
+    let label = "";
+    let subtext = "";
+    let mainVal = "";
+    let icon = "calculator";
+    let description = "";
+    let color = "#3b82f6";
+    
+    if (item.calc_type === 'SIP') {
+        label = "SIP Investment Plan";
+        subtext = `₹${item.input_data.amount}/mo @ ${item.input_data.rate}% for ${item.input_data.time}yr`;
+        mainVal = item.result_data.total;
+        icon = "trending-up";
+        description = `Systematic Investment Plan with ${item.input_data.rate}% annual return`;
+        color = "#3b82f6";
+    } else if (item.calc_type === 'EMI') {
+        label = "EMI Calculation";
+        subtext = `₹${item.input_data.amount} @ ${item.input_data.rate}% for ${item.input_data.time}yr`;
+        mainVal = item.result_data.monthly;
+        icon = "card";
+        description = `Monthly EMI at ${item.input_data.rate}% interest rate`;
+        color = "#8b5cf6";
+    } else if (item.calc_type === 'CI') {
+        label = "Compound Interest";
+        subtext = `Principal: ₹${item.input_data.principal} @ ${item.input_data.rate}%`;
+        mainVal = item.result_data.total;
+        icon = "analytics";
+        description = `Compound growth at ${item.input_data.rate}% annual return`;
+        color = "#10b981";
+    } else if (item.calc_type === 'BUDGET') {
+        label = "Budget Planning";
+        const persona = item.input_data.persona ? ` | ${item.input_data.persona}` : "";
+        subtext = `Monthly Income: ₹${item.input_data.income}${persona}`;
+        mainVal = item.result_data.investments || item.result_data.savings;
+        icon = "wallet";
+        description = "Personal budget allocation and savings plan";
+        color = "#f59e0b";
+    } else if (item.calc_type === 'TAX') {
+        label = "Tax Calculation";
+        subtext = `Income: ₹${item.input_data.income}`;
+        mainVal = item.result_data.tax;
+        icon = "receipt";
+        description = `Tax liability calculation for the financial year`;
+        color = "#ef4444";
+    } else if (item.calc_type === 'NETWORTH') {
+        label = "Net Worth Assessment";
+        subtext = `Assets: ${item.input_data.assets} | Liabilities: ${item.input_data.liabilities}`;
+        mainVal = item.result_data.networth;
+        icon = "pie-chart";
+        description = "Complete financial portfolio analysis";
+        color = "#10b981";
+    }
+
+    const date = new Date(item.created_at).toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+    });
+    
+    const time = new Date(item.created_at).toLocaleTimeString('en-IN', {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+
+    div.innerHTML = `
+        <div class="tl-item-marker" style="background: ${color};">
+            <ion-icon name="${icon}"></ion-icon>
+        </div>
+        <div class="tl-item-content">
+            <div class="tl-item-header">
+                <div class="tl-item-title-section">
+                    <h4 class="tl-item-title">${label}</h4>
+                    <p class="tl-item-description">${description}</p>
+                </div>
+                <div class="tl-item-meta">
+                    <span class="tl-item-type" style="background: ${color}20; color: ${color};">${item.calc_type}</span>
+                    <span class="tl-item-time">${date} • ${time}</span>
+                </div>
+            </div>
+            <div class="tl-item-details">
+                <div class="tl-item-params">
+                    <p>${subtext}</p>
+                </div>
+                <div class="tl-item-result">
+                    <span class="tl-result-value">${mainVal}</span>
+                </div>
+            </div>
+            <div class="tl-item-actions">
+                <button class="tl-action-btn" onclick="deleteCalculation('${item.id}')" title="Delete calculation">
+                    <ion-icon name="trash-outline"></ion-icon>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    return div;
+};
+
+const setupTimelineFilters = (items) => {
+    const filterButtons = document.querySelectorAll('.tl-filter-btn');
+    
+    filterButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            // Remove active from all buttons
+            filterButtons.forEach(b => b.classList.remove('active'));
+            
+            // Add active to clicked button
+            e.target.classList.add('active');
+            
+            // Get filter value and render filtered items
+            const filter = e.target.getAttribute('data-filter');
+            renderTimelineItems(items, filter);
+        });
+    });
+};
+
 const deleteCalculation = async (id) => {
     const token = localStorage.getItem('auth_token');
     if (!token) return;
@@ -1571,7 +1818,12 @@ const deleteCalculation = async (id) => {
         });
 
         if (response.ok) {
-            loadHistory(); // Refresh the list
+            loadHistory(); // Refresh the history list
+            if (document.getElementById('timeline-feed')) {
+                loadTimeline(); // Refresh the timeline if it's loaded
+            }
+            updateDashboard(); // Refresh dashboard stats
+            showAlertModal('Calculation deleted successfully!', 'success');
         } else {
             const errData = await response.json();
             showAlertModal(`Could not delete: ${errData.error}`, 'error');
