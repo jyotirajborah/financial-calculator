@@ -159,6 +159,14 @@ function openViewFromQuery() {
     }
 }
 
+// Function to programmatically open a view
+function openView(viewId) {
+    const navBtn = Array.from(document.querySelectorAll('.nav-item')).find(b => b.getAttribute('data-target') === viewId);
+    if (navBtn) {
+        navBtn.click();
+    }
+}
+
 // Global Chart Objects
 let sipChartObj = null;
 let emiChartObj = null;
@@ -1392,6 +1400,8 @@ const loadHistory = async () => {
     const timeline = document.getElementById('history-timeline');
     const token = localStorage.getItem('auth_token');
     
+    console.log('Loading history timeline...', { timeline: !!timeline, token: !!token, isGuestMode });
+    
     // Handle guest users
     if (isGuestMode || !token) {
         timeline.innerHTML = `
@@ -1415,19 +1425,39 @@ const loadHistory = async () => {
         });
         const data = await response.json();
 
+        console.log('History data received:', data);
+
         window.__historyCache = Array.isArray(data) ? data : [];
         updateDashboardHistory(window.__historyCache);
         updateHistoryStats(window.__historyCache);
         
         if (!Array.isArray(data) || data.length === 0) {
-            timeline.innerHTML = '<p class="empty-timeline-msg">No calculations found. Start planning to see your timeline!</p>';
+            timeline.innerHTML = `
+                <div class="empty-timeline-msg">
+                    <ion-icon name="calculator" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></ion-icon>
+                    <h3>No calculations found</h3>
+                    <p>Start your financial planning journey by trying our calculators</p>
+                    <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap;">
+                        <button class="btn-primary" onclick="openView('sip-calculator')" style="display: flex; align-items: center; gap: 0.5rem;">
+                            <ion-icon name="trending-up"></ion-icon> Try SIP Calculator
+                        </button>
+                        <button class="btn-secondary" onclick="openView('emi-calculator')" style="display: flex; align-items: center; gap: 0.5rem;">
+                            <ion-icon name="card"></ion-icon> Try EMI Calculator
+                        </button>
+                    </div>
+                </div>
+            `;
             return;
         }
 
         // Create timeline line
         timeline.innerHTML = '<div class="timeline-line"></div>';
         
+        console.log('Creating timeline items for', data.length, 'calculations');
+        
         data.forEach((item, index) => {
+            console.log('Processing item:', item);
+            
             const div = document.createElement('div');
             div.className = 'timeline-item';
             
@@ -1464,7 +1494,7 @@ const loadHistory = async () => {
                 description = "Personal budget allocation and savings plan";
             } else if (item.calc_type === 'TAX') {
                 label = "Tax Calculation";
-                subtext = `Income: ₹${formatCurrency(item.input_data.income)}`;
+                subtext = `Income: ₹${item.input_data.income}`;
                 mainVal = item.result_data.tax;
                 icon = "receipt";
                 description = `Tax liability calculation for the financial year`;
@@ -1519,6 +1549,8 @@ const loadHistory = async () => {
             
             timeline.appendChild(div);
         });
+        
+        console.log('Timeline created with', timeline.children.length, 'items');
     } catch (error) {
         window.__historyCache = [];
         updateDashboardHistory(window.__historyCache);
