@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinCalc Diagnostic</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #0f172a;
+            color: white;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+        }
+        button:hover {
+            background: #818cf8;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 4px;
+        }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+    </style>
+</head>
+<body>
+    <h1>🔍 FinCalc Diagnostic Tool</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Basic JavaScript</h2>
+        <button onclick="test1()">Click Me - Test Basic JS</button>
+        <div id="test1-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 2: Script.js Loading</h2>
+        <button onclick="test2()">Check if script.js loaded</button>
+        <div id="test2-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 3: Event Listeners</h2>
+        <button id="test3-btn">Click Me - Test Event Listener</button>
+        <div id="test3-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 4: Fetch API</h2>
+        <button onclick="test4()">Test Server Connection</button>
+        <div id="test4-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 5: Console Logs</h2>
+        <p>Open browser console (F12) and check for errors</p>
+        <button onclick="console.log('✅ Console logging works!')">Log to Console</button>
+    </div>
+
+    <script>
+        console.log('🚀 Diagnostic page loaded');
+        
+        function test1() {
+            const result = document.getElementById('test1-result');
+            result.innerHTML = '<span class="success">✅ Basic JavaScript is working!</span>';
+            result.innerHTML += '<br>Date: ' + new Date().toLocaleString();
+        }
+        
+        function test2() {
+            const result = document.getElementById('test2-result');
+            let html = '';
+            
+            // Check for global variables from script.js
+            if (typeof window.jsWorking !== 'undefined') {
+                html += '<span class="success">✅ window.jsWorking found</span><br>';
+            } else {
+                html += '<span class="error">❌ window.jsWorking NOT found</span><br>';
+            }
+            
+            if (typeof window.emergencyBypass !== 'undefined') {
+                html += '<span class="success">✅ window.emergencyBypass found</span><br>';
+            } else {
+                html += '<span class="error">❌ window.emergencyBypass NOT found</span><br>';
+            }
+            
+            if (typeof window.isGuestMode !== 'undefined') {
+                html += '<span class="success">✅ window.isGuestMode found</span><br>';
+            } else {
+                html += '<span class="error">❌ window.isGuestMode NOT found</span><br>';
+            }
+            
+            result.innerHTML = html;
+        }
+        
+        // Test 3 - Event Listener
+        document.addEventListener('DOMContentLoaded', function() {
+            const btn = document.getElementById('test3-btn');
+            const result = document.getElementById('test3-result');
+            
+            if (btn) {
+                btn.addEventListener('click', function() {
+                    result.innerHTML = '<span class="success">✅ Event listeners are working!</span>';
+                });
+            }
+        });
+        
+        async function test4() {
+            const result = document.getElementById('test4-result');
+            result.innerHTML = 'Testing server connection...';
+            
+            try {
+                const response = await fetch('/api/verify', {
+                    method: 'GET'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    result.innerHTML = '<span class="success">✅ Server is responding!</span><br>' + 
+                                     'Response: ' + JSON.stringify(data);
+                } else {
+                    result.innerHTML = '<span class="error">⚠️ Server responded with status: ' + response.status + '</span>';
+                }
+            } catch (error) {
+                result.innerHTML = '<span class="error">❌ Cannot connect to server</span><br>' + 
+                                 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

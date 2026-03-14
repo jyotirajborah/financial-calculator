@@ -3952,30 +3952,8 @@ const getSavedNews = () => {
     return [];
 };
 
-const showToast = (message, type = 'info') => {
-    // Simple toast notification
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    toast.textContent = message;
-    toast.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: ${type === 'success' ? 'var(--success)' : 'var(--accent-color)'};
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        z-index: 10000;
-        animation: slideIn 0.3s ease-out;
-    `;
-    
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.style.animation = 'slideOut 0.3s ease-out';
-        setTimeout(() => document.body.removeChild(toast), 300);
-    }, 3000);
-};
+// showToast is already defined at the top of the file (line 225)
+// Removed duplicate declaration to fix JavaScript loading error
 
 const showNewsError = (listId) => {
     const newsList = document.getElementById(listId);
@@ -4584,22 +4562,8 @@ const loadNotesData = async () => {
     renderStickyNotes();
 };
 
-// Toast Notification System
-function showToast(message, type = 'success') {
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    
-    // Show toast
-    setTimeout(() => toast.classList.add('show'), 100);
-    
-    // Hide and remove toast
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => document.body.removeChild(toast), 300);
-    }, 3000);
-}
+// showToast is already defined at the top of the file (line 225)
+// Removed duplicate declaration to fix JavaScript loading error
 
 // Enhanced save success feedback
 const originalSaveCalculation = saveCalculation;
