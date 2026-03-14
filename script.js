@@ -18,6 +18,44 @@ if (document.readyState === 'loading') {
     console.log('🚨 EMERGENCY: DOM is ready!');
 }
 
+// IMMEDIATE TEST - Add click listener to test button right away
+setTimeout(() => {
+    console.log('🧪 TESTING: Adding immediate click listeners...');
+    
+    // Test if we can find elements
+    const testBtn = document.querySelector('button[onclick*="alert"]');
+    const emergencyBtn = document.querySelector('button[onclick*="emergencyBypass"]');
+    const authTabs = document.querySelectorAll('.auth-tab');
+    
+    console.log('🔍 FOUND ELEMENTS:', {
+        testBtn: !!testBtn,
+        emergencyBtn: !!emergencyBtn,
+        authTabs: authTabs.length
+    });
+    
+    // Try to add direct event listeners
+    if (authTabs.length > 0) {
+        authTabs.forEach((tab, index) => {
+            console.log(`🔧 Adding direct listener to tab ${index}`);
+            tab.addEventListener('click', function(e) {
+                console.log('🎯 DIRECT CLICK WORKED on tab:', this.textContent);
+                alert('Direct click listener worked on: ' + this.textContent);
+            });
+        });
+    }
+    
+    // Test guest continue button
+    const guestBtn = document.getElementById('guest-continue-btn');
+    if (guestBtn) {
+        console.log('🔧 Adding direct listener to guest button');
+        guestBtn.addEventListener('click', function() {
+            console.log('🎯 GUEST BUTTON CLICKED');
+            alert('Guest button direct click worked!');
+        });
+    }
+    
+}, 1000);
+
 // State Management
 let currentUser = null;
 
