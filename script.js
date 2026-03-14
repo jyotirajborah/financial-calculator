@@ -2184,11 +2184,6 @@ const loginAsGuest = () => {
     calculateCI();
     calculateBudget();
     calculateTax();
-    
-    // Show welcome notification after entering as guest
-    setTimeout(() => {
-        showToast('Welcome! Press Alt+1-9 for quick navigation or Ctrl+S to save calculations', 'success');
-    }, 500);
 };
 
 const login = (user, token) => {
@@ -2270,11 +2265,6 @@ const login = (user, token) => {
     calculateCI();
     calculateBudget();
     calculateTax();
-    
-    // Show welcome notification after successful login
-    setTimeout(() => {
-        showToast(`Welcome back, ${user.name}! Use keyboard shortcuts for faster navigation`, 'success');
-    }, 500);
 };
 
 const logout = () => {
