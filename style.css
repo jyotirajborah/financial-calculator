@@ -3976,6 +3976,34 @@ body, html {
     color: var(--text-main);
 }
 
+/* Calendar Compare Button */
+.calendar-compare-btn {
+    position: absolute;
+    top: 1rem;
+    right: 4rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.calendar-compare-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent-color);
+    transform: scale(1.1);
+}
+
+.calendar-compare-btn ion-icon {
+    font-size: 1.25rem;
+    color: var(--text-main);
+}
+
 /* Calendar Expanded View */
 .calendar-summary {
     transition: all 0.3s ease;
@@ -4025,6 +4053,121 @@ body, html {
 .month-info {
     font-size: 0.8rem;
     color: var(--text-muted);
+}
+
+/* Calendar Compare View */
+.calendar-compare {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease;
+}
+
+.calendar-card.comparing .calendar-compare {
+    max-height: 2000px;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.compare-calendars {
+    width: 100%;
+}
+
+.compare-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.compare-header h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+}
+
+.compare-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.compare-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.compare-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 1rem;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.compare-row:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--accent-color);
+    transform: translateX(4px);
+}
+
+.compare-row.current-month {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+}
+
+.compare-ethnic,
+.compare-gregorian {
+    text-align: center;
+}
+
+.compare-month-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 0.25rem;
+}
+
+.compare-month-info {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.compare-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-color);
+}
+
+.compare-arrow ion-icon {
+    font-size: 1.5rem;
+}
+
+.compare-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: rgba(99, 102, 241, 0.05);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 8px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.compare-note ion-icon {
+    flex-shrink: 0;
+    font-size: 1.25rem;
+    color: var(--accent-color);
+    margin-top: 0.1rem;
 }
 
 /* =============================================

@@ -3213,6 +3213,9 @@ const initWorldClocks = () => {
     // Create calendar cards (ethnic calendars)
     calendarsGrid.innerHTML = `
         <div class="clock-card glass-card calendar-card hindu-calendar" data-calendar="hindu">
+            <button class="calendar-compare-btn" onclick="toggleCompareView('hindu')" title="Compare with Gregorian">
+                <ion-icon name="git-compare-outline"></ion-icon>
+            </button>
             <button class="calendar-expand-btn" onclick="toggleCalendarView('hindu')" title="View full year">
                 <ion-icon name="expand-outline"></ion-icon>
             </button>
@@ -3234,8 +3237,14 @@ const initWorldClocks = () => {
             <div class="calendar-expanded" id="hindu-expanded">
                 <div class="calendar-year-view" id="hindu-year-view"></div>
             </div>
+            <div class="calendar-compare" id="hindu-compare">
+                <div class="compare-view-container" id="hindu-compare-view"></div>
+            </div>
         </div>
         <div class="clock-card glass-card calendar-card islamic-calendar" data-calendar="islamic">
+            <button class="calendar-compare-btn" onclick="toggleCompareView('islamic')" title="Compare with Gregorian">
+                <ion-icon name="git-compare-outline"></ion-icon>
+            </button>
             <button class="calendar-expand-btn" onclick="toggleCalendarView('islamic')" title="View full year">
                 <ion-icon name="expand-outline"></ion-icon>
             </button>
@@ -3257,8 +3266,14 @@ const initWorldClocks = () => {
             <div class="calendar-expanded" id="islamic-expanded">
                 <div class="calendar-year-view" id="islamic-year-view"></div>
             </div>
+            <div class="calendar-compare" id="islamic-compare">
+                <div class="compare-view-container" id="islamic-compare-view"></div>
+            </div>
         </div>
         <div class="clock-card glass-card calendar-card hebrew-calendar" data-calendar="hebrew">
+            <button class="calendar-compare-btn" onclick="toggleCompareView('hebrew')" title="Compare with Gregorian">
+                <ion-icon name="git-compare-outline"></ion-icon>
+            </button>
             <button class="calendar-expand-btn" onclick="toggleCalendarView('hebrew')" title="View full year">
                 <ion-icon name="expand-outline"></ion-icon>
             </button>
@@ -3280,8 +3295,14 @@ const initWorldClocks = () => {
             <div class="calendar-expanded" id="hebrew-expanded">
                 <div class="calendar-year-view" id="hebrew-year-view"></div>
             </div>
+            <div class="calendar-compare" id="hebrew-compare">
+                <div class="compare-view-container" id="hebrew-compare-view"></div>
+            </div>
         </div>
         <div class="clock-card glass-card calendar-card chinese-calendar" data-calendar="chinese">
+            <button class="calendar-compare-btn" onclick="toggleCompareView('chinese')" title="Compare with Gregorian">
+                <ion-icon name="git-compare-outline"></ion-icon>
+            </button>
             <button class="calendar-expand-btn" onclick="toggleCalendarView('chinese')" title="View full year">
                 <ion-icon name="expand-outline"></ion-icon>
             </button>
@@ -3303,8 +3324,14 @@ const initWorldClocks = () => {
             <div class="calendar-expanded" id="chinese-expanded">
                 <div class="calendar-year-view" id="chinese-year-view"></div>
             </div>
+            <div class="calendar-compare" id="chinese-compare">
+                <div class="compare-view-container" id="chinese-compare-view"></div>
+            </div>
         </div>
         <div class="clock-card glass-card calendar-card persian-calendar" data-calendar="persian">
+            <button class="calendar-compare-btn" onclick="toggleCompareView('persian')" title="Compare with Gregorian">
+                <ion-icon name="git-compare-outline"></ion-icon>
+            </button>
             <button class="calendar-expand-btn" onclick="toggleCalendarView('persian')" title="View full year">
                 <ion-icon name="expand-outline"></ion-icon>
             </button>
@@ -3326,8 +3353,14 @@ const initWorldClocks = () => {
             <div class="calendar-expanded" id="persian-expanded">
                 <div class="calendar-year-view" id="persian-year-view"></div>
             </div>
+            <div class="calendar-compare" id="persian-compare">
+                <div class="compare-view-container" id="persian-compare-view"></div>
+            </div>
         </div>
         <div class="clock-card glass-card calendar-card ethiopian-calendar" data-calendar="ethiopian">
+            <button class="calendar-compare-btn" onclick="toggleCompareView('ethiopian')" title="Compare with Gregorian">
+                <ion-icon name="git-compare-outline"></ion-icon>
+            </button>
             <button class="calendar-expand-btn" onclick="toggleCalendarView('ethiopian')" title="View full year">
                 <ion-icon name="expand-outline"></ion-icon>
             </button>
@@ -3348,6 +3381,9 @@ const initWorldClocks = () => {
             </div>
             <div class="calendar-expanded" id="ethiopian-expanded">
                 <div class="calendar-year-view" id="ethiopian-year-view"></div>
+            </div>
+            <div class="calendar-compare" id="ethiopian-compare">
+                <div class="compare-view-container" id="ethiopian-compare-view"></div>
             </div>
         </div>
     `;
@@ -3395,11 +3431,19 @@ const setupGlobalTimeTabs = () => {
 window.toggleCalendarView = (calendarType) => {
     const card = document.querySelector(`[data-calendar="${calendarType}"]`);
     const expandedSection = document.getElementById(`${calendarType}-expanded`);
+    const compareSection = document.getElementById(`${calendarType}-compare`);
     const expandBtn = card.querySelector('.calendar-expand-btn ion-icon');
     
     if (!card || !expandedSection) return;
     
     const isExpanded = card.classList.contains('expanded');
+    
+    // Close compare view if open
+    if (card.classList.contains('comparing')) {
+        card.classList.remove('comparing');
+        const compareBtn = card.querySelector('.calendar-compare-btn ion-icon');
+        if (compareBtn) compareBtn.setAttribute('name', 'git-compare-outline');
+    }
     
     if (isExpanded) {
         // Collapse
@@ -3413,6 +3457,40 @@ window.toggleCalendarView = (calendarType) => {
         // Generate year view if not already generated
         if (!expandedSection.querySelector('.calendar-months')) {
             generateYearView(calendarType);
+        }
+    }
+};
+
+// Toggle compare view with Gregorian calendar
+window.toggleCompareView = (calendarType) => {
+    const card = document.querySelector(`[data-calendar="${calendarType}"]`);
+    const compareSection = document.getElementById(`${calendarType}-compare`);
+    const expandedSection = document.getElementById(`${calendarType}-expanded`);
+    const compareBtn = card.querySelector('.calendar-compare-btn ion-icon');
+    
+    if (!card || !compareSection) return;
+    
+    const isComparing = card.classList.contains('comparing');
+    
+    // Close expanded view if open
+    if (card.classList.contains('expanded')) {
+        card.classList.remove('expanded');
+        const expandBtn = card.querySelector('.calendar-expand-btn ion-icon');
+        if (expandBtn) expandBtn.setAttribute('name', 'expand-outline');
+    }
+    
+    if (isComparing) {
+        // Close compare view
+        card.classList.remove('comparing');
+        compareBtn.setAttribute('name', 'git-compare-outline');
+    } else {
+        // Open compare view
+        card.classList.add('comparing');
+        compareBtn.setAttribute('name', 'close-outline');
+        
+        // Generate compare view if not already generated
+        if (!compareSection.querySelector('.compare-calendars')) {
+            generateCompareView(calendarType);
         }
     }
 };
@@ -3437,6 +3515,103 @@ const generateYearView = (calendarType) => {
     
     html += '</div>';
     yearViewContainer.innerHTML = html;
+};
+
+// Generate parallel comparison view with Gregorian calendar
+const generateCompareView = (calendarType) => {
+    const compareContainer = document.getElementById(`${calendarType}-compare-view`);
+    if (!compareContainer) return;
+    
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    const gregorianMonths = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    
+    const monthsData = getMonthsForCalendar(calendarType);
+    const calendarName = getCalendarDisplayName(calendarType);
+    
+    let html = `
+        <div class="compare-calendars">
+            <div class="compare-header">
+                <h3>${calendarName} ⇄ Gregorian Calendar</h3>
+                <p class="compare-subtitle">Side-by-side month comparison for ${currentYear}</p>
+            </div>
+            <div class="compare-grid">
+    `;
+    
+    // Generate comparison for all months
+    monthsData.forEach((ethnicMonth, index) => {
+        // Map ethnic month to approximate Gregorian month
+        const gregorianIndex = getGregorianMapping(calendarType, index);
+        const gregorianMonth = gregorianMonths[gregorianIndex % 12];
+        const gregorianYear = gregorianIndex >= 12 ? currentYear + 1 : currentYear;
+        
+        const isCurrentMonth = (calendarType === 'hindu' && index === currentMonth) ||
+                               (calendarType === 'islamic' && Math.abs(index - currentMonth) <= 1) ||
+                               (calendarType === 'hebrew' && Math.abs(index - currentMonth) <= 1) ||
+                               (calendarType === 'chinese' && index === currentMonth) ||
+                               (calendarType === 'persian' && Math.abs(index - currentMonth) <= 1) ||
+                               (calendarType === 'ethiopian' && Math.abs(index - currentMonth) <= 1);
+        
+        html += `
+            <div class="compare-row ${isCurrentMonth ? 'current-month' : ''}">
+                <div class="compare-ethnic">
+                    <div class="compare-month-name">${ethnicMonth.name}</div>
+                    <div class="compare-month-info">${ethnicMonth.info}</div>
+                </div>
+                <div class="compare-arrow">
+                    <ion-icon name="swap-horizontal"></ion-icon>
+                </div>
+                <div class="compare-gregorian">
+                    <div class="compare-month-name">${gregorianMonth}</div>
+                    <div class="compare-month-info">${gregorianYear}</div>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += `
+            </div>
+            <div class="compare-note">
+                <ion-icon name="information-circle"></ion-icon>
+                <span>Approximate correspondence - exact dates may vary based on lunar cycles and regional variations</span>
+            </div>
+        </div>
+    `;
+    
+    compareContainer.innerHTML = html;
+};
+
+// Get calendar display name
+const getCalendarDisplayName = (calendarType) => {
+    const names = {
+        hindu: 'Hindu Calendar (Vikram Samvat)',
+        islamic: 'Islamic Calendar (Hijri)',
+        hebrew: 'Hebrew Calendar (Jewish)',
+        chinese: 'Chinese Calendar (Lunar)',
+        persian: 'Persian Calendar (Solar Hijri)',
+        ethiopian: 'Ethiopian Calendar (Ge\'ez)'
+    };
+    return names[calendarType] || calendarType;
+};
+
+// Map ethnic calendar months to Gregorian months
+const getGregorianMapping = (calendarType, monthIndex) => {
+    // These mappings show approximate start months
+    const mappings = {
+        hindu: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1], // Chaitra starts ~March
+        islamic: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], // Shifts ~11 days each year
+        hebrew: [3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1, 2], // Nisan starts ~March-April
+        chinese: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 0], // Lunar New Year ~Jan-Feb
+        persian: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1], // Farvardin starts ~March 21
+        ethiopian: [8, 9, 10, 11, 0, 1, 2, 3, 4, 5, 6, 7, 8] // Meskerem starts ~Sept 11
+    };
+    
+    return mappings[calendarType] ? mappings[calendarType][monthIndex] : monthIndex;
 };
 
 // Get months data for each calendar type
