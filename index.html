@@ -269,6 +269,10 @@
                     <ion-icon name="time"></ion-icon>
                     <span>History</span>
                 </button>
+                <button class="nav-item" data-target="calc-timeline">
+                    <ion-icon name="git-branch"></ion-icon>
+                    <span>Timeline</span>
+                </button>
             </nav>
         </aside>
 
@@ -1283,17 +1287,162 @@
                     </div>
                 </section>
 
+                <!-- Timeline View -->
+                <section class="calculator-view" id="calc-timeline">
+                    <div class="timeline-wrapper glass-card">
+                        <!-- Header -->
+                        <div class="timeline-header">
+                            <div class="timeline-header-left">
+                                <div class="timeline-eyebrow">
+                                    <ion-icon name="git-branch-outline"></ion-icon>
+                                    Your financial journey
+                                </div>
+                                <h2>Calculation Timeline</h2>
+                                <p class="timeline-subtitle">A chronological view of every calculation you've saved — your financial story at a glance.</p>
+                            </div>
+                            <div class="timeline-header-right">
+                                <div class="timeline-stat-pill" id="tl-total-pill">
+                                    <ion-icon name="sparkles-outline"></ion-icon>
+                                    <span id="tl-total-count">0 entries</span>
+                                </div>
+                                <button class="btn-icon-text" onclick="loadTimeline()">
+                                    <ion-icon name="refresh-outline"></ion-icon> Refresh
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Summary Stats Row -->
+                        <div class="timeline-stats-row" id="tl-stats-row">
+                            <div class="tl-stat-card">
+                                <ion-icon name="trending-up-outline" style="color:#3b82f6;"></ion-icon>
+                                <div>
+                                    <div class="tl-stat-label">SIP Saves</div>
+                                    <div class="tl-stat-value" id="tl-count-sip">0</div>
+                                </div>
+                            </div>
+                            <div class="tl-stat-card">
+                                <ion-icon name="home-outline" style="color:#8b5cf6;"></ion-icon>
+                                <div>
+                                    <div class="tl-stat-label">EMI Saves</div>
+                                    <div class="tl-stat-value" id="tl-count-emi">0</div>
+                                </div>
+                            </div>
+                            <div class="tl-stat-card">
+                                <ion-icon name="stats-chart-outline" style="color:#10b981;"></ion-icon>
+                                <div>
+                                    <div class="tl-stat-label">CI Saves</div>
+                                    <div class="tl-stat-value" id="tl-count-ci">0</div>
+                                </div>
+                            </div>
+                            <div class="tl-stat-card">
+                                <ion-icon name="pie-chart-outline" style="color:#f59e0b;"></ion-icon>
+                                <div>
+                                    <div class="tl-stat-label">Budget Saves</div>
+                                    <div class="tl-stat-value" id="tl-count-budget">0</div>
+                                </div>
+                            </div>
+                            <div class="tl-stat-card">
+                                <ion-icon name="calculator-outline" style="color:#ef4444;"></ion-icon>
+                                <div>
+                                    <div class="tl-stat-label">Tax Saves</div>
+                                    <div class="tl-stat-value" id="tl-count-tax">0</div>
+                                </div>
+                            </div>
+                            <div class="tl-stat-card">
+                                <ion-icon name="wallet-outline" style="color:#10b981;"></ion-icon>
+                                <div>
+                                    <div class="tl-stat-label">Net Worth</div>
+                                    <div class="tl-stat-value" id="tl-count-networth">0</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Filter Bar -->
+                        <div class="timeline-filter-bar">
+                            <button class="tl-filter-btn active" data-filter="all">All</button>
+                            <button class="tl-filter-btn" data-filter="SIP">SIP</button>
+                            <button class="tl-filter-btn" data-filter="EMI">EMI</button>
+                            <button class="tl-filter-btn" data-filter="CI">Compound Interest</button>
+                            <button class="tl-filter-btn" data-filter="BUDGET">Budget</button>
+                            <button class="tl-filter-btn" data-filter="TAX">Tax</button>
+                            <button class="tl-filter-btn" data-filter="NETWORTH">Net Worth</button>
+                        </div>
+
+                        <!-- Timeline Feed -->
+                        <div class="timeline-feed" id="timeline-feed">
+                            <div class="tl-empty-state" id="tl-empty-state">
+                                <ion-icon name="git-branch-outline"></ion-icon>
+                                <h3>No calculations saved yet</h3>
+                                <p>Save a calculation from any tool and it will appear here as a timeline entry.</p>
+                                <button class="btn-primary" style="width:auto;padding:0.75rem 2rem;margin-top:0.5rem;" onclick="document.querySelector('[data-target=sip-calculator]').click()">
+                                    <ion-icon name="trending-up-outline"></ion-icon> Try SIP Calculator
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 <!-- History View -->
                 <section class="calculator-view" id="calc-history">
-                    <div class="history-container glass-card">
-                        <div class="history-header">
-                            <h2>Your Saved Calculations</h2>
-                            <button class="btn-icon-text" onclick="loadHistory()">
-                                <ion-icon name="refresh"></ion-icon> Refresh
-                            </button>
+                    <div class="history-container">
+                        <!-- History Header with Stats -->
+                        <div class="history-header-section glass-card">
+                            <div class="history-header">
+                                <div class="history-title">
+                                    <div class="title-icon">
+                                        <ion-icon name="time"></ion-icon>
+                                    </div>
+                                    <div>
+                                        <h2>Your Financial Timeline</h2>
+                                        <p class="history-subtitle">Track your financial planning journey and insights over time</p>
+                                    </div>
+                                </div>
+                                <div class="history-actions">
+                                    <button class="btn-icon-text" onclick="loadHistory()">
+                                        <ion-icon name="refresh"></ion-icon> Refresh
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- History Stats Cards -->
+                            <div class="history-stats" id="history-stats">
+                                <div class="stat-card">
+                                    <div class="stat-header">
+                                        <span class="stat-label">Total Calculations</span>
+                                        <ion-icon name="calculator" class="stat-icon"></ion-icon>
+                                    </div>
+                                    <div class="stat-value" id="total-calculations">0</div>
+                                    <p class="stat-description">Financial plans created</p>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-header">
+                                        <span class="stat-label">Most Used</span>
+                                        <ion-icon name="trending-up" class="stat-icon"></ion-icon>
+                                    </div>
+                                    <div class="stat-value" id="most-used-calc">SIP</div>
+                                    <p class="stat-description">Your favorite calculator</p>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-header">
+                                        <span class="stat-label">This Month</span>
+                                        <ion-icon name="calendar" class="stat-icon"></ion-icon>
+                                    </div>
+                                    <div class="stat-value" id="month-calculations">0</div>
+                                    <p class="stat-description">Recent activity</p>
+                                </div>
+                            </div>
                         </div>
-                        <div id="history-list" class="history-list">
-                            <p class="empty-msg">No history found. Save a calculation to see it here!</p>
+
+                        <!-- Timeline Container -->
+                        <div class="timeline-container glass-card">
+                            <div class="timeline-header">
+                                <h3>Calculation Timeline</h3>
+                                <p>Your financial planning journey mapped chronologically</p>
+                            </div>
+                            
+                            <div id="history-timeline" class="history-timeline">
+                                <p class="empty-timeline-msg">No calculations found. Start planning to see your timeline!</p>
+                            </div>
                         </div>
                     </div>
                 </section>

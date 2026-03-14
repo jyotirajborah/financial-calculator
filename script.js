@@ -1236,6 +1236,53 @@ function updateDashboardHistory(items) {
     }
 }
 
+function updateHistoryStats(items) {
+    const totalCalcElement = document.getElementById('total-calculations');
+    const mostUsedElement = document.getElementById('most-used-calc');
+    const monthCalcElement = document.getElementById('month-calculations');
+
+    if (!totalCalcElement || !mostUsedElement || !monthCalcElement) return;
+
+    if (!Array.isArray(items) || items.length === 0) {
+        totalCalcElement.textContent = '0';
+        mostUsedElement.textContent = 'None';
+        monthCalcElement.textContent = '0';
+        return;
+    }
+
+    // Total calculations
+    totalCalcElement.textContent = items.length;
+
+    // Most used calculator
+    const calcCounts = {};
+    items.forEach(item => {
+        calcCounts[item.calc_type] = (calcCounts[item.calc_type] || 0) + 1;
+    });
+
+    const mostUsed = Object.keys(calcCounts).reduce((a, b) => 
+        calcCounts[a] > calcCounts[b] ? a : b
+    );
+
+    const typeMap = {
+        'SIP': 'SIP Calculator',
+        'EMI': 'EMI Calculator',
+        'CI': 'Compound Interest',
+        'BUDGET': 'Budget Planner',
+        'TAX': 'Tax Calculator',
+        'NETWORTH': 'Net Worth'
+    };
+    mostUsedElement.textContent = typeMap[mostUsed] || mostUsed;
+
+    // This month's calculations
+    const now = new Date();
+    const thisMonth = items.filter(item => {
+        const itemDate = new Date(item.created_at);
+        return itemDate.getMonth() === now.getMonth() && 
+               itemDate.getFullYear() === now.getFullYear();
+    });
+    monthCalcElement.textContent = thisMonth.length;
+}
+
 const saveCalculation = async (type, e) => {
     if (e) e.preventDefault();
     
@@ -1342,16 +1389,16 @@ const saveCalculation = async (type, e) => {
 };
 
 const loadHistory = async () => {
-    const list = document.getElementById('history-list');
+    const timeline = document.getElementById('history-timeline');
     const token = localStorage.getItem('auth_token');
     
     // Handle guest users
     if (isGuestMode || !token) {
-        list.innerHTML = `
-            <div class="guest-history-message">
-                <ion-icon name="lock-closed-outline" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></ion-icon>
-                <h3>History Locked</h3>
-                <p>Create an account or login to save and view your calculation history.</p>
+        timeline.innerHTML = `
+            <div class="guest-timeline-message">
+                <ion-icon name="lock-closed-outline"></ion-icon>
+                <h3>Timeline Locked</h3>
+                <p>Create an account or login to save and view your financial planning timeline.</p>
                 <button class="btn-primary" onclick="logout()" style="margin-top: 1rem;">
                     <ion-icon name="log-in-outline"></ion-icon> Login / Sign Up
                 </button>
@@ -1360,7 +1407,7 @@ const loadHistory = async () => {
         return;
     }
 
-    list.innerHTML = '<div class="empty-msg">Loading history...</div>';
+    timeline.innerHTML = '<div class="empty-timeline-msg">Loading your financial timeline...</div>';
 
     try {
         const response = await fetch('/api/history', {
@@ -1370,71 +1417,114 @@ const loadHistory = async () => {
 
         window.__historyCache = Array.isArray(data) ? data : [];
         updateDashboardHistory(window.__historyCache);
+        updateHistoryStats(window.__historyCache);
         
         if (!Array.isArray(data) || data.length === 0) {
-            list.innerHTML = '<p class="empty-msg">No history found. Save a calculation to see it here!</p>';
+            timeline.innerHTML = '<p class="empty-timeline-msg">No calculations found. Start planning to see your timeline!</p>';
             return;
         }
 
-        list.innerHTML = '';
-        data.forEach(item => {
+        // Create timeline line
+        timeline.innerHTML = '<div class="timeline-line"></div>';
+        
+        data.forEach((item, index) => {
             const div = document.createElement('div');
-            div.className = 'history-item';
+            div.className = 'timeline-item';
             
             let label = "";
             let subtext = "";
             let mainVal = "";
+            let icon = "calculator";
+            let description = "";
             
             if (item.calc_type === 'SIP') {
-                label = "SIP Plan";
+                label = "SIP Investment Plan";
                 subtext = `₹${item.input_data.amount}/mo @ ${item.input_data.rate}% for ${item.input_data.time}yr`;
                 mainVal = item.result_data.total;
+                icon = "trending-up";
+                description = `Systematic Investment Plan with ${item.input_data.rate}% annual return`;
             } else if (item.calc_type === 'EMI') {
-                label = "Loan EMI";
+                label = "EMI Calculation";
                 subtext = `₹${item.input_data.amount} @ ${item.input_data.rate}% for ${item.input_data.time}yr`;
                 mainVal = item.result_data.monthly;
-            } else if (item.calc_type === 'TAX') {
-                label = "Tax Estimate";
-                subtext = `Income: ₹${formatCurrency(item.input_data.income)}`;
-                mainVal = item.result_data.tax;
+                icon = "card";
+                description = `Monthly EMI at ${item.input_data.rate}% interest rate`;
             } else if (item.calc_type === 'CI') {
-                label = "Growth Plan";
+                label = "Compound Interest";
                 subtext = `Principal: ₹${item.input_data.principal} @ ${item.input_data.rate}%`;
                 mainVal = item.result_data.total;
+                icon = "analytics";
+                description = `Compound growth at ${item.input_data.rate}% annual return`;
             } else if (item.calc_type === 'BUDGET') {
-                label = "Budget Rule";
+                label = "Budget Planning";
                 const persona = item.input_data.persona ? ` | Persona: ${item.input_data.persona}` : "";
                 subtext = `Monthly Income: ₹${item.input_data.income}${persona}`;
                 mainVal = item.result_data.investments || item.result_data.savings;
+                icon = "wallet";
+                description = "Personal budget allocation and savings plan";
+            } else if (item.calc_type === 'TAX') {
+                label = "Tax Calculation";
+                subtext = `Income: ₹${formatCurrency(item.input_data.income)}`;
+                mainVal = item.result_data.tax;
+                icon = "receipt";
+                description = `Tax liability calculation for the financial year`;
             } else if (item.calc_type === 'NETWORTH') {
-                label = "Net Worth";
+                label = "Net Worth Assessment";
                 subtext = `Assets: ${item.input_data.assets} | Liabilities: ${item.input_data.liabilities}`;
                 mainVal = item.result_data.networth;
+                icon = "pie-chart";
+                description = "Complete financial portfolio analysis";
             }
 
             const date = new Date(item.created_at).toLocaleDateString('en-IN', {
-                day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            });
+            
+            const time = new Date(item.created_at).toLocaleTimeString('en-IN', {
+                hour: '2-digit',
+                minute: '2-digit'
             });
 
             div.innerHTML = `
-                <div class="history-info">
-                    <h4>${label}</h4>
-                    <p>${subtext}</p>
+                <div class="timeline-marker">
+                    <ion-icon name="${icon}"></ion-icon>
                 </div>
-                <div class="history-value">
-                    <span class="main-val">${mainVal}</span>
-                    <span class="date">${date}</span>
+                <div class="timeline-content">
+                    <div class="timeline-item-header">
+                        <h4 class="timeline-item-title">${label}</h4>
+                        <span class="timeline-item-type">${item.calc_type}</span>
+                    </div>
+                    <div class="timeline-item-details">
+                        <div class="timeline-item-info">
+                            <p class="timeline-item-description">${description}</p>
+                            <div class="timeline-item-meta">
+                                <span><ion-icon name="calendar"></ion-icon> ${date}</span>
+                                <span><ion-icon name="time"></ion-icon> ${time}</span>
+                            </div>
+                        </div>
+                        <div class="timeline-item-value">
+                            <span class="timeline-main-value">${mainVal}</span>
+                            <div class="timeline-sub-value">${subtext}</div>
+                        </div>
+                    </div>
+                    <div class="timeline-actions">
+                        <button class="timeline-action-btn" onclick="deleteCalculation('${item.id}')" title="Delete calculation">
+                            <ion-icon name="trash-outline"></ion-icon>
+                        </button>
+                    </div>
                 </div>
-                <button class="btn-delete-history" onclick="deleteCalculation('${item.id}')" title="Delete">
-                    <ion-icon name="trash-outline"></ion-icon>
-                </button>
             `;
-            list.appendChild(div);
+            
+            timeline.appendChild(div);
         });
     } catch (error) {
         window.__historyCache = [];
         updateDashboardHistory(window.__historyCache);
-        list.innerHTML = '<p class="empty-msg">Something went wrong while loading history.</p>';
+        updateHistoryStats(window.__historyCache);
+        timeline.innerHTML = '<p class="empty-timeline-msg">Something went wrong while loading your timeline.</p>';
+        console.error('Error loading history:', error);
     }
 };
 
