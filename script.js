@@ -10,6 +10,32 @@
 // State Management
 let currentUser = null;
 
+// Toast Notification System
+function showToast(message, type = 'success') {
+    // Remove any existing toast
+    const existingToast = document.querySelector('.toast');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    // Create new toast
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    
+    // Add to page
+    document.body.appendChild(toast);
+    
+    // Show toast
+    setTimeout(() => toast.classList.add('show'), 100);
+    
+    // Hide and remove toast
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
 // Format numbers as Indian Currency
 const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-IN').format(Math.round(amount));
@@ -147,6 +173,9 @@ function exportToExcel(elementId) {
 
     const filename = `FinCalc-${elementId}-${Date.now()}.xlsx`;
     XLSX.writeFile(wb, filename);
+    
+    // Show success toast
+    showToast('Excel file exported successfully!', 'success');
 }
 
 // On load, allow '?view=emi-calculator' style deep links to open a specific view
@@ -327,6 +356,16 @@ const calculateEMI = () => {
     const totalPayable = emi * n;
     const totalInterest = totalPayable - P;
     
+    // Add subtle animation to results
+    const resultElements = ['emi-monthly', 'emi-principal', 'emi-interest', 'emi-total'];
+    resultElements.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.classList.add('result-updated');
+            setTimeout(() => element.classList.remove('result-updated'), 600);
+        }
+    });
+    
     document.getElementById('emi-monthly').textContent = '₹' + formatCurrency(emi);
     document.getElementById('emi-principal').textContent = '₹' + formatCurrency(P);
     document.getElementById('emi-interest').textContent = '₹' + formatCurrency(totalInterest);
@@ -350,6 +389,16 @@ const calculateCI = () => {
     
     const amount = P * Math.pow(1 + (r / 100) / n, n * t);
     const interest = amount - P;
+    
+    // Add subtle animation to results
+    const resultElements = ['ci-principal-res', 'ci-interest', 'ci-total'];
+    resultElements.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.classList.add('result-updated');
+            setTimeout(() => element.classList.remove('result-updated'), 600);
+        }
+    });
     
     document.getElementById('ci-principal-res').textContent = '₹' + formatCurrency(P);
     document.getElementById('ci-interest').textContent = '₹' + formatCurrency(interest);
@@ -892,6 +941,16 @@ const calculateBudget = () => {
     const invEl = document.getElementById('budget-investments');
     if (invEl) invEl.textContent = RUPEE + formatCurrency(investments);
 
+    // Add subtle animation to results
+    const resultElements = ['budget-needs', 'budget-wants', 'budget-savings', 'budget-investments'];
+    resultElements.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.classList.add('result-updated');
+            setTimeout(() => element.classList.remove('result-updated'), 600);
+        }
+    });
+
     ensureBudgetBreakdownUI();
 
     const applyBreakdown = (catKey, total) => {
@@ -1018,6 +1077,16 @@ const calculateTax = () => {
     document.getElementById('tax-monthly').textContent = RUPEE + formatCurrency(monthlyAfterTax);
     document.getElementById('tax-monthly-tax').textContent = RUPEE + formatCurrency(monthlyTax);
 
+    // Add subtle animation to results
+    const resultElements = ['tax-payable', 'tax-taxable', 'tax-slab-tax', 'tax-cess', 'tax-effective-rate', 'tax-inhand', 'tax-monthly', 'tax-monthly-tax'];
+    resultElements.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.classList.add('result-updated');
+            setTimeout(() => element.classList.remove('result-updated'), 600);
+        }
+    });
+
     updateChart('taxChart', taxChartObj, ['After-Tax Income', 'Total Tax'], [annualAfterTax, totalTax], ['#10b981', '#ef4444'], 'taxChartObj', 'doughnut');
     updateDashboard();
 };
@@ -1049,6 +1118,16 @@ const calculateNetWorth = () => {
     
     // Calculate net worth
     const netWorth = totalAssets - totalLiabilities;
+    
+    // Add subtle animation to results
+    const resultElements = ['nw-total-assets', 'nw-total-liabilities', 'nw-result-assets', 'nw-result-liabilities', 'nw-net-worth'];
+    resultElements.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.classList.add('result-updated');
+            setTimeout(() => element.classList.remove('result-updated'), 600);
+        }
+    });
     
     // Update display
     document.getElementById('nw-total-assets').textContent = '₹' + formatCurrency(totalAssets);
@@ -2884,14 +2963,29 @@ window.addEventListener('DOMContentLoaded', () => {
         userInitials.style.display = 'none';
     }
     
-    // Chart.js global defaults
-    Chart.defaults.color = '#94a3b8';
-    Chart.defaults.font.family = "'Outfit', sans-serif";
+    // Chart.js global defaults (guarded so auth still works if Chart fails to load)
+    try {
+        if (window.Chart && Chart.defaults) {
+            Chart.defaults.color = '#94a3b8';
+            Chart.defaults.font.family = "'Outfit', sans-serif";
+        }
+    } catch (err) {
+        console.error('Chart.js not available, continuing without chart defaults:', err);
+    }
     
     initAuth();
     initProjection();
     openViewFromQuery();
     updateDashboard();
+    
+    // Show welcome toast for new users
+    setTimeout(() => {
+        if (isGuestMode) {
+            showToast('Welcome! Press Alt+1-9 for quick navigation or Ctrl+S to save calculations', 'success');
+        } else {
+            showToast('Welcome back! Use keyboard shortcuts for faster navigation', 'success');
+        }
+    }, 1000);
     
     // Add keyboard shortcuts for better UX
     document.addEventListener('keydown', (e) => {
@@ -2902,6 +2996,7 @@ window.addEventListener('DOMContentLoaded', () => {
             const index = parseInt(e.key) - 1;
             if (navItems[index]) {
                 navItems[index].click();
+                showToast(`Switched to ${navItems[index].querySelector('span').textContent}`, 'success');
             }
         }
         
@@ -2911,7 +3006,12 @@ window.addEventListener('DOMContentLoaded', () => {
             const activeView = document.querySelector('.calculator-view.active');
             if (activeView && !isGuestMode) {
                 const saveBtn = activeView.querySelector('.btn-save');
-                if (saveBtn) saveBtn.click();
+                if (saveBtn) {
+                    saveBtn.click();
+                    showToast('Calculation saved using keyboard shortcut!', 'success');
+                }
+            } else if (isGuestMode) {
+                showToast('Please login to save calculations', 'error');
             }
         }
         

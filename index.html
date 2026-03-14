@@ -273,6 +273,10 @@
                     <ion-icon name="git-branch"></ion-icon>
                     <span>Timeline</span>
                 </button>
+                <button class="nav-item" data-target="help-shortcuts">
+                    <ion-icon name="help-circle"></ion-icon>
+                    <span>Help & Shortcuts</span>
+                </button>
             </nav>
         </aside>
 
@@ -429,7 +433,7 @@
                                 <label for="sip-amount">Monthly Investment</label>
                                 <div class="input-wrapper">
                                     <span class="currency">₹</span>
-                                    <input type="number" id="sip-amount" value="10000" min="500" step="500">
+                                    <input type="number" id="sip-amount" value="10000" min="500" step="500" class="tooltip" data-tooltip="Monthly investment amount for SIP">
                                 </div>
                                 <input type="range" id="sip-amount-range" min="500" max="100000" step="500" value="10000">
                             </div>
@@ -488,7 +492,7 @@
                                 <label for="emi-amount">Loan Amount</label>
                                 <div class="input-wrapper">
                                     <span class="currency">₹</span>
-                                    <input type="number" id="emi-amount" value="5000000" min="100000" step="10000">
+                                    <input type="number" id="emi-amount" value="5000000" min="100000" step="10000" class="tooltip" data-tooltip="Total loan amount you want to borrow">
                                 </div>
                                 <input type="range" id="emi-amount-range" min="100000" max="20000000" step="50000" value="5000000">
                             </div>
@@ -551,7 +555,7 @@
                                 <label for="ci-principal">Principal Amount</label>
                                 <div class="input-wrapper">
                                     <span class="currency">₹</span>
-                                    <input type="number" id="ci-principal" value="100000" min="1000" step="1000">
+                                    <input type="number" id="ci-principal" value="100000" min="1000" step="1000" class="tooltip" data-tooltip="Initial investment amount">
                                 </div>
                                 <input type="range" id="ci-principal-range" min="1000" max="10000000" step="5000" value="100000">
                             </div>
@@ -1445,6 +1449,117 @@
                             
                             <div id="history-timeline" class="history-timeline">
                                 <p class="empty-timeline-msg">No calculations found. Start planning to see your timeline!</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Help & Shortcuts View -->
+                <section class="calculator-view" id="help-shortcuts">
+                    <div class="help-container glass-card">
+                        <div class="help-header">
+                            <div class="help-title">
+                                <div class="title-icon">
+                                    <ion-icon name="help-circle"></ion-icon>
+                                </div>
+                                <div>
+                                    <h2>Help & Keyboard Shortcuts</h2>
+                                    <p class="help-subtitle">Boost your productivity with these handy shortcuts and tips</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="help-content">
+                            <div class="help-section">
+                                <h3><ion-icon name="flash"></ion-icon> Keyboard Shortcuts</h3>
+                                <div class="shortcuts-grid">
+                                    <div class="shortcut-item">
+                                        <div class="shortcut-keys">
+                                            <kbd>Alt</kbd> + <kbd>1-9</kbd>
+                                        </div>
+                                        <div class="shortcut-desc">Quick navigation between sections</div>
+                                    </div>
+                                    <div class="shortcut-item">
+                                        <div class="shortcut-keys">
+                                            <kbd>Ctrl</kbd> + <kbd>S</kbd>
+                                        </div>
+                                        <div class="shortcut-desc">Save current calculation (when logged in)</div>
+                                    </div>
+                                    <div class="shortcut-item">
+                                        <div class="shortcut-keys">
+                                            <kbd>Esc</kbd>
+                                        </div>
+                                        <div class="shortcut-desc">Close active modals and popups</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="help-section">
+                                <h3><ion-icon name="bulb"></ion-icon> Tips & Tricks</h3>
+                                <div class="tips-list">
+                                    <div class="tip-item">
+                                        <ion-icon name="checkmark-circle" class="tip-icon"></ion-icon>
+                                        <div>
+                                            <strong>Auto-save:</strong> Your calculations are automatically saved when you're logged in
+                                        </div>
+                                    </div>
+                                    <div class="tip-item">
+                                        <ion-icon name="checkmark-circle" class="tip-icon"></ion-icon>
+                                        <div>
+                                            <strong>Timeline view:</strong> Access detailed timeline from History section for advanced filtering
+                                        </div>
+                                    </div>
+                                    <div class="tip-item">
+                                        <ion-icon name="checkmark-circle" class="tip-icon"></ion-icon>
+                                        <div>
+                                            <strong>Guest mode:</strong> Use all calculators without signing up, but history won't be saved
+                                        </div>
+                                    </div>
+                                    <div class="tip-item">
+                                        <ion-icon name="checkmark-circle" class="tip-icon"></ion-icon>
+                                        <div>
+                                            <strong>Export data:</strong> Export your calculations to Excel for further analysis
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="help-section">
+                                <h3><ion-icon name="calculator"></ion-icon> Calculator Guide</h3>
+                                <div class="calculator-guide">
+                                    <div class="guide-item">
+                                        <div class="guide-icon">
+                                            <ion-icon name="repeat"></ion-icon>
+                                        </div>
+                                        <div>
+                                            <strong>SIP Calculator:</strong> Plan systematic investments with compound growth projections
+                                        </div>
+                                    </div>
+                                    <div class="guide-item">
+                                        <div class="guide-icon">
+                                            <ion-icon name="card"></ion-icon>
+                                        </div>
+                                        <div>
+                                            <strong>EMI Calculator:</strong> Calculate monthly loan payments and total interest
+                                        </div>
+                                    </div>
+                                    <div class="guide-item">
+                                        <div class="guide-icon">
+                                            <ion-icon name="analytics"></ion-icon>
+                                        </div>
+                                        <div>
+                                            <strong>Compound Interest:</strong> See how your investments grow over time
+                                        </div>
+                                    </div>
+                                    <div class="guide-item">
+                                        <div class="guide-icon">
+                                            <ion-icon name="wallet"></ion-icon>
+                                        </div>
+                                        <div>
+                                            <strong>Budget Planner:</strong> Allocate income using 50/30/20 rule or custom ratios
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
