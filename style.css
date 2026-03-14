@@ -2746,11 +2746,8 @@ input[type=range]::-webkit-slider-thumb:hover {
 .timeline-marker ion-icon {
     font-size: 20px;
     color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: block;
     line-height: 1;
-    vertical-align: middle;
 }
 
 .timeline-content {
@@ -2947,11 +2944,8 @@ input[type=range]::-webkit-slider-thumb:hover {
     
     .timeline-marker ion-icon {
         font-size: 18px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        display: block;
         line-height: 1;
-        vertical-align: middle;
     }
     
     .timeline-item-header {
@@ -3142,16 +3136,14 @@ input[type=range]::-webkit-slider-thumb:hover {
     border: 3px solid var(--bg-main);
     flex-shrink: 0;
     z-index: 2;
+    position: relative;
 }
 
 .tl-item-marker ion-icon {
     font-size: 20px;
     color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: block;
     line-height: 1;
-    vertical-align: middle;
 }
 
 .tl-item-content {
@@ -3332,11 +3324,8 @@ input[type=range]::-webkit-slider-thumb:hover {
     
     .tl-item-marker ion-icon {
         font-size: 18px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        display: block;
         line-height: 1;
-        vertical-align: middle;
     }
     
     .tl-item-header {
