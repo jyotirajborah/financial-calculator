@@ -3097,6 +3097,16 @@ function initProjection() {
 window.addEventListener('DOMContentLoaded', () => {
     console.log('=== FinCalc App Starting ===');
     
+    // Check URL parameters for login redirect
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.toString() === '' && window.location.pathname === '/') {
+        // This might be a redirect after login, check for auth token
+        const authToken = localStorage.getItem('auth_token');
+        if (authToken) {
+            console.log('🔄 Detected potential login redirect, checking token...');
+        }
+    }
+    
     // Check if user is already logged in
     const authToken = localStorage.getItem('auth_token');
     if (authToken) {
@@ -3123,7 +3133,7 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // EMERGENCY BYPASS - Auto-login as guest after 2 seconds if auth fails
+    // EMERGENCY BYPASS - Auto-login as guest after 3 seconds if auth fails
     setTimeout(() => {
         const overlay = document.getElementById('auth-overlay');
         const appContainer = document.getElementById('app-container');
@@ -3154,7 +3164,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 console.error('❌ EMERGENCY BYPASS FAILED:', err);
             }
         }
-    }, 2000);
+    }, 3000);
     
     // Initialize profile avatar for guest state (default)
     const guestIcon = document.getElementById('guest-icon');

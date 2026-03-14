@@ -191,6 +191,52 @@
                     });
                 });
                 
+                // FALLBACK LOGIN SUCCESS HANDLER
+                // Check every 500ms if login was successful but UI didn't update
+                var loginCheckInterval = setInterval(function() {
+                    var authToken = localStorage.getItem('auth_token');
+                    var overlay = document.getElementById('auth-overlay');
+                    var appContainer = document.getElementById('app-container');
+                    
+                    if (authToken && overlay && overlay.classList.contains('active')) {
+                        console.log('🚨 FALLBACK: Detected successful login but overlay still active, fixing...');
+                        
+                        // Hide auth overlay
+                        overlay.classList.remove('active');
+                        overlay.style.display = 'none';
+                        
+                        // Show app container
+                        if (appContainer) {
+                            appContainer.style.display = 'flex';
+                            appContainer.style.opacity = '1';
+                        }
+                        
+                        // Set user profile (try to get from localStorage or default to logged-in state)
+                        var guestIcon = document.getElementById('guest-icon');
+                        var userInitials = document.getElementById('user-initials');
+                        if (guestIcon) guestIcon.style.display = 'none';
+                        if (userInitials) {
+                            userInitials.style.display = 'block';
+                            userInitials.textContent = 'U'; // Default initials
+                        }
+                        
+                        console.log('✅ FALLBACK: Successfully entered app after login');
+                        clearInterval(loginCheckInterval);
+                        
+                        // Show success message
+                        setTimeout(function() {
+                            if (window.showToast) {
+                                showToast('Login successful! Welcome to FinCalc', 'success');
+                            }
+                        }, 500);
+                    }
+                }, 500);
+                
+                // Stop checking after 30 seconds
+                setTimeout(function() {
+                    clearInterval(loginCheckInterval);
+                }, 30000);
+                
                 console.log('Fallback auth handler setup complete');
             } catch (e) {
                 console.error('Fallback auth tab handler failed:', e);
