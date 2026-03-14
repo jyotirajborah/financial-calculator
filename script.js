@@ -18,46 +18,208 @@ if (document.readyState === 'loading') {
     console.log('🚨 EMERGENCY: DOM is ready!');
 }
 
-// IMMEDIATE TEST - Add click listener to test button right away
+// IMMEDIATE EMERGENCY FIX - Force enable authentication
 setTimeout(() => {
-    console.log('🧪 TESTING: Adding immediate click listeners...');
+    console.log('🚨 EMERGENCY FIX: Forcing authentication system...');
     
-    // Test if we can find elements
+    // Test basic functionality
     const testBtn = document.querySelector('button[onclick*="alert"]');
     const emergencyBtn = document.querySelector('button[onclick*="emergencyBypass"]');
     const authTabs = document.querySelectorAll('.auth-tab');
+    const guestBtn = document.getElementById('guest-continue-btn');
     
     console.log('🔍 FOUND ELEMENTS:', {
         testBtn: !!testBtn,
         emergencyBtn: !!emergencyBtn,
-        authTabs: authTabs.length
+        authTabs: authTabs.length,
+        guestBtn: !!guestBtn
     });
     
-    // Try to add direct event listeners
+    // FORCE FIX: Add robust event listeners that override any issues
     if (authTabs.length > 0) {
+        console.log('🔧 FORCE FIXING: Auth tabs...');
         authTabs.forEach((tab, index) => {
-            console.log(`🔧 Adding direct listener to tab ${index}`);
-            tab.addEventListener('click', function(e) {
-                console.log('🎯 DIRECT CLICK WORKED on tab:', this.textContent);
-                alert('Direct click listener worked on: ' + this.textContent);
+            // Remove any existing listeners
+            const newTab = tab.cloneNode(true);
+            tab.parentNode.replaceChild(newTab, tab);
+            
+            // Add fresh listener
+            newTab.addEventListener('click', function(e) {
+                console.log('🎯 FORCE FIX: Auth tab clicked:', this.getAttribute('data-form'));
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Remove active from all tabs and forms
+                document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+                
+                // Add active to clicked tab
+                this.classList.add('active');
+                
+                // Show corresponding form
+                const formKey = this.getAttribute('data-form');
+                const targetForm = formKey === 'guest'
+                    ? document.getElementById('guest-form')
+                    : document.getElementById(formKey + '-form');
+                    
+                console.log('🔄 FORCE FIX: Switching to form:', formKey, 'element found:', !!targetForm);
+                
+                if (targetForm) {
+                    targetForm.classList.add('active');
+                    console.log('✅ FORCE FIX: Successfully switched to:', formKey);
+                } else {
+                    console.error('❌ FORCE FIX: Target form not found:', formKey);
+                }
             });
         });
     }
     
-    // Test guest continue button
-    const guestBtn = document.getElementById('guest-continue-btn');
+    // FORCE FIX: Guest continue button
     if (guestBtn) {
-        console.log('🔧 Adding direct listener to guest button');
-        guestBtn.addEventListener('click', function() {
-            console.log('🎯 GUEST BUTTON CLICKED');
-            alert('Guest button direct click worked!');
+        console.log('🔧 FORCE FIXING: Guest button...');
+        const newGuestBtn = guestBtn.cloneNode(true);
+        guestBtn.parentNode.replaceChild(newGuestBtn, guestBtn);
+        
+        newGuestBtn.addEventListener('click', function(e) {
+            console.log('🎯 FORCE FIX: Guest button clicked');
+            e.preventDefault();
+            e.stopPropagation();
+            
+            try {
+                // Force guest login immediately
+                isGuestMode = true;
+                currentUser = { name: 'Guest', email: null };
+                
+                // Hide auth overlay
+                const overlay = document.getElementById('auth-overlay');
+                if (overlay) {
+                    overlay.classList.remove('active');
+                    overlay.style.display = 'none';
+                }
+                
+                // Show app container
+                const appContainer = document.getElementById('app-container');
+                if (appContainer) {
+                    appContainer.style.display = 'flex';
+                    appContainer.style.opacity = '1';
+                }
+                
+                // Set guest profile
+                const guestIcon = document.getElementById('guest-icon');
+                const userInitials = document.getElementById('user-initials');
+                if (guestIcon && userInitials) {
+                    guestIcon.style.display = 'block';
+                    userInitials.style.display = 'none';
+                }
+                
+                console.log('✅ FORCE FIX: Guest login successful');
+                if (window.showToast) {
+                    showToast('Welcome! You are now using FinCalc as a guest.', 'success');
+                }
+                
+            } catch (err) {
+                console.error('❌ FORCE FIX: Guest login failed:', err);
+                alert('Guest login failed. Please try the emergency bypass button.');
+            }
         });
     }
+    
+    // FORCE FIX: Login and signup forms
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+    
+    if (loginForm) {
+        console.log('🔧 FORCE FIXING: Login form...');
+        const newLoginForm = loginForm.cloneNode(true);
+        loginForm.parentNode.replaceChild(newLoginForm, loginForm);
+        
+        newLoginForm.addEventListener('submit', async function(e) {
+            console.log('🎯 FORCE FIX: Login form submitted');
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const email = this.querySelector('#login-email').value;
+            const password = this.querySelector('#login-password').value;
+            const errorEl = this.querySelector('#login-error');
+            const submitBtn = this.querySelector('button[type="submit"]');
+            
+            console.log('🔄 FORCE FIX: Login attempt for:', email);
+            
+            // Clear errors
+            if (errorEl) errorEl.textContent = '';
+            
+            // Show loading
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<ion-icon name="sync"></ion-icon> Signing In...';
+            submitBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                console.log('🔄 FORCE FIX: Login response:', response.status, data);
+                
+                if (response.ok) {
+                    console.log('✅ FORCE FIX: Login successful');
+                    
+                    // Set user state
+                    isGuestMode = false;
+                    currentUser = data.user;
+                    localStorage.setItem('auth_token', data.token);
+                    
+                    // Hide auth overlay
+                    const overlay = document.getElementById('auth-overlay');
+                    if (overlay) {
+                        overlay.classList.remove('active');
+                        overlay.style.display = 'none';
+                    }
+                    
+                    // Show app container
+                    const appContainer = document.getElementById('app-container');
+                    if (appContainer) {
+                        appContainer.style.display = 'flex';
+                        appContainer.style.opacity = '1';
+                    }
+                    
+                    // Set user profile
+                    const guestIcon = document.getElementById('guest-icon');
+                    const userInitials = document.getElementById('user-initials');
+                    if (guestIcon && userInitials) {
+                        guestIcon.style.display = 'none';
+                        userInitials.style.display = 'block';
+                        userInitials.textContent = data.user.name ? data.user.name.charAt(0).toUpperCase() : 'U';
+                    }
+                    
+                    if (window.showToast) {
+                        showToast(`Welcome back, ${data.user.name}!`, 'success');
+                    }
+                    
+                } else {
+                    console.error('❌ FORCE FIX: Login failed:', data.error);
+                    if (errorEl) errorEl.textContent = data.error || 'Login failed';
+                }
+                
+            } catch (error) {
+                console.error('❌ FORCE FIX: Login network error:', error);
+                if (errorEl) errorEl.textContent = 'Unable to connect to server';
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+    }
+    
+    console.log('✅ EMERGENCY FIX: Authentication system force-fixed');
     
 }, 1000);
 
 // State Management
 let currentUser = null;
+let isGuestMode = false;
 
 // Toast Notification System
 function showToast(message, type = 'success') {
@@ -141,8 +303,8 @@ window.emergencyBypass = function() {
     
     try {
         // Force guest mode
-        isGuestMode = true;
-        currentUser = { name: 'Guest', email: null };
+        window.isGuestMode = true;
+        window.currentUser = { name: 'Guest', email: null };
         
         // Hide auth overlay
         const overlay = document.getElementById('auth-overlay');
@@ -167,19 +329,24 @@ window.emergencyBypass = function() {
         }
         
         // Initialize calculators
-        calculateSIP();
-        calculateEMI();
-        calculateCI();
-        calculateBudget();
-        calculateTax();
-        calculateNetWorth();
+        if (window.calculateSIP) calculateSIP();
+        if (window.calculateEMI) calculateEMI();
+        if (window.calculateCI) calculateCI();
+        if (window.calculateBudget) calculateBudget();
+        if (window.calculateTax) calculateTax();
+        if (window.calculateNetWorth) calculateNetWorth();
         
-        showToast('🚨 Emergency bypass successful! You are now in the app as a guest.', 'success');
+        // Show success message
+        if (window.showToast) {
+            showToast('🚨 Emergency bypass successful! You are now in the app as a guest.', 'success');
+        } else {
+            alert('🚨 Emergency bypass successful! You are now in the app as a guest.');
+        }
         console.log('✅ EMERGENCY BYPASS SUCCESSFUL');
         
     } catch (err) {
         console.error('❌ EMERGENCY BYPASS FAILED:', err);
-        alert('Emergency bypass failed. Please refresh the page and try again.');
+        alert('Emergency bypass failed: ' + err.message + '. Please refresh the page and try again.');
     }
 };
 
@@ -2291,7 +2458,6 @@ function updateChart(canvasId, chartObjInstance, labels, data, colors, varName, 
 
 
 // --- Auth Logic (Real API calls to /api) ---
-let isGuestMode = false;
 
 // Global authentication functions
 const loginAsGuest = () => {
@@ -3217,14 +3383,15 @@ window.addEventListener('DOMContentLoaded', () => {
         const appContainer = document.getElementById('app-container');
         
         if (overlay && overlay.classList.contains('active') && appContainer) {
-            console.log('🚨 EMERGENCY BYPASS: Auto-logging in as guest...');
+            console.log('🚨 EMERGENCY BYPASS: Auto-logging in as guest after 3 seconds...');
             try {
                 // Force guest login
-                isGuestMode = true;
-                currentUser = { name: 'Guest', email: null };
+                window.isGuestMode = true;
+                window.currentUser = { name: 'Guest', email: null };
                 
                 // Hide auth overlay and show app
                 overlay.classList.remove('active');
+                overlay.style.display = 'none';
                 appContainer.style.display = 'flex';
                 appContainer.style.opacity = '1';
                 
@@ -3237,7 +3404,9 @@ window.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 console.log('✅ EMERGENCY BYPASS: Successfully entered as guest!');
-                showToast('Entered as Guest - Authentication bypassed', 'success');
+                if (window.showToast) {
+                    showToast('Entered as Guest - Authentication bypassed', 'success');
+                }
             } catch (err) {
                 console.error('❌ EMERGENCY BYPASS FAILED:', err);
             }

@@ -3496,8 +3496,7 @@ body, html {
 
 .auth-card-wrapper:hover {
     transform: none;
-    background: var(--bg-card);
-    border-color: var(--border-color);
+    /* Removed border-color change to fix white border hover issue */
 }
 
 /* Subtle Result Animation */
