@@ -2254,6 +2254,8 @@ const loginAsGuest = () => {
 };
 
 const login = (user, token) => {
+    console.log('🔐 LOGIN FUNCTION CALLED:', { user, token: !!token });
+    
     isGuestMode = false;
     currentUser = user;
     if (token) localStorage.setItem('auth_token', token);
@@ -2265,28 +2267,52 @@ const login = (user, token) => {
     const loginForm = document.getElementById('login-form');
     const signupForm = document.getElementById('signup-form');
     
+    console.log('🔍 LOGIN ELEMENTS CHECK:', {
+        overlay: !!overlay,
+        appContainer: !!appContainer,
+        overlayHasActive: overlay?.classList.contains('active'),
+        appContainerDisplay: appContainer?.style.display
+    });
+    
     // Update profile avatar for logged-in user
     const guestIcon = document.getElementById('guest-icon');
     const userInitials = document.getElementById('user-initials');
     
-    // Extract initials from user name
-    const initials = user.name.split(' ').map(word => word.charAt(0)).join('').substring(0, 2);
-    userInitials.textContent = initials;
+    if (user && user.name) {
+        // Extract initials from user name
+        const initials = user.name.split(' ').map(word => word.charAt(0)).join('').substring(0, 2);
+        if (userInitials) {
+            userInitials.textContent = initials;
+            console.log('👤 SET USER INITIALS:', initials);
+        }
+        
+        if (guestIcon) guestIcon.style.display = 'none';
+        if (userInitials) userInitials.style.display = 'block';
+    }
     
-    guestIcon.style.display = 'none';
-    userInitials.style.display = 'block';
-    overlay.classList.remove('active');
-    appContainer.style.display = 'flex';
-    appContainer.style.opacity = '0';
-    setTimeout(() => {
-        appContainer.style.transition = 'opacity 0.5s ease';
-        appContainer.style.opacity = '1';
-    }, 50);
+    // Hide auth overlay and show app
+    if (overlay) {
+        overlay.classList.remove('active');
+        console.log('✅ REMOVED ACTIVE CLASS FROM OVERLAY');
+    }
+    
+    if (appContainer) {
+        appContainer.style.display = 'flex';
+        appContainer.style.opacity = '0';
+        console.log('✅ SET APP CONTAINER TO FLEX');
+        
+        setTimeout(() => {
+            appContainer.style.transition = 'opacity 0.5s ease';
+            appContainer.style.opacity = '1';
+            console.log('✅ SET APP CONTAINER OPACITY TO 1');
+        }, 50);
+    }
     
     // Unlock history section
     const historySection = document.getElementById('calc-history');
     if (historySection) {
         historySection.classList.remove('history-locked');
+        console.log('✅ UNLOCKED HISTORY SECTION');
     }
     
     // Restore normal save buttons
@@ -2297,6 +2323,8 @@ const login = (user, token) => {
     if (signupError) signupError.textContent = "";
     if (loginForm) loginForm.reset();
     if (signupForm) signupForm.reset();
+    
+    console.log('🎉 LOGIN FUNCTION COMPLETED SUCCESSFULLY');
     
     // Refresh charts now that container is visible
     calculateSIP();
@@ -3068,6 +3096,32 @@ function initProjection() {
 // Initialize all calculators on load
 window.addEventListener('DOMContentLoaded', () => {
     console.log('=== FinCalc App Starting ===');
+    
+    // Check if user is already logged in
+    const authToken = localStorage.getItem('auth_token');
+    if (authToken) {
+        console.log('🔑 Found existing auth token, attempting auto-login...');
+        // Try to verify the token and auto-login
+        fetch('/api/verify', {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.user) {
+                console.log('✅ Auto-login successful:', data.user);
+                login(data.user, authToken);
+                return;
+            } else {
+                console.log('❌ Token invalid, clearing...');
+                localStorage.removeItem('auth_token');
+            }
+        })
+        .catch(err => {
+            console.log('❌ Auto-login failed:', err);
+            localStorage.removeItem('auth_token');
+        });
+    }
     
     // EMERGENCY BYPASS - Auto-login as guest after 2 seconds if auth fails
     setTimeout(() => {
