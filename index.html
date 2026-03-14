@@ -140,6 +140,35 @@
             </div>
         </div>
     </div>
+    <!-- Fallback auth-tab handler to ensure Sign Up / Guest are clickable
+         even if main script initialization fails -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            try {
+                var authTabs = document.querySelectorAll('.auth-tab');
+                var authForms = document.querySelectorAll('.auth-form');
+                if (!authTabs.length || !authForms.length) return;
+
+                authTabs.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        authTabs.forEach(function (b) { b.classList.remove('active'); });
+                        authForms.forEach(function (f) { f.classList.remove('active'); });
+
+                        this.classList.add('active');
+                        var formKey = this.getAttribute('data-form');
+                        var targetForm = formKey === 'guest'
+                            ? document.getElementById('guest-form')
+                            : document.getElementById(formKey + '-form');
+                        if (targetForm) {
+                            targetForm.classList.add('active');
+                        }
+                    });
+                });
+            } catch (e) {
+                console.error('Fallback auth tab handler failed:', e);
+            }
+        });
+    </script>
 
     <!-- Custom Confirmation Modal -->
     <div id="confirmation-modal" class="modal-overlay">
