@@ -3622,6 +3622,56 @@ body, html {
 .clocks-subtitle {
     color: var(--text-muted);
     font-size: 1rem;
+    margin-bottom: 2rem;
+}
+
+.global-time-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0;
+}
+
+.global-time-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1rem;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+    position: relative;
+    bottom: -2px;
+}
+
+.global-time-tab ion-icon {
+    font-size: 1.25rem;
+}
+
+.global-time-tab:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.global-time-tab.active {
+    color: var(--accent-color);
+    border-bottom-color: var(--accent-color);
+    background: rgba(99, 102, 241, 0.05);
+}
+
+.global-time-content {
+    display: none;
+}
+
+.global-time-content.active {
+    display: block;
 }
 
 .clocks-grid {

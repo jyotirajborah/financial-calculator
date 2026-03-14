@@ -369,8 +369,8 @@
                     <span>Timeline</span>
                 </button>
                 <button class="nav-item" data-target="world-clocks">
-                    <ion-icon name="time"></ion-icon>
-                    <span>World Clocks</span>
+                    <ion-icon name="globe"></ion-icon>
+                    <span>Global Time</span>
                 </button>
                 <button class="nav-item" data-target="help-shortcuts">
                     <ion-icon name="help-circle"></ion-icon>
@@ -1553,19 +1553,41 @@
                     </div>
                 </section>
 
-                <!-- World Clocks View -->
+                <!-- Global Time & Calendars View -->
                 <section class="calculator-view" id="world-clocks">
                     <div class="clocks-container">
                         <div class="clocks-header">
                             <div class="clocks-title">
-                                <ion-icon name="time"></ion-icon>
-                                <h2>World Clocks</h2>
+                                <ion-icon name="globe"></ion-icon>
+                                <h2>Global Time & Calendars</h2>
                             </div>
-                            <p class="clocks-subtitle">Track time across major financial markets</p>
+                            <p class="clocks-subtitle">Track time and dates across the world</p>
                         </div>
                         
-                        <div class="clocks-grid" id="clocks-grid">
-                            <!-- Clocks will be dynamically generated here -->
+                        <!-- Tabs for switching between Clocks and Calendars -->
+                        <div class="global-time-tabs">
+                            <button class="global-time-tab active" data-tab="clocks">
+                                <ion-icon name="time"></ion-icon>
+                                <span>World Clocks</span>
+                            </button>
+                            <button class="global-time-tab" data-tab="calendars">
+                                <ion-icon name="calendar"></ion-icon>
+                                <span>Ethnic Calendars</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Clocks Tab Content -->
+                        <div class="global-time-content active" id="clocks-content">
+                            <div class="clocks-grid" id="clocks-grid">
+                                <!-- Clocks will be dynamically generated here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Calendars Tab Content -->
+                        <div class="global-time-content" id="calendars-content">
+                            <div class="clocks-grid" id="calendars-grid">
+                                <!-- Calendars will be dynamically generated here -->
+                            </div>
                         </div>
                     </div>
                 </section>

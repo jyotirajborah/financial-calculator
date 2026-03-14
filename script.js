@@ -3193,14 +3193,16 @@ const worldClocks = [
 
 const initWorldClocks = () => {
     const clocksGrid = document.getElementById('clocks-grid');
-    if (!clocksGrid) return;
+    const calendarsGrid = document.getElementById('calendars-grid');
+    
+    if (!clocksGrid || !calendarsGrid) return;
     
     // Clear any existing interval
     if (clockInterval) {
         clearInterval(clockInterval);
     }
     
-    // Create clock cards
+    // Create clock cards (only world clocks)
     clocksGrid.innerHTML = worldClocks.map(clock => `
         <div class="clock-card glass-card">
             <div class="clock-city">
@@ -3216,7 +3218,10 @@ const initWorldClocks = () => {
                 <span>Checking...</span>
             </div>
         </div>
-    `).join('') + `
+    `).join('');
+    
+    // Create calendar cards (ethnic calendars)
+    calendarsGrid.innerHTML = `
         <div class="clock-card glass-card calendar-card hindu-calendar">
             <div class="clock-city">
                 <ion-icon name="moon"></ion-icon>
@@ -3309,6 +3314,9 @@ const initWorldClocks = () => {
         </div>
     `;
     
+    // Setup tab switching
+    setupGlobalTimeTabs();
+    
     // Update clocks immediately
     updateWorldClocks();
     updateAllCalendars();
@@ -3318,6 +3326,31 @@ const initWorldClocks = () => {
         updateWorldClocks();
         updateAllCalendars();
     }, 1000);
+};
+
+// Setup tab switching for Global Time section
+const setupGlobalTimeTabs = () => {
+    const tabs = document.querySelectorAll('.global-time-tab');
+    const contents = document.querySelectorAll('.global-time-content');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const targetTab = tab.getAttribute('data-tab');
+            
+            // Remove active from all tabs and contents
+            tabs.forEach(t => t.classList.remove('active'));
+            contents.forEach(c => c.classList.remove('active'));
+            
+            // Add active to clicked tab
+            tab.classList.add('active');
+            
+            // Show corresponding content
+            const targetContent = document.getElementById(`${targetTab}-content`);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+        });
+    });
 };
 
 const updateWorldClocks = () => {
