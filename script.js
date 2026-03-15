@@ -5101,6 +5101,8 @@ const initCountryFinancial = async () => {
         });
         
         countriesData = enrichedData.sort((a, b) => a.name.localeCompare(b.name));
+        console.log('Loaded countries:', countriesData.length);
+        console.log('Sample country data:', countriesData[0]);
         renderCountries();
     } catch (error) {
         console.error('Error fetching country data:', error);
