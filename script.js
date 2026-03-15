@@ -4262,6 +4262,41 @@ const initWhiteboard = () => {
         });
     }
     
+    // Zoom input
+    const zoomDisplay = document.getElementById('zoom-display');
+    if (zoomDisplay) {
+        // Select all text when clicked
+        zoomDisplay.addEventListener('click', () => {
+            zoomDisplay.select();
+        });
+        
+        // Handle Enter key
+        zoomDisplay.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const value = zoomDisplay.value.replace('%', '').trim();
+                const newZoom = parseFloat(value);
+                
+                if (!isNaN(newZoom) && newZoom >= 10 && newZoom <= 500) {
+                    zoomLevel = newZoom / 100;
+                    applyZoom();
+                    zoomDisplay.blur();
+                } else {
+                    showToast('Please enter a zoom level between 10% and 500%', 'error');
+                    zoomDisplay.value = `${Math.round(zoomLevel * 100)}%`;
+                }
+            } else if (e.key === 'Escape') {
+                zoomDisplay.value = `${Math.round(zoomLevel * 100)}%`;
+                zoomDisplay.blur();
+            }
+        });
+        
+        // Handle blur (when clicking away)
+        zoomDisplay.addEventListener('blur', () => {
+            zoomDisplay.value = `${Math.round(zoomLevel * 100)}%`;
+        });
+    }
+    
     // Keyboard support for panning with Space key
     let spacePressed = false;
     document.addEventListener('keydown', (e) => {
@@ -4540,7 +4575,7 @@ const applyZoom = () => {
     // Update zoom display
     const zoomDisplay = document.getElementById('zoom-display');
     if (zoomDisplay) {
-        zoomDisplay.textContent = `${Math.round(zoomLevel * 100)}%`;
+        zoomDisplay.value = `${Math.round(zoomLevel * 100)}%`;
     }
     
     console.log('Zoom level:', zoomLevel);
