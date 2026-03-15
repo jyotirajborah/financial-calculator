@@ -2925,8 +2925,14 @@ function calculateProjection() {
         debtPayment = Math.round(Math.max(disposable * 0.3, debt * dRate * 1.05));
         const minPmt = debt * dRate;
         if (debtPayment > minPmt) {
-            debtMonths = Math.ceil(Math.log(debtPayment / (debtPayment - debt * dRate)) / Math.log(1 + dRate));
-            totalDebtInterest = debtPayment * debtMonths - debt;
+            const monthsCalc = Math.log(debtPayment / (debtPayment - debt * dRate)) / Math.log(1 + dRate);
+            debtMonths = Math.ceil(monthsCalc);
+            // Cap at 600 months (50 years) for display purposes
+            if (debtMonths > 600 || !isFinite(debtMonths)) {
+                debtMonths = -1;
+            } else {
+                totalDebtInterest = debtPayment * debtMonths - debt;
+            }
         } else {
             debtMonths = -1;
         }
