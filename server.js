@@ -684,56 +684,158 @@ app.get('/api/billionaires', async (req, res) => {
 // Real-time market data endpoint
 app.get('/api/market-data', async (req, res) => {
     try {
-        const indices = [
-            { symbol: '^NSEI', name: 'NIFTY 50', country: 'India', timezone: 'Asia/Kolkata' },
-            { symbol: '^BSESN', name: 'SENSEX', country: 'India', timezone: 'Asia/Kolkata' },
-            { symbol: '^GSPC', name: 'S&P 500', country: 'USA', timezone: 'America/New_York' },
-            { symbol: '^DJI', name: 'Dow Jones', country: 'USA', timezone: 'America/New_York' },
-            { symbol: '^IXIC', name: 'NASDAQ', country: 'USA', timezone: 'America/New_York' },
-            { symbol: '^FTSE', name: 'FTSE 100', country: 'UK', timezone: 'Europe/London' },
-            { symbol: '^N225', name: 'Nikkei 225', country: 'Japan', timezone: 'Asia/Tokyo' },
-            { symbol: '^HSI', name: 'Hang Seng', country: 'Hong Kong', timezone: 'Asia/Hong_Kong' },
-            { symbol: '^GDAXI', name: 'DAX', country: 'Germany', timezone: 'Europe/Berlin' },
-            { symbol: '^AXJO', name: 'ASX 200', country: 'Australia', timezone: 'Australia/Sydney' }
-        ];
+        const https = require('https');
         
-        const baseValues = {
-            '^NSEI': 21500 + (Math.random() - 0.5) * 1000,
-            '^BSESN': 71000 + (Math.random() - 0.5) * 3000,
-            '^GSPC': 5800 + (Math.random() - 0.5) * 200,
-            '^DJI': 42000 + (Math.random() - 0.5) * 1000,
-            '^IXIC': 18500 + (Math.random() - 0.5) * 500,
-            '^FTSE': 8200 + (Math.random() - 0.5) * 200,
-            '^N225': 38000 + (Math.random() - 0.5) * 1000,
-            '^HSI': 19500 + (Math.random() - 0.5) * 500,
-            '^GDAXI': 18500 + (Math.random() - 0.5) * 500,
-            '^AXJO': 7800 + (Math.random() - 0.5) * 200
-        };
+        // Use Alpha Vantage API for real market data (free tier)
+        const apiKey = process.env.ALPHA_VANTAGE_API_KEY || 'demo';
         
-        const marketData = indices.map(index => {
-            const currentValue = baseValues[index.symbol];
-            const changePercent = (Math.random() - 0.5) * 4;
-            const changeValue = (currentValue * changePercent) / 100;
-            
-            return {
-                symbol: index.symbol,
-                name: index.name,
-                country: index.country,
-                timezone: index.timezone,
-                value: currentValue,
-                change: changeValue,
-                changePercent: changePercent,
-                timestamp: new Date().toISOString()
+        if (apiKey === 'demo') {
+            console.log('⚠️ Using simulated market data - add ALPHA_VANTAGE_API_KEY for real data');
+            return generateSimulatedMarketData(res);
+        }
+        
+        // Fetch real market data from Alpha Vantage
+        const symbols = ['NIFTY', 'SENSEX', 'SPY', 'DJI', 'QQQ', 'UKX', 'N225', 'HSI', 'DAX', 'AXJO'];
+        const marketData = [];
+        
+        let completed = 0;
+        const total = symbols.length;
+        
+        symbols.forEach((symbol, index) => {
+            const options = {
+                hostname: 'www.alphavantage.co',
+                path: `/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`,
+                method: 'GET'
             };
+            
+            const request = https.get(options, (apiRes) => {
+                let data = '';
+                
+                apiRes.on('data', (chunk) => {
+                    data += chunk;
+                });
+                
+                apiRes.on('end', () => {
+                    try {
+                        const jsonData = JSON.parse(data);
+                        const quote = jsonData['Global Quote'];
+                        
+                        if (quote && quote['05. price']) {
+                            const symbolMap = {
+                                'NIFTY': { name: 'NIFTY 50', country: 'India', timezone: 'Asia/Kolkata' },
+                                'SENSEX': { name: 'SENSEX', country: 'India', timezone: 'Asia/Kolkata' },
+                                'SPY': { name: 'S&P 500', country: 'USA', timezone: 'America/New_York' },
+                                'DJI': { name: 'Dow Jones', country: 'USA', timezone: 'America/New_York' },
+                                'QQQ': { name: 'NASDAQ', country: 'USA', timezone: 'America/New_York' },
+                                'UKX': { name: 'FTSE 100', country: 'UK', timezone: 'Europe/London' },
+                                'N225': { name: 'Nikkei 225', country: 'Japan', timezone: 'Asia/Tokyo' },
+                                'HSI': { name: 'Hang Seng', country: 'Hong Kong', timezone: 'Asia/Hong_Kong' },
+                                'DAX': { name: 'DAX', country: 'Germany', timezone: 'Europe/Berlin' },
+                                'AXJO': { name: 'ASX 200', country: 'Australia', timezone: 'Australia/Sydney' }
+                            };
+                            
+                            const info = symbolMap[symbol] || { name: symbol, country: 'Unknown', timezone: 'UTC' };
+                            
+                            marketData.push({
+                                symbol: symbol,
+                                name: info.name,
+                                country: info.country,
+                                timezone: info.timezone,
+                                value: parseFloat(quote['05. price']),
+                                change: parseFloat(quote['09. change']),
+                                changePercent: parseFloat(quote['10. change percent'].replace('%', '')),
+                                timestamp: new Date().toISOString()
+                            });
+                        }
+                    } catch (e) {
+                        console.error(`Error parsing data for ${symbol}:`, e);
+                    }
+                    
+                    completed++;
+                    if (completed === total) {
+                        if (marketData.length > 0) {
+                            console.log('✅ Real market data fetched successfully');
+                            res.json({ success: true, data: marketData });
+                        } else {
+                            console.log('⚠️ No real market data available, using simulated');
+                            generateSimulatedMarketData(res);
+                        }
+                    }
+                });
+            });
+            
+            request.on('error', (e) => {
+                console.error(`Market data request error for ${symbol}:`, e);
+                completed++;
+                if (completed === total) {
+                    console.log('⚠️ Real market data failed, using simulated');
+                    generateSimulatedMarketData(res);
+                }
+            });
+            
+            request.setTimeout(5000, () => {
+                request.destroy();
+                completed++;
+                if (completed === total) {
+                    console.log('⚠️ Market data timeout, using simulated');
+                    generateSimulatedMarketData(res);
+                }
+            });
         });
-        
-        res.json({ success: true, data: marketData });
         
     } catch (error) {
         console.error('Market data error:', error);
-        res.status(500).json({ success: false, error: error.message });
+        generateSimulatedMarketData(res);
     }
 });
+
+// Fallback simulated market data
+function generateSimulatedMarketData(res) {
+    const indices = [
+        { symbol: '^NSEI', name: 'NIFTY 50', country: 'India', timezone: 'Asia/Kolkata' },
+        { symbol: '^BSESN', name: 'SENSEX', country: 'India', timezone: 'Asia/Kolkata' },
+        { symbol: '^GSPC', name: 'S&P 500', country: 'USA', timezone: 'America/New_York' },
+        { symbol: '^DJI', name: 'Dow Jones', country: 'USA', timezone: 'America/New_York' },
+        { symbol: '^IXIC', name: 'NASDAQ', country: 'USA', timezone: 'America/New_York' },
+        { symbol: '^FTSE', name: 'FTSE 100', country: 'UK', timezone: 'Europe/London' },
+        { symbol: '^N225', name: 'Nikkei 225', country: 'Japan', timezone: 'Asia/Tokyo' },
+        { symbol: '^HSI', name: 'Hang Seng', country: 'Hong Kong', timezone: 'Asia/Hong_Kong' },
+        { symbol: '^GDAXI', name: 'DAX', country: 'Germany', timezone: 'Europe/Berlin' },
+        { symbol: '^AXJO', name: 'ASX 200', country: 'Australia', timezone: 'Australia/Sydney' }
+    ];
+    
+    const baseValues = {
+        '^NSEI': 21500 + (Math.random() - 0.5) * 1000,
+        '^BSESN': 71000 + (Math.random() - 0.5) * 3000,
+        '^GSPC': 5800 + (Math.random() - 0.5) * 200,
+        '^DJI': 42000 + (Math.random() - 0.5) * 1000,
+        '^IXIC': 18500 + (Math.random() - 0.5) * 500,
+        '^FTSE': 8200 + (Math.random() - 0.5) * 200,
+        '^N225': 38000 + (Math.random() - 0.5) * 1000,
+        '^HSI': 19500 + (Math.random() - 0.5) * 500,
+        '^GDAXI': 18500 + (Math.random() - 0.5) * 500,
+        '^AXJO': 7800 + (Math.random() - 0.5) * 200
+    };
+    
+    const marketData = indices.map(index => {
+        const currentValue = baseValues[index.symbol];
+        const changePercent = (Math.random() - 0.5) * 4;
+        const changeValue = (currentValue * changePercent) / 100;
+        
+        return {
+            symbol: index.symbol,
+            name: index.name,
+            country: index.country,
+            timezone: index.timezone,
+            value: currentValue,
+            change: changeValue,
+            changePercent: changePercent,
+            timestamp: new Date().toISOString()
+        };
+    });
+    
+    res.json({ success: true, data: marketData });
+}
 
 // Fallback route
 app.use((req, res, next) => {

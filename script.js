@@ -3337,10 +3337,6 @@ const initWorldClocks = () => {
                 <div class="calendar-month" id="hindu-month">---</div>
                 <div class="calendar-detail" id="hindu-tithi">---</div>
                 <div class="calendar-detail" id="hindu-paksha">---</div>
-                <div class="calendar-badge hindu-badge">
-                    <ion-icon name="calendar"></ion-icon>
-                    <span id="hindu-gregorian">---</span>
-                </div>
             </div>
             <div class="calendar-expanded" id="hindu-expanded">
                 <div class="calendar-year-view" id="hindu-year-view"></div>
@@ -3366,10 +3362,6 @@ const initWorldClocks = () => {
                 <div class="calendar-month" id="islamic-month">---</div>
                 <div class="calendar-detail" id="islamic-day">---</div>
                 <div class="calendar-detail" id="islamic-weekday">---</div>
-                <div class="calendar-badge islamic-badge">
-                    <ion-icon name="calendar"></ion-icon>
-                    <span id="islamic-gregorian">---</span>
-                </div>
             </div>
             <div class="calendar-expanded" id="islamic-expanded">
                 <div class="calendar-year-view" id="islamic-year-view"></div>
@@ -3395,10 +3387,6 @@ const initWorldClocks = () => {
                 <div class="calendar-month" id="hebrew-month">---</div>
                 <div class="calendar-detail" id="hebrew-day">---</div>
                 <div class="calendar-detail" id="hebrew-weekday">---</div>
-                <div class="calendar-badge hebrew-badge">
-                    <ion-icon name="calendar"></ion-icon>
-                    <span id="hebrew-gregorian">---</span>
-                </div>
             </div>
             <div class="calendar-expanded" id="hebrew-expanded">
                 <div class="calendar-year-view" id="hebrew-year-view"></div>
@@ -3424,10 +3412,6 @@ const initWorldClocks = () => {
                 <div class="calendar-month" id="chinese-month">---</div>
                 <div class="calendar-detail" id="chinese-zodiac">---</div>
                 <div class="calendar-detail" id="chinese-element">---</div>
-                <div class="calendar-badge chinese-badge">
-                    <ion-icon name="calendar"></ion-icon>
-                    <span id="chinese-gregorian">---</span>
-                </div>
             </div>
             <div class="calendar-expanded" id="chinese-expanded">
                 <div class="calendar-year-view" id="chinese-year-view"></div>
@@ -3453,10 +3437,6 @@ const initWorldClocks = () => {
                 <div class="calendar-month" id="persian-month">---</div>
                 <div class="calendar-detail" id="persian-day">---</div>
                 <div class="calendar-detail" id="persian-season">---</div>
-                <div class="calendar-badge persian-badge">
-                    <ion-icon name="calendar"></ion-icon>
-                    <span id="persian-gregorian">---</span>
-                </div>
             </div>
             <div class="calendar-expanded" id="persian-expanded">
                 <div class="calendar-year-view" id="persian-year-view"></div>
@@ -3482,10 +3462,6 @@ const initWorldClocks = () => {
                 <div class="calendar-month" id="ethiopian-month">---</div>
                 <div class="calendar-detail" id="ethiopian-day">---</div>
                 <div class="calendar-detail" id="ethiopian-era">---</div>
-                <div class="calendar-badge ethiopian-badge">
-                    <ion-icon name="calendar"></ion-icon>
-                    <span id="ethiopian-gregorian">---</span>
-                </div>
             </div>
             <div class="calendar-expanded" id="ethiopian-expanded">
                 <div class="calendar-year-view" id="ethiopian-year-view"></div>
@@ -4001,7 +3977,6 @@ const updateHinduCalendar = () => {
         const monthElement = document.getElementById('hindu-month');
         const tithiElement = document.getElementById('hindu-tithi');
         const pakshaElement = document.getElementById('hindu-paksha');
-        const gregorianElement = document.getElementById('hindu-gregorian');
         
         if (yearElement) yearElement.textContent = `${vikramYear} VS`;
         if (monthElement) monthElement.textContent = hinduMonths[hinduMonthIndex];
@@ -4049,9 +4024,6 @@ const updateIslamicCalendar = () => {
         document.getElementById('islamic-month').textContent = islamicMonths[islamicMonthIndex];
         document.getElementById('islamic-day').textContent = `Day ${islamicDay}`;
         document.getElementById('islamic-weekday').textContent = now.toLocaleDateString('en-US', { weekday: 'long' });
-        document.getElementById('islamic-gregorian').textContent = now.toLocaleDateString('en-US', {
-            day: 'numeric', month: 'short', year: 'numeric'
-        });
     } catch (error) {
         console.error('Error updating Islamic calendar:', error);
     }
@@ -4080,9 +4052,6 @@ const updateHebrewCalendar = () => {
         document.getElementById('hebrew-month').textContent = hebrewMonths[hebrewMonthIndex];
         document.getElementById('hebrew-day').textContent = `Day ${hebrewDay}`;
         document.getElementById('hebrew-weekday').textContent = now.toLocaleDateString('en-US', { weekday: 'long' });
-        document.getElementById('hebrew-gregorian').textContent = now.toLocaleDateString('en-US', {
-            day: 'numeric', month: 'short', year: 'numeric'
-        });
     } catch (error) {
         console.error('Error updating Hebrew calendar:', error);
     }
@@ -4111,9 +4080,6 @@ const updateChineseCalendar = () => {
         document.getElementById('chinese-month').textContent = `${chineseMonths[monthIndex]} Month`;
         document.getElementById('chinese-zodiac').textContent = `Year of the ${zodiacAnimals[zodiacIndex]}`;
         document.getElementById('chinese-element').textContent = `${elements[elementIndex]} Element`;
-        document.getElementById('chinese-gregorian').textContent = now.toLocaleDateString('en-US', {
-            day: 'numeric', month: 'short', year: 'numeric'
-        });
     } catch (error) {
         console.error('Error updating Chinese calendar:', error);
     }
@@ -4152,9 +4118,6 @@ const updatePersianCalendar = () => {
         document.getElementById('persian-month').textContent = persianMonths[persianMonthIndex];
         document.getElementById('persian-day').textContent = `Day ${now.getDate()}`;
         document.getElementById('persian-season').textContent = seasons[persianMonthIndex];
-        document.getElementById('persian-gregorian').textContent = now.toLocaleDateString('en-US', {
-            day: 'numeric', month: 'short', year: 'numeric'
-        });
     } catch (error) {
         console.error('Error updating Persian calendar:', error);
     }
@@ -4190,9 +4153,6 @@ const updateEthiopianCalendar = () => {
         document.getElementById('ethiopian-month').textContent = ethiopianMonths[ethiopianMonthIndex];
         document.getElementById('ethiopian-day').textContent = `Day ${now.getDate()}`;
         document.getElementById('ethiopian-era').textContent = 'Era of Mercy';
-        document.getElementById('ethiopian-gregorian').textContent = now.toLocaleDateString('en-US', {
-            day: 'numeric', month: 'short', year: 'numeric'
-        });
     } catch (error) {
         console.error('Error updating Ethiopian calendar:', error);
     }
