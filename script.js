@@ -6191,10 +6191,6 @@ const renderRichestPeople = () => {
                             <ion-icon name="business"></ion-icon>
                             <span>${person.industry}</span>
                         </div>
-                        <div class="richest-detail-item">
-                            <ion-icon name="calendar"></ion-icon>
-                            <span>Age: ${person.age}</span>
-                        </div>
                     </div>
 
                     ${hasPortfolio ? `
