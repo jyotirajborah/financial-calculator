@@ -5782,7 +5782,267 @@ const richestPeopleByCountry = [
     { name: 'Goh Cheng Liang', country: 'Singapore', countryCode: 'SG', wealth: 12, source: 'Paints', age: 96, industry: 'Manufacturing' },
     { name: 'Robert Kuok', country: 'Malaysia', countryCode: 'MY', wealth: 11, source: 'Palm Oil, Shipping', age: 100, industry: 'Commodities' },
     { name: 'Ananda Krishnan', country: 'Malaysia', countryCode: 'MY', wealth: 5.8, source: 'Telecom, Media', age: 85, industry: 'Telecommunications' },
-    { name: 'Pham Nhat Vuong', country: 'Vietnam', countryCode: 'VN', wealth: 4.2, source: 'Vingroup', age: 55, industry: 'Real Estate, Automotive' }
+    { name: 'Francoise Bettencourt Meyers', country: 'France', countryCode: 'FR', wealth: 80, source: "L'Oréal", age: 70, industry: 'Cosmetics',
+      portfolio: [
+        { company: "L'Oréal", stake: '33%', value: 75, description: 'World\'s largest cosmetics company' },
+        { company: 'Tethys SAS', stake: '100%', value: 3, description: 'Family investment company' },
+        { company: 'Nestle', stake: '0.01%', value: 2, description: 'Food and beverage company' }
+      ]
+    },
+    { name: 'Amancio Ortega', country: 'Spain', countryCode: 'ES', wealth: 77, source: 'Zara, Inditex', age: 87, industry: 'Fashion Retail',
+      portfolio: [
+        { company: 'Inditex', stake: '59%', value: 70, description: 'Fashion retail group (Zara, Massimo Dutti)' },
+        { company: 'Real Estate', stake: 'N/A', value: 5, description: 'Properties in Madrid, London, Miami' },
+        { company: 'Pontegadea Inversiones', stake: '100%', value: 2, description: 'Investment holding company' }
+      ]
+    },
+    { name: 'Carlos Slim Helu', country: 'Mexico', countryCode: 'MX', wealth: 68, source: 'Telecom', age: 84, industry: 'Telecommunications',
+      portfolio: [
+        { company: 'América Móvil', stake: '17%', value: 45, description: 'Telecommunications giant' },
+        { company: 'Grupo Carso', stake: '82%', value: 15, description: 'Conglomerate (retail, infrastructure)' },
+        { company: 'Grupo Financiero Inbursa', stake: '66%', value: 5, description: 'Banking and financial services' },
+        { company: 'Minera Frisco', stake: '85%', value: 3, description: 'Mining operations' }
+      ]
+    },
+    { name: 'Zhong Shanshan', country: 'China', countryCode: 'CN', wealth: 62, source: 'Nongfu Spring', age: 69, industry: 'Beverages',
+      portfolio: [
+        { company: 'Nongfu Spring', stake: '84%', value: 50, description: 'Bottled water and beverages' },
+        { company: 'Beijing Wantai Biological Pharmacy', stake: '75%', value: 10, description: 'Vaccine and diagnostics' },
+        { company: 'Yangshengtang', stake: '100%', value: 2, description: 'Health supplements' }
+      ]
+    },
+    { name: 'Michael Bloomberg', country: 'United States', countryCode: 'US', wealth: 96, source: 'Bloomberg LP', age: 81, industry: 'Media, Finance',
+      portfolio: [
+        { company: 'Bloomberg LP', stake: '88%', value: 90, description: 'Financial data and media company' },
+        { company: 'Real Estate', stake: 'N/A', value: 4, description: 'Properties in New York and London' },
+        { company: 'Bloomberg Philanthropies', stake: '100%', value: 2, description: 'Charitable foundation' }
+      ]
+    },
+    { name: 'Jim Walton', country: 'United States', countryCode: 'US', wealth: 65, source: 'Walmart', age: 75, industry: 'Retail',
+      portfolio: [
+        { company: 'Walmart', stake: '11.5%', value: 60, description: 'World\'s largest retailer' },
+        { company: 'Arvest Bank', stake: '79%', value: 3, description: 'Regional banking' },
+        { company: 'Community Publishers', stake: '100%', value: 2, description: 'Newspaper publishing' }
+      ]
+    },
+    { name: 'Rob Walton', country: 'United States', countryCode: 'US', wealth: 64, source: 'Walmart', age: 79, industry: 'Retail',
+      portfolio: [
+        { company: 'Walmart', stake: '11.3%', value: 59, description: 'World\'s largest retailer' },
+        { company: 'Denver Broncos', stake: '100%', value: 4.5, description: 'NFL franchise' },
+        { company: 'Real Estate', stake: 'N/A', value: 0.5, description: 'Properties in Colorado' }
+      ]
+    },
+    { name: 'Alice Walton', country: 'United States', countryCode: 'US', wealth: 63, source: 'Walmart', age: 74, industry: 'Retail',
+      portfolio: [
+        { company: 'Walmart', stake: '11.2%', value: 58, description: 'World\'s largest retailer' },
+        { company: 'Crystal Bridges Museum', stake: '100%', value: 1.5, description: 'Art museum in Arkansas' },
+        { company: 'Art Collection', stake: 'N/A', value: 3.5, description: 'Personal art collection' }
+      ]
+    },
+    { name: 'Jack Ma', country: 'China', countryCode: 'CN', wealth: 34, source: 'Alibaba', age: 59, industry: 'E-commerce',
+      portfolio: [
+        { company: 'Alibaba Group', stake: '4.8%', value: 25, description: 'E-commerce and cloud computing' },
+        { company: 'Ant Group', stake: '8.8%', value: 7, description: 'Fintech and digital payments' },
+        { company: 'Yunfeng Capital', stake: 'Founder', value: 2, description: 'Private equity firm' }
+      ]
+    },
+    { name: 'Ma Huateng', country: 'China', countryCode: 'CN', wealth: 38, source: 'Tencent', age: 52, industry: 'Technology, Gaming',
+      portfolio: [
+        { company: 'Tencent', stake: '8.4%', value: 35, description: 'Social media, gaming, fintech' },
+        { company: 'Tesla', stake: '0.6%', value: 2, description: 'Electric vehicles' },
+        { company: 'Snap Inc', stake: '12%', value: 1, description: 'Social media platform' }
+      ]
+    },
+    { name: 'Colin Huang', country: 'China', countryCode: 'CN', wealth: 36, source: 'Pinduoduo', age: 43, industry: 'E-commerce',
+      portfolio: [
+        { company: 'PDD Holdings (Pinduoduo)', stake: '26%', value: 34, description: 'E-commerce platform' },
+        { company: 'Temu', stake: 'Via PDD', value: 2, description: 'International e-commerce' }
+      ]
+    },
+    { name: 'Tadashi Yanai', country: 'Japan', countryCode: 'JP', wealth: 35, source: 'Uniqlo, Fast Retailing', age: 74, industry: 'Fashion Retail',
+      portfolio: [
+        { company: 'Fast Retailing', stake: '44%', value: 33, description: 'Fashion retail (Uniqlo, GU)' },
+        { company: 'Theory', stake: 'Via FR', value: 1.5, description: 'Fashion brand' },
+        { company: 'J Brand', stake: 'Via FR', value: 0.5, description: 'Denim brand' }
+      ]
+    },
+    { name: 'Giovanni Ferrero', country: 'Italy', countryCode: 'IT', wealth: 39, source: 'Ferrero', age: 59, industry: 'Confectionery',
+      portfolio: [
+        { company: 'Ferrero Group', stake: '50%', value: 38, description: 'Confectionery (Nutella, Ferrero Rocher)' },
+        { company: 'Thorntons', stake: 'Via Ferrero', value: 0.5, description: 'UK chocolate brand' },
+        { company: 'Fannie May', stake: 'Via Ferrero', value: 0.5, description: 'US chocolate brand' }
+      ]
+    },
+    { name: 'Klaus-Michael Kuehne', country: 'Germany', countryCode: 'DE', wealth: 36, source: 'Logistics', age: 86, industry: 'Shipping, Logistics',
+      portfolio: [
+        { company: 'Kuehne + Nagel', stake: '53%', value: 30, description: 'Global logistics company' },
+        { company: 'Hapag-Lloyd', stake: '30%', value: 5, description: 'Container shipping' },
+        { company: 'VTG AG', stake: '25%', value: 1, description: 'Rail logistics' }
+      ]
+    },
+    { name: 'Dieter Schwarz', country: 'Germany', countryCode: 'DE', wealth: 47, source: 'Lidl, Kaufland', age: 84, industry: 'Retail',
+      portfolio: [
+        { company: 'Schwarz Group (Lidl)', stake: '100%', value: 30, description: 'Discount supermarket chain' },
+        { company: 'Kaufland', stake: '100%', value: 15, description: 'Hypermarket chain' },
+        { company: 'PreZero', stake: '100%', value: 2, description: 'Waste management and recycling' }
+      ]
+    },
+    { name: 'Gina Rinehart', country: 'Australia', countryCode: 'AU', wealth: 30, source: 'Mining', age: 69, industry: 'Mining, Agriculture',
+      portfolio: [
+        { company: 'Hancock Prospecting', stake: '100%', value: 25, description: 'Iron ore mining' },
+        { company: 'Roy Hill', stake: '70%', value: 3, description: 'Iron ore mine and infrastructure' },
+        { company: 'Cattle Stations', stake: '100%', value: 2, description: 'Agricultural properties' }
+      ]
+    },
+    { name: 'Alain Wertheimer', country: 'France', countryCode: 'FR', wealth: 40, source: 'Chanel', age: 75, industry: 'Luxury Fashion',
+      portfolio: [
+        { company: 'Chanel', stake: '50%', value: 38, description: 'Luxury fashion house' },
+        { company: 'Vineyards', stake: '100%', value: 1.5, description: 'Wine estates in France' },
+        { company: 'Horse Racing', stake: 'N/A', value: 0.5, description: 'Thoroughbred breeding' }
+      ]
+    },
+    { name: 'Gerard Wertheimer', country: 'France', countryCode: 'FR', wealth: 40, source: 'Chanel', age: 73, industry: 'Luxury Fashion',
+      portfolio: [
+        { company: 'Chanel', stake: '50%', value: 38, description: 'Luxury fashion house' },
+        { company: 'Vineyards', stake: '100%', value: 1.5, description: 'Wine estates in France' },
+        { company: 'Horse Racing', stake: 'N/A', value: 0.5, description: 'Thoroughbred breeding' }
+      ]
+    },
+    { name: 'David Thomson', country: 'Canada', countryCode: 'CA', wealth: 55, source: 'Thomson Reuters', age: 66, industry: 'Media',
+      portfolio: [
+        { company: 'Thomson Reuters', stake: '66%', value: 45, description: 'News and information services' },
+        { company: 'The Globe and Mail', stake: '100%', value: 1, description: 'Canadian newspaper' },
+        { company: 'Woodbridge Company', stake: '97%', value: 9, description: 'Family investment firm' }
+      ]
+    },
+    { name: 'Len Blavatnik', country: 'United Kingdom', countryCode: 'GB', wealth: 32, source: 'Access Industries', age: 66, industry: 'Investments, Music',
+      portfolio: [
+        { company: 'Access Industries', stake: '100%', value: 20, description: 'Diversified holding company' },
+        { company: 'Warner Music Group', stake: '100%', value: 8, description: 'Music entertainment company' },
+        { company: 'DAZN', stake: 'Majority', value: 3, description: 'Sports streaming service' },
+        { company: 'LyondellBasell', stake: '16%', value: 1, description: 'Chemicals and refining' }
+      ]
+    },
+    { name: 'Lee Shau Kee', country: 'Hong Kong', countryCode: 'HK', wealth: 29, source: 'Real Estate', age: 96, industry: 'Real Estate',
+      portfolio: [
+        { company: 'Henderson Land Development', stake: '43%', value: 20, description: 'Real estate development' },
+        { company: 'Hong Kong and China Gas', stake: '33%', value: 7, description: 'Utility company' },
+        { company: 'Miramar Hotel', stake: '65%', value: 2, description: 'Hospitality' }
+      ]
+    },
+    { name: 'Li Ka-shing', country: 'Hong Kong', countryCode: 'HK', wealth: 37, source: 'Diversified', age: 95, industry: 'Conglomerate',
+      portfolio: [
+        { company: 'CK Hutchison Holdings', stake: '30%', value: 20, description: 'Conglomerate (ports, retail, telecom)' },
+        { company: 'CK Asset Holdings', stake: '30%', value: 12, description: 'Real estate and infrastructure' },
+        { company: 'Power Assets Holdings', stake: '33%', value: 5, description: 'Energy and utilities' }
+      ]
+    },
+    { name: 'Shiv Nadar', country: 'India', countryCode: 'IN', wealth: 28, source: 'HCL Technologies', age: 78, industry: 'Technology',
+      portfolio: [
+        { company: 'HCL Technologies', stake: '58%', value: 25, description: 'IT services and consulting' },
+        { company: 'HCL Infosystems', stake: '46%', value: 2, description: 'Technology products' },
+        { company: 'Shiv Nadar Foundation', stake: '100%', value: 1, description: 'Educational philanthropy' }
+      ]
+    },
+    { name: 'Cyril Ramaphosa', country: 'South Africa', countryCode: 'ZA', wealth: 0.45, source: 'Investments', age: 71, industry: 'Politics, Business',
+      portfolio: [
+        { company: 'Shanduka Group', stake: 'Founder', value: 0.2, description: 'Investment holding company' },
+        { company: 'McDonald\'s SA', stake: 'Former', value: 0.15, description: 'Fast food franchise (divested)' },
+        { company: 'MTN', stake: 'Former', value: 0.1, description: 'Telecommunications (divested)' }
+      ]
+    },
+    { name: 'Johann Rupert', country: 'South Africa', countryCode: 'ZA', wealth: 11, source: 'Richemont', age: 73, industry: 'Luxury Goods',
+      portfolio: [
+        { company: 'Richemont', stake: '10%', value: 9, description: 'Luxury goods (Cartier, Van Cleef)' },
+        { company: 'Remgro', stake: '26%', value: 1.5, description: 'Investment holding company' },
+        { company: 'Reinet Investments', stake: '25%', value: 0.5, description: 'Investment company' }
+      ]
+    },
+    { name: 'Aliko Dangote', country: 'Nigeria', countryCode: 'NG', wealth: 13.5, source: 'Cement, Sugar', age: 66, industry: 'Manufacturing',
+      portfolio: [
+        { company: 'Dangote Cement', stake: '86%', value: 10, description: 'Largest cement producer in Africa' },
+        { company: 'Dangote Sugar', stake: '95%', value: 2, description: 'Sugar refining' },
+        { company: 'Dangote Refinery', stake: '100%', value: 1.5, description: 'Oil refinery (under construction)' }
+      ]
+    },
+    { name: 'Nicky Oppenheimer', country: 'South Africa', countryCode: 'ZA', wealth: 8.7, source: 'Diamonds', age: 78, industry: 'Mining',
+      portfolio: [
+        { company: 'De Beers (sold)', stake: 'Former 40%', value: 5.2, description: 'Diamond mining (sold to Anglo American)' },
+        { company: 'E Oppenheimer & Son', stake: '100%', value: 2.5, description: 'Investment company' },
+        { company: 'Tswalu Kalahari Reserve', stake: '100%', value: 1, description: 'Private game reserve' }
+      ]
+    },
+    { name: 'Mohamed Al Fayed', country: 'Egypt', countryCode: 'EG', wealth: 2.0, source: 'Retail, Hotels', age: 94, industry: 'Retail, Hospitality',
+      portfolio: [
+        { company: 'Harrods (sold)', stake: 'Former 100%', value: 1.5, description: 'Luxury department store (sold)' },
+        { company: 'Hôtel Ritz Paris (sold)', stake: 'Former 100%', value: 0.3, description: 'Luxury hotel (sold)' },
+        { company: 'Fulham FC (sold)', stake: 'Former 100%', value: 0.2, description: 'Football club (sold)' }
+      ]
+    },
+    { name: 'Nassef Sawiris', country: 'Egypt', countryCode: 'EG', wealth: 7.4, source: 'Construction, Chemicals', age: 62, industry: 'Construction',
+      portfolio: [
+        { company: 'OCI NV', stake: '42%', value: 4, description: 'Nitrogen fertilizers' },
+        { company: 'Adidas', stake: '6%', value: 2, description: 'Sportswear company' },
+        { company: 'Aston Villa FC', stake: '55%', value: 1, description: 'English football club' },
+        { company: 'Lafarge', stake: '7%', value: 0.4, description: 'Building materials' }
+      ]
+    },
+    { name: 'Naguib Sawiris', country: 'Egypt', countryCode: 'EG', wealth: 3.3, source: 'Telecom', age: 69, industry: 'Telecommunications',
+      portfolio: [
+        { company: 'Orascom TMT Investments', stake: '90%', value: 2, description: 'Telecom and media investments' },
+        { company: 'Euronews', stake: '53%', value: 0.5, description: 'News media network' },
+        { company: 'Mobinil (sold)', stake: 'Former', value: 0.8, description: 'Egyptian mobile operator (sold)' }
+      ]
+    },
+    { name: 'Iris Fontbona', country: 'Chile', countryCode: 'CL', wealth: 23, source: 'Mining', age: 81, industry: 'Mining',
+      portfolio: [
+        { company: 'Antofagasta PLC', stake: '65%', value: 18, description: 'Copper mining' },
+        { company: 'Quiñenco', stake: '58%', value: 4, description: 'Conglomerate (banking, beverages)' },
+        { company: 'Banco de Chile', stake: 'Via Quiñenco', value: 1, description: 'Banking' }
+      ]
+    },
+    { name: 'Jorge Paulo Lemann', country: 'Brazil', countryCode: 'BR', wealth: 15, source: 'AB InBev', age: 84, industry: 'Beverages',
+      portfolio: [
+        { company: 'AB InBev', stake: '5%', value: 10, description: 'World\'s largest brewer' },
+        { company: 'Restaurant Brands International', stake: '10%', value: 3, description: 'Burger King, Tim Hortons' },
+        { company: 'Kraft Heinz', stake: '5%', value: 2, description: 'Food and beverage company' }
+      ]
+    },
+    { name: 'Eduardo Saverin', country: 'Singapore', countryCode: 'SG', wealth: 18, source: 'Facebook', age: 41, industry: 'Technology',
+      portfolio: [
+        { company: 'Meta Platforms', stake: '2%', value: 15, description: 'Social media (Facebook co-founder)' },
+        { company: 'B Capital Group', stake: 'Co-founder', value: 2, description: 'Venture capital firm' },
+        { company: 'Various Startups', stake: 'N/A', value: 1, description: 'Early-stage investments' }
+      ]
+    },
+    { name: 'Goh Cheng Liang', country: 'Singapore', countryCode: 'SG', wealth: 12, source: 'Paints', age: 96, industry: 'Manufacturing',
+      portfolio: [
+        { company: 'Nippon Paint Holdings', stake: '47%', value: 11, description: 'Paint and coatings manufacturer' },
+        { company: 'Wuthelam Holdings', stake: '100%', value: 1, description: 'Investment holding company' }
+      ]
+    },
+    { name: 'Robert Kuok', country: 'Malaysia', countryCode: 'MY', wealth: 11, source: 'Palm Oil, Shipping', age: 100, industry: 'Commodities',
+      portfolio: [
+        { company: 'Wilmar International', stake: '18%', value: 6, description: 'Palm oil and agribusiness' },
+        { company: 'Shangri-La Hotels', stake: '50%', value: 3, description: 'Luxury hotel chain' },
+        { company: 'Kerry Group', stake: '35%', value: 2, description: 'Logistics and trading' }
+      ]
+    },
+    { name: 'Ananda Krishnan', country: 'Malaysia', countryCode: 'MY', wealth: 5.8, source: 'Telecom, Media', age: 85, industry: 'Telecommunications',
+      portfolio: [
+        { company: 'Maxis Communications', stake: '74%', value: 3, description: 'Mobile telecommunications' },
+        { company: 'Astro Malaysia', stake: '48%', value: 1.5, description: 'Satellite TV and media' },
+        { company: 'Bumi Armada', stake: '30%', value: 1, description: 'Offshore oil and gas services' },
+        { company: 'Tanjong PLC', stake: '100%', value: 0.3, description: 'Power generation' }
+      ]
+    },
+    { name: 'Pham Nhat Vuong', country: 'Vietnam', countryCode: 'VN', wealth: 4.2, source: 'Vingroup', age: 55, industry: 'Real Estate, Automotive',
+      portfolio: [
+        { company: 'Vingroup', stake: '25%', value: 3, description: 'Conglomerate (real estate, retail)' },
+        { company: 'VinFast', stake: 'Via Vingroup', value: 1, description: 'Electric vehicle manufacturer' },
+        { company: 'Vincom Retail', stake: 'Via Vingroup', value: 0.2, description: 'Shopping mall operator' }
+      ]
+    }
 ];
 
 const initRichestPeople = () => {
