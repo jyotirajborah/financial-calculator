@@ -17,6 +17,8 @@ console.log('🔗 Port:', PORT);
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_KEY;
 
+console.log('🔧 Initializing Supabase client...');
+
 if (!SUPABASE_URL || !SUPABASE_KEY) {
     console.error('❌ Missing Supabase configuration');
     console.error('SUPABASE_URL:', !!SUPABASE_URL);
