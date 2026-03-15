@@ -5007,25 +5007,25 @@ const countryFinancialData = [
     { name: 'Brazil', code: 'BR', gdp: 2.08, growth: 2.9, debt: 88, inflation: 4.6, unemployment: 8.5, currency: 'BRL', rating: 'BB-' },
     { name: 'Canada', code: 'CA', gdp: 2.14, growth: 1.5, debt: 106, inflation: 3.9, unemployment: 5.4, currency: 'CAD', rating: 'AAA' },
     { name: 'Chile', code: 'CL', gdp: 0.30, growth: 0.2, debt: 39, inflation: 11.6, unemployment: 8.9, currency: 'CLP', rating: 'A' },
-    { name: 'China', code: 'CN', gdp: 17.96, growth: 5.2, debt: 77, inflation: 0.2, unemployment: 5.2, currency: 'CNY', rating: 'A+' },
+    { name: 'China', code: 'CN', gdp: 17.96, growth: 5.2, debt: 77, inflation: 0.2, unemployment: 5.2, currency: 'CNY', rating: 'A+', resources: 'Rare Earth Elements, Coal, Iron Ore, Oil, Natural Gas', knownFor: 'Manufacturing, Technology, Infrastructure, Trade', exports: 'Electronics, Machinery, Textiles, Furniture, Toys', imports: 'Oil, Semiconductors, Iron Ore, Soybeans, Vehicles', military: 'Rank #3 - Budget: $292B, Active: 2.0M', government: 'Socialist Republic (One-Party State)' },
     { name: 'Colombia', code: 'CO', gdp: 0.36, growth: 1.0, debt: 72, inflation: 11.8, unemployment: 10.7, currency: 'COP', rating: 'BB+' },
     { name: 'Czech Republic', code: 'CZ', gdp: 0.29, growth: -0.2, debt: 44, inflation: 15.1, unemployment: 2.6, currency: 'CZK', rating: 'AA-' },
     { name: 'Denmark', code: 'DK', gdp: 0.40, growth: 1.8, debt: 30, inflation: 7.7, unemployment: 4.5, currency: 'DKK', rating: 'AAA' },
     { name: 'Egypt', code: 'EG', gdp: 0.48, growth: 3.8, debt: 95, inflation: 33.7, unemployment: 7.1, currency: 'EGP', rating: 'B' },
     { name: 'Finland', code: 'FI', gdp: 0.30, growth: -0.5, debt: 73, inflation: 7.1, unemployment: 7.2, currency: 'EUR', rating: 'AA+' },
     { name: 'France', code: 'FR', gdp: 2.78, growth: 0.9, debt: 111, inflation: 5.7, unemployment: 7.3, currency: 'EUR', rating: 'AA' },
-    { name: 'Germany', code: 'DE', gdp: 4.08, growth: -0.3, debt: 66, inflation: 6.1, unemployment: 3.0, currency: 'EUR', rating: 'AAA' },
+    { name: 'Germany', code: 'DE', gdp: 4.08, growth: -0.3, debt: 66, inflation: 6.1, unemployment: 3.0, currency: 'EUR', rating: 'AAA', resources: 'Coal, Lignite, Natural Gas, Iron Ore, Timber', knownFor: 'Engineering, Automobiles, Chemicals, Precision Manufacturing', exports: 'Vehicles, Machinery, Chemicals, Electronics, Pharmaceuticals', imports: 'Oil, Natural Gas, Machinery, Vehicles, Electronics', military: 'Rank #16 - Budget: $56B, Active: 184K', government: 'Federal Parliamentary Republic' },
     { name: 'Greece', code: 'GR', gdp: 0.22, growth: 2.0, debt: 171, inflation: 4.2, unemployment: 11.2, currency: 'EUR', rating: 'BB+' },
     { name: 'Hong Kong', code: 'HK', gdp: 0.38, growth: -3.5, debt: 5, inflation: 1.9, unemployment: 4.3, currency: 'HKD', rating: 'AA+' },
     { name: 'Hungary', code: 'HU', gdp: 0.18, growth: -0.9, debt: 73, inflation: 17.0, unemployment: 4.1, currency: 'HUF', rating: 'BBB' },
-    { name: 'India', code: 'IN', gdp: 3.73, growth: 7.2, debt: 84, inflation: 5.4, unemployment: 7.8, currency: 'INR', rating: 'BBB-' },
+    { name: 'India', code: 'IN', gdp: 3.73, growth: 7.2, debt: 84, inflation: 5.4, unemployment: 7.8, currency: 'INR', rating: 'BBB-', resources: 'Coal, Iron Ore, Manganese, Mica, Bauxite', knownFor: 'IT Services, Pharmaceuticals, Textiles, Agriculture', exports: 'Petroleum Products, Gems, Machinery, Pharmaceuticals, Textiles', imports: 'Crude Oil, Gold, Electronics, Machinery, Chemicals', military: 'Rank #4 - Budget: $81B, Active: 1.5M', government: 'Federal Parliamentary Republic' },
     { name: 'Indonesia', code: 'ID', gdp: 1.32, growth: 5.3, debt: 39, inflation: 3.7, unemployment: 5.3, currency: 'IDR', rating: 'BBB' },
     { name: 'Iran', code: 'IR', gdp: 0.39, growth: 3.0, debt: 43, inflation: 40.2, unemployment: 9.1, currency: 'IRR', rating: 'N/A' },
     { name: 'Iraq', code: 'IQ', gdp: 0.26, growth: -2.4, debt: 60, inflation: 5.0, unemployment: 16.5, currency: 'IQD', rating: 'B-' },
     { name: 'Ireland', code: 'IE', gdp: 0.53, growth: 9.4, debt: 45, inflation: 8.1, unemployment: 4.5, currency: 'EUR', rating: 'AA-' },
     { name: 'Israel', code: 'IL', gdp: 0.52, growth: 2.0, debt: 60, inflation: 4.4, unemployment: 3.4, currency: 'ILS', rating: 'AA-' },
     { name: 'Italy', code: 'IT', gdp: 2.01, growth: 0.7, debt: 144, inflation: 5.9, unemployment: 7.8, currency: 'EUR', rating: 'BBB' },
-    { name: 'Japan', code: 'JP', gdp: 4.23, growth: 1.9, debt: 264, inflation: 3.3, unemployment: 2.6, currency: 'JPY', rating: 'A+' },
+    { name: 'Japan', code: 'JP', gdp: 4.23, growth: 1.9, debt: 264, inflation: 3.3, unemployment: 2.6, currency: 'JPY', rating: 'A+', resources: 'Fish, Limited Minerals, Forests', knownFor: 'Automobiles, Electronics, Robotics, Anime', exports: 'Vehicles, Machinery, Electronics, Steel, Chemicals', imports: 'Oil, Natural Gas, Food, Machinery, Textiles', military: 'Rank #8 - Budget: $46B, Active: 247K', government: 'Parliamentary Constitutional Monarchy' },
     { name: 'Kenya', code: 'KE', gdp: 0.11, growth: 5.3, debt: 68, inflation: 7.7, unemployment: 5.7, currency: 'KES', rating: 'B+' },
     { name: 'Malaysia', code: 'MY', gdp: 0.40, growth: 8.7, debt: 60, inflation: 3.4, unemployment: 3.5, currency: 'MYR', rating: 'A-' },
     { name: 'Mexico', code: 'MX', gdp: 1.41, growth: 3.2, debt: 60, inflation: 4.7, unemployment: 2.8, currency: 'MXN', rating: 'BBB' },
@@ -5053,8 +5053,8 @@ const countryFinancialData = [
     { name: 'Turkey', code: 'TR', gdp: 0.91, growth: 4.5, debt: 31, inflation: 64.8, unemployment: 10.2, currency: 'TRY', rating: 'B+' },
     { name: 'Ukraine', code: 'UA', gdp: 0.16, growth: -29.1, debt: 78, inflation: 26.6, unemployment: 9.9, currency: 'UAH', rating: 'CCC' },
     { name: 'United Arab Emirates', code: 'AE', gdp: 0.50, growth: 3.9, debt: 39, inflation: 4.8, unemployment: 2.7, currency: 'AED', rating: 'AA' },
-    { name: 'United Kingdom', code: 'GB', gdp: 3.07, growth: 0.5, debt: 101, inflation: 4.0, unemployment: 4.2, currency: 'GBP', rating: 'AA' },
-    { name: 'United States', code: 'US', gdp: 25.46, growth: 2.1, debt: 123, inflation: 3.2, unemployment: 3.7, currency: 'USD', rating: 'AA+' },
+    { name: 'United Kingdom', code: 'GB', gdp: 3.07, growth: 0.5, debt: 101, inflation: 4.0, unemployment: 4.2, currency: 'GBP', rating: 'AA', resources: 'Oil, Natural Gas, Coal, Limestone, Salt', knownFor: 'Finance, Pharmaceuticals, Aerospace, Creative Industries', exports: 'Machinery, Vehicles, Pharmaceuticals, Oil, Electronics', imports: 'Machinery, Vehicles, Oil, Electronics, Food', military: 'Rank #5 - Budget: $68B, Active: 148K', government: 'Parliamentary Constitutional Monarchy' },
+    { name: 'United States', code: 'US', gdp: 25.46, growth: 2.1, debt: 123, inflation: 3.2, unemployment: 3.7, currency: 'USD', rating: 'AA+', resources: 'Oil, Natural Gas, Coal, Timber, Agricultural Land', knownFor: 'Technology, Finance, Entertainment, Military Power', exports: 'Machinery, Electronics, Vehicles, Aircraft, Pharmaceuticals', imports: 'Electronics, Vehicles, Machinery, Oil, Pharmaceuticals', military: 'Rank #1 - Budget: $877B, Active: 1.4M', government: 'Federal Presidential Republic' },
     { name: 'Venezuela', code: 'VE', gdp: 0.10, growth: 4.0, debt: 350, inflation: 234.1, unemployment: 7.9, currency: 'VES', rating: 'N/A' },
     { name: 'Vietnam', code: 'VN', gdp: 0.43, growth: 5.0, debt: 43, inflation: 3.2, unemployment: 2.3, currency: 'VND', rating: 'BB' }
 ];
@@ -5110,18 +5110,18 @@ const toggleCountry = (countryName) => {
 const renderCountries = () => {
     const grid = document.getElementById('countries-grid');
     if (!grid) return;
-    
+
     grid.innerHTML = countriesData.map(country => {
         const isExpanded = expandedCountries.has(country.name);
         const growthPositive = country.growth >= 0;
         const debtLevel = country.debt > 100 ? 'high' : country.debt > 60 ? 'medium' : 'low';
-        
+
         return `
             <div class="country-item ${isExpanded ? 'expanded' : ''}" onclick="toggleCountry('${country.name}')">
                 <div class="country-item-header">
                     <div class="country-basic-info">
-                        <img src="https://flagcdn.com/w40/${country.code.toLowerCase()}.png" 
-                             alt="${country.name}" 
+                        <img src="https://flagcdn.com/w40/${country.code.toLowerCase()}.png"
+                             alt="${country.name}"
                              class="country-flag"
                              onerror="this.style.display='none'">
                         <span class="country-name">${country.name}</span>
@@ -5131,22 +5131,64 @@ const renderCountries = () => {
                         <ion-icon name="${isExpanded ? 'chevron-up' : 'chevron-down'}" class="expand-icon"></ion-icon>
                     </div>
                 </div>
-                
+
                 ${isExpanded ? `
                     <div class="country-details">
+                        ${country.resources ? `
+                            <div class="info-section">
+                                <h4><ion-icon name="diamond"></ion-icon> Natural Resources</h4>
+                                <p>${country.resources}</p>
+                            </div>
+                        ` : ''}
+
+                        ${country.knownFor ? `
+                            <div class="info-section">
+                                <h4><ion-icon name="star"></ion-icon> Known For</h4>
+                                <p>${country.knownFor}</p>
+                            </div>
+                        ` : ''}
+
+                        ${country.exports ? `
+                            <div class="info-section">
+                                <h4><ion-icon name="arrow-up-circle"></ion-icon> Major Exports</h4>
+                                <p>${country.exports}</p>
+                            </div>
+                        ` : ''}
+
+                        ${country.imports ? `
+                            <div class="info-section">
+                                <h4><ion-icon name="arrow-down-circle"></ion-icon> Major Imports</h4>
+                                <p>${country.imports}</p>
+                            </div>
+                        ` : ''}
+
+                        ${country.military ? `
+                            <div class="info-section">
+                                <h4><ion-icon name="shield"></ion-icon> Military Power</h4>
+                                <p>${country.military}</p>
+                            </div>
+                        ` : ''}
+
+                        ${country.government ? `
+                            <div class="info-section">
+                                <h4><ion-icon name="business"></ion-icon> Government Type</h4>
+                                <p>${country.government}</p>
+                            </div>
+                        ` : ''}
+
                         <div class="country-stats">
                             <div class="stat-item">
-                                <span class="stat-label">GDP (Trillion)</span>
+                                <span class="stat-label">GDP</span>
                                 <span class="stat-value">$${country.gdp}T</span>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-label">Growth Rate</span>
+                                <span class="stat-label">Growth</span>
                                 <span class="stat-value ${growthPositive ? 'positive' : 'negative'}">
                                     ${growthPositive ? '+' : ''}${country.growth}%
                                 </span>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-label">Debt to GDP</span>
+                                <span class="stat-label">Debt/GDP</span>
                                 <span class="stat-value debt-${debtLevel}">${country.debt}%</span>
                             </div>
                             <div class="stat-item">
