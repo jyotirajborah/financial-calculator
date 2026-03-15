@@ -2734,7 +2734,9 @@ initAuth = () => {
                 
                 if (response.ok) {
                     console.log('Login successful, calling login function'); // Debug log
-                    login(data.user, data.token);
+                    // Extract token from session
+                    const token = data.session?.access_token;
+                    login(data.user, token);
                 } else {
                     console.error('Login failed:', data.error); // Debug log
                     if (loginError) loginError.textContent = data.error || "Login failed.";
@@ -2792,7 +2794,9 @@ initAuth = () => {
                 if (response.ok) {
                     if (data.user) {
                         console.log('Signup successful with auto-login'); // Debug log
-                        login(data.user, data.token);
+                        // Extract token from session
+                        const token = data.session?.access_token;
+                        login(data.user, token);
                     } else {
                         console.log('Signup successful, email verification required'); // Debug log
                         // Email confirmation is pending

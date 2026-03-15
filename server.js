@@ -98,6 +98,35 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+// Token Verification Endpoint
+app.get('/api/verify', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ error: 'Authorization token required' });
+        }
+        
+        const token = authHeader.split(' ')[1];
+        
+        // Verify the token with Supabase
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        
+        if (authError || !user) {
+            return res.status(401).json({ error: 'Invalid or expired token' });
+        }
+        
+        res.json({ 
+            message: 'Token valid',
+            user: user
+        });
+        
+    } catch (error) {
+        console.error('Error in verify endpoint:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 // News Search Endpoint
 app.post('/api/search-news', async (req, res) => {
     try {
