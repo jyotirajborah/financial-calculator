@@ -4120,6 +4120,28 @@ let currentSize = 3;
 let lastX = 0;
 let lastY = 0;
 
+// Function to draw dotted grid background
+const drawDottedBackground = () => {
+    if (!whiteboardCtx || !whiteboardCanvas) return;
+    
+    // Fill with white background
+    whiteboardCtx.fillStyle = 'white';
+    whiteboardCtx.fillRect(0, 0, whiteboardCanvas.width, whiteboardCanvas.height);
+    
+    // Draw dots
+    const dotSpacing = 20; // Space between dots
+    const dotRadius = 1.5; // Dot size
+    whiteboardCtx.fillStyle = '#e0e0e0'; // Light gray dots
+    
+    for (let x = dotSpacing; x < whiteboardCanvas.width; x += dotSpacing) {
+        for (let y = dotSpacing; y < whiteboardCanvas.height; y += dotSpacing) {
+            whiteboardCtx.beginPath();
+            whiteboardCtx.arc(x, y, dotRadius, 0, Math.PI * 2);
+            whiteboardCtx.fill();
+        }
+    }
+};
+
 const initWhiteboard = () => {
     console.log('Initializing whiteboard...');
     whiteboardCanvas = document.getElementById('whiteboard-canvas');
@@ -4140,9 +4162,8 @@ const initWhiteboard = () => {
         whiteboardCanvas.width = width;
         whiteboardCanvas.height = height;
         
-        // Fill with white background
-        whiteboardCtx.fillStyle = 'white';
-        whiteboardCtx.fillRect(0, 0, whiteboardCanvas.width, whiteboardCanvas.height);
+        // Draw dotted background
+        drawDottedBackground();
     };
     
     resizeCanvas();
@@ -4283,8 +4304,8 @@ const handleTouchMove = (e) => {
 window.clearWhiteboard = () => {
     if (!whiteboardCtx || !whiteboardCanvas) return;
     
-    whiteboardCtx.fillStyle = 'white';
-    whiteboardCtx.fillRect(0, 0, whiteboardCanvas.width, whiteboardCanvas.height);
+    // Redraw dotted background
+    drawDottedBackground();
     showToast('Whiteboard cleared', 'success');
 };
 
