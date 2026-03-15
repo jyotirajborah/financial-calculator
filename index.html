@@ -1674,9 +1674,26 @@
                                 <h2>Live Market Indices</h2>
                             </div>
                             <p class="markets-subtitle">Real-time global market data</p>
-                            <div class="last-updated">
-                                <ion-icon name="time"></ion-icon>
-                                <span id="markets-last-updated">Loading...</span>
+                            <div class="markets-controls">
+                                <div class="timezone-selector">
+                                    <label for="market-timezone">
+                                        <ion-icon name="globe-outline"></ion-icon>
+                                        <span>Timezone:</span>
+                                    </label>
+                                    <select id="market-timezone" onchange="changeMarketTimezone()">
+                                        <option value="Asia/Kolkata">IST (India)</option>
+                                        <option value="America/New_York">EST (New York)</option>
+                                        <option value="Europe/London">GMT (London)</option>
+                                        <option value="Asia/Tokyo">JST (Tokyo)</option>
+                                        <option value="Asia/Hong_Kong">HKT (Hong Kong)</option>
+                                        <option value="Europe/Berlin">CET (Berlin)</option>
+                                        <option value="Australia/Sydney">AEST (Sydney)</option>
+                                    </select>
+                                </div>
+                                <div class="last-updated">
+                                    <ion-icon name="time"></ion-icon>
+                                    <span id="markets-last-updated">Loading...</span>
+                                </div>
                             </div>
                         </div>
                         
