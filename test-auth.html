@@ -1,49 +1,222 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Auth Test</title>
+    <title>Auth Test - FinCalc</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+        h1 { color: #60a5fa; }
+        .test-section {
+            background: #334155;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover { background: #2563eb; }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border-radius: 4px;
+            border: 1px solid #475569;
+            background: #1e293b;
+            color: #e2e8f0;
+            width: 250px;
+        }
+        #result {
+            background: #1e293b;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .info { color: #60a5fa; }
+    </style>
 </head>
 <body>
-    <h1>Authentication Test</h1>
-    <button onclick="testSignup()">Test Signup</button>
-    <button onclick="testLogin()">Test Login</button>
+    <h1>🔐 FinCalc Authentication Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Test Login with Your Credentials</h2>
+        <input type="email" id="login-email" placeholder="Your email" />
+        <input type="password" id="login-password" placeholder="Your password" />
+        <button onclick="testLogin()">Test Login</button>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Check Current State</h2>
+        <button onclick="checkLocalStorage()">Check LocalStorage</button>
+        <button onclick="testVerify()">Test Token Verification</button>
+        <button onclick="clearStorage()">Clear Storage</button>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Test Signup (Optional)</h2>
+        <input type="text" id="signup-name" placeholder="Name" />
+        <input type="email" id="signup-email" placeholder="Email" />
+        <input type="password" id="signup-password" placeholder="Password" />
+        <button onclick="testSignup()">Test Signup</button>
+    </div>
+
     <div id="result"></div>
 
     <script>
-        async function testSignup() {
-            try {
-                const response = await fetch('/api/signup', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        name: 'Test User', 
-                        email: 'test@example.com', 
-                        password: 'testpass123' 
-                    })
-                });
-                const data = await response.json();
-                document.getElementById('result').innerHTML = 'Signup: ' + JSON.stringify(data);
-            } catch (error) {
-                document.getElementById('result').innerHTML = 'Signup Error: ' + error.message;
-            }
+        function log(message, type = 'info') {
+            const result = document.getElementById('result');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            result.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            console.log(message);
         }
 
         async function testLogin() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            if (!email || !password) {
+                log('❌ Please enter email and password', 'error');
+                return;
+            }
+
+            log('🔄 Testing login...', 'info');
+            
             try {
                 const response = await fetch('/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        email: 'test@example.com', 
-                        password: 'testpass123' 
-                    })
+                    body: JSON.stringify({ email, password })
                 });
+                
+                log(`📡 Response status: ${response.status}`, 'info');
+                
                 const data = await response.json();
-                document.getElementById('result').innerHTML = 'Login: ' + JSON.stringify(data);
+                
+                if (response.ok) {
+                    log('✅ Login successful!', 'success');
+                    log(`User: ${JSON.stringify(data.user, null, 2)}`, 'success');
+                    log(`Session exists: ${!!data.session}`, 'success');
+                    log(`Access token exists: ${!!data.session?.access_token}`, 'success');
+                    
+                    if (data.session?.access_token) {
+                        localStorage.setItem('auth_token', data.session.access_token);
+                        log('✅ Token saved to localStorage', 'success');
+                    } else {
+                        log('❌ No access token in response!', 'error');
+                    }
+                } else {
+                    log(`❌ Login failed: ${data.error}`, 'error');
+                }
             } catch (error) {
-                document.getElementById('result').innerHTML = 'Login Error: ' + error.message;
+                log(`❌ Network error: ${error.message}`, 'error');
             }
         }
+
+        async function testSignup() {
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            
+            if (!name || !email || !password) {
+                log('❌ Please fill all signup fields', 'error');
+                return;
+            }
+
+            log('🔄 Testing signup...', 'info');
+            
+            try {
+                const response = await fetch('/api/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('✅ Signup successful!', 'success');
+                    log(`Response: ${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    log(`❌ Signup failed: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Network error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testVerify() {
+            const token = localStorage.getItem('auth_token');
+            
+            if (!token) {
+                log('❌ No token found in localStorage', 'error');
+                return;
+            }
+
+            log('🔄 Testing token verification...', 'info');
+            log(`Token (first 20 chars): ${token.substring(0, 20)}...`, 'info');
+            
+            try {
+                const response = await fetch('/api/verify', {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                log(`📡 Response status: ${response.status}`, 'info');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('✅ Token is valid!', 'success');
+                    log(`User: ${JSON.stringify(data.user, null, 2)}`, 'success');
+                } else {
+                    const data = await response.json();
+                    log(`❌ Token verification failed: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Network error: ${error.message}`, 'error');
+            }
+        }
+
+        function checkLocalStorage() {
+            log('📦 Checking localStorage...', 'info');
+            const token = localStorage.getItem('auth_token');
+            
+            if (token) {
+                log(`✅ Token found: ${token.substring(0, 30)}...`, 'success');
+                log(`Token length: ${token.length}`, 'info');
+            } else {
+                log('❌ No token in localStorage', 'error');
+            }
+            
+            log(`All localStorage keys: ${Object.keys(localStorage).join(', ')}`, 'info');
+        }
+
+        function clearStorage() {
+            localStorage.clear();
+            log('🗑️ LocalStorage cleared', 'info');
+        }
+
+        // Auto-check on load
+        window.addEventListener('DOMContentLoaded', () => {
+            log('🚀 Auth Test Page Loaded', 'info');
+            checkLocalStorage();
+        });
     </script>
 </body>
 </html>
