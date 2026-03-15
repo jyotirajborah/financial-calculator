@@ -6493,10 +6493,16 @@ const displayFinanceNews = (newsItems, listId, countId, region) => {
 
 const saveNewsArticle = async (region, index) => {
     const article = currentNewsData[region][index];
-    if (!article) return;
+    if (!article) {
+        console.error('❌ Article not found:', { region, index });
+        return;
+    }
+    
+    console.log('📰 Attempting to save article:', article.title);
     
     // Check if user is guest
     if (isGuestMode) {
+        console.log('❌ User is in guest mode');
         showLoginPromptModal(
             'You need to create an account or login to save news articles. Would you like to go to the login page?',
             () => {
@@ -6508,44 +6514,57 @@ const saveNewsArticle = async (region, index) => {
     
     const token = localStorage.getItem('auth_token');
     if (!token) {
+        console.error('❌ No auth token found');
         showAlertModal("Please login to save news articles.", 'warning');
         return;
     }
     
+    console.log('✅ Token found, sending request...');
+    
     try {
+        const payload = {
+            title: article.title,
+            snippet: article.snippet,
+            url: article.url,
+            domain: article.domain,
+            region: region,
+            category: document.getElementById('news-category').value,
+            published_date: article.publishedDate
+        };
+        
+        console.log('📤 Payload:', payload);
+        
         const response = await fetch('/api/save-news', {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({
-                title: article.title,
-                snippet: article.snippet,
-                url: article.url,
-                domain: article.domain,
-                region: region,
-                category: document.getElementById('news-category').value,
-                published_date: article.publishedDate
-            })
+            body: JSON.stringify(payload)
         });
         
+        console.log('📡 Response status:', response.status);
+        
         if (response.ok) {
+            console.log('✅ Article saved successfully');
             // Update UI to show saved state
             const saveBtn = event.target.closest('.btn-news-save');
-            saveBtn.classList.add('saved');
-            saveBtn.querySelector('ion-icon').setAttribute('name', 'bookmark');
-            saveBtn.title = 'Already saved';
+            if (saveBtn) {
+                saveBtn.classList.add('saved');
+                saveBtn.querySelector('ion-icon').setAttribute('name', 'bookmark');
+                saveBtn.title = 'Already saved';
+            }
             
             // Show success message
             showToast('Article saved successfully!', 'success');
         } else {
             const errData = await response.json();
-            showAlertModal(`Could not save article: ${errData.error || 'Server error'}`, 'error');
+            console.error('❌ Save failed:', errData);
+            showAlertModal(`Could not save article: ${errData.error || 'Server error'}${errData.details ? '\n' + errData.details : ''}`, 'error');
         }
     } catch (error) {
-        console.error("Error saving news article:", error);
-        showAlertModal("Network error. Make sure the server is running.", 'error');
+        console.error("❌ Error saving news article:", error);
+        showAlertModal(`Network error: ${error.message}`, 'error');
     }
 };
 

@@ -157,18 +157,26 @@ app.post('/api/save-news', async (req, res) => {
         const { title, snippet, url, domain, region, category, published_date } = req.body;
         const authHeader = req.headers.authorization;
         
+        console.log('📰 Save news request received:', { title, region, category });
+        
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            console.error('❌ No authorization header');
             return res.status(401).json({ error: 'Authorization token required' });
         }
         
         const token = authHeader.split(' ')[1];
+        console.log('🔑 Token received, verifying...');
         
         // Verify the token with Supabase
         const { data: { user }, error: authError } = await supabase.auth.getUser(token);
         
         if (authError || !user) {
+            console.error('❌ Token verification failed:', authError);
             return res.status(401).json({ error: 'Invalid or expired token' });
         }
+        
+        console.log('✅ User verified:', user.id);
+        console.log('💾 Attempting to save to database...');
         
         // Save the news article to the database
         const { data, error } = await supabase
@@ -187,15 +195,20 @@ app.post('/api/save-news', async (req, res) => {
             ]);
         
         if (error) {
-            console.error('Database error saving news:', error);
-            return res.status(500).json({ error: 'Failed to save article' });
+            console.error('❌ Database error saving news:', error);
+            console.error('Error details:', JSON.stringify(error, null, 2));
+            return res.status(500).json({ 
+                error: `Failed to save article: ${error.message || error.code || 'Unknown error'}`,
+                details: error.hint || error.details
+            });
         }
         
+        console.log('✅ Article saved successfully');
         res.json({ message: 'Article saved successfully' });
         
     } catch (error) {
-        console.error('Error in save-news endpoint:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error('❌ Error in save-news endpoint:', error);
+        res.status(500).json({ error: `Internal server error: ${error.message}` });
     }
 });
 
