@@ -302,6 +302,11 @@ document.querySelectorAll('.nav-item').forEach(btn => {
             }, 100);
         }
         
+        // Initialize market indices if target is market-indices
+        if (targetId === 'market-indices') {
+            initMarketIndices();
+        }
+        
         // Initialize notes if target is my notes
         if (targetId === 'my-notes') {
             initNotesSection();
@@ -4743,6 +4748,133 @@ const applyZoom = () => {
     }
     
     console.log('Zoom level:', zoomLevel);
+};
+
+// --- Market Indices Functions ---
+let marketsInterval = null;
+
+const majorIndices = [
+    { symbol: '^NSEI', name: 'NIFTY 50', country: 'India', timezone: 'Asia/Kolkata' },
+    { symbol: '^BSESN', name: 'SENSEX', country: 'India', timezone: 'Asia/Kolkata' },
+    { symbol: '^GSPC', name: 'S&P 500', country: 'USA', timezone: 'America/New_York' },
+    { symbol: '^DJI', name: 'Dow Jones', country: 'USA', timezone: 'America/New_York' },
+    { symbol: '^IXIC', name: 'NASDAQ', country: 'USA', timezone: 'America/New_York' },
+    { symbol: '^FTSE', name: 'FTSE 100', country: 'UK', timezone: 'Europe/London' },
+    { symbol: '^N225', name: 'Nikkei 225', country: 'Japan', timezone: 'Asia/Tokyo' },
+    { symbol: '^HSI', name: 'Hang Seng', country: 'Hong Kong', timezone: 'Asia/Hong_Kong' },
+    { symbol: '^GDAXI', name: 'DAX', country: 'Germany', timezone: 'Europe/Berlin' },
+    { symbol: '^AXJO', name: 'ASX 200', country: 'Australia', timezone: 'Australia/Sydney' }
+];
+
+const initMarketIndices = () => {
+    const indicesGrid = document.getElementById('indices-grid');
+    if (!indicesGrid) return;
+    
+    // Show loading state
+    indicesGrid.innerHTML = `
+        <div class="index-loading">
+            <ion-icon name="sync"></ion-icon>
+            <p>Loading market data...</p>
+        </div>
+    `;
+    
+    // Generate mock data for demonstration
+    generateMockMarketData();
+    
+    // Update every 30 seconds
+    if (marketsInterval) clearInterval(marketsInterval);
+    marketsInterval = setInterval(generateMockMarketData, 30000);
+    
+    // Update last updated time
+    updateLastUpdatedTime();
+    setInterval(updateLastUpdatedTime, 1000);
+};
+
+const generateMockMarketData = () => {
+    const indicesGrid = document.getElementById('indices-grid');
+    if (!indicesGrid) return;
+    
+    indicesGrid.innerHTML = majorIndices.map(index => {
+        // Generate realistic mock data
+        const baseValue = getBaseValue(index.symbol);
+        const changePercent = (Math.random() - 0.5) * 4; // -2% to +2%
+        const changeValue = (baseValue * changePercent) / 100;
+        const currentValue = baseValue + changeValue;
+        
+        const isPositive = changePercent >= 0;
+        const isOpen = isMarketOpen(index.timezone);
+        
+        return `
+            <div class="index-card ${isPositive ? 'positive' : 'negative'}">
+                <div class="index-header">
+                    <div>
+                        <div class="index-name">${index.name}</div>
+                        <div class="index-country">${index.country}</div>
+                    </div>
+                    <div class="index-status ${isOpen ? 'open' : 'closed'}">
+                        <ion-icon name="${isOpen ? 'radio-button-on' : 'radio-button-off'}"></ion-icon>
+                        ${isOpen ? 'OPEN' : 'CLOSED'}
+                    </div>
+                </div>
+                <div class="index-value">${formatIndexValue(currentValue)}</div>
+                <div class="index-change ${isPositive ? 'positive' : 'negative'}">
+                    <ion-icon name="${isPositive ? 'trending-up' : 'trending-down'}"></ion-icon>
+                    <span>${isPositive ? '+' : ''}${changeValue.toFixed(2)}</span>
+                    <span class="index-percent">(${isPositive ? '+' : ''}${changePercent.toFixed(2)}%)</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+};
+
+const getBaseValue = (symbol) => {
+    const baseValues = {
+        '^NSEI': 21500,
+        '^BSESN': 71000,
+        '^GSPC': 5800,
+        '^DJI': 42000,
+        '^IXIC': 18500,
+        '^FTSE': 8200,
+        '^N225': 38000,
+        '^HSI': 19500,
+        '^GDAXI': 18500,
+        '^AXJO': 7800
+    };
+    return baseValues[symbol] || 10000;
+};
+
+const formatIndexValue = (value) => {
+    return new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(value);
+};
+
+const isMarketOpen = (timezone) => {
+    try {
+        const now = new Date();
+        const localTime = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
+        const day = localTime.getDay();
+        const hours = localTime.getHours();
+        const minutes = localTime.getMinutes();
+        const timeInMinutes = hours * 60 + minutes;
+        
+        // Weekend check
+        if (day === 0 || day === 6) return false;
+        
+        // Simplified market hours (9:00 AM - 4:00 PM local time)
+        return timeInMinutes >= 540 && timeInMinutes < 960;
+    } catch (error) {
+        return false;
+    }
+};
+
+const updateLastUpdatedTime = () => {
+    const lastUpdated = document.getElementById('markets-last-updated');
+    if (!lastUpdated) return;
+    
+    const now = new Date();
+    lastUpdated.textContent = `Updated: ${now.toLocaleTimeString()}`;
 };
 
 // --- Finance News Functions ---

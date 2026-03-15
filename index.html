@@ -376,6 +376,10 @@
                     <ion-icon name="brush"></ion-icon>
                     <span>Whiteboard</span>
                 </button>
+                <button class="nav-item" data-target="market-indices">
+                    <ion-icon name="trending-up"></ion-icon>
+                    <span>Live Markets</span>
+                </button>
                 <button class="nav-item" data-target="help-shortcuts">
                     <ion-icon name="help-circle"></ion-icon>
                     <span>Help & Shortcuts</span>
@@ -1657,6 +1661,27 @@
                                 </button>
                             </div>
                             <canvas id="whiteboard-canvas"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Market Indices View -->
+                <section class="calculator-view" id="market-indices">
+                    <div class="markets-container">
+                        <div class="markets-header">
+                            <div class="markets-title">
+                                <ion-icon name="trending-up"></ion-icon>
+                                <h2>Live Market Indices</h2>
+                            </div>
+                            <p class="markets-subtitle">Real-time global market data</p>
+                            <div class="last-updated">
+                                <ion-icon name="time"></ion-icon>
+                                <span id="markets-last-updated">Loading...</span>
+                            </div>
+                        </div>
+                        
+                        <div class="indices-grid" id="indices-grid">
+                            <!-- Indices will be dynamically loaded here -->
                         </div>
                     </div>
                 </section>
