@@ -4993,32 +4993,74 @@ const updateLastUpdatedTime = () => {
 
 // --- Country Financial Functions ---
 let countriesData = [];
+let expandedCountries = new Set();
 
 const countryFinancialData = [
-    { name: 'United States', gdp: 25.46, growth: 2.1, debt: 123, inflation: 3.2, unemployment: 3.7, currency: 'USD', rating: 'AA+' },
-    { name: 'China', gdp: 17.96, growth: 5.2, debt: 77, inflation: 0.2, unemployment: 5.2, currency: 'CNY', rating: 'A+' },
-    { name: 'Japan', gdp: 4.23, growth: 1.9, debt: 264, inflation: 3.3, unemployment: 2.6, currency: 'JPY', rating: 'A+' },
-    { name: 'Germany', gdp: 4.08, growth: -0.3, debt: 66, inflation: 6.1, unemployment: 3.0, currency: 'EUR', rating: 'AAA' },
-    { name: 'India', gdp: 3.73, growth: 7.2, debt: 84, inflation: 5.4, unemployment: 7.8, currency: 'INR', rating: 'BBB-' },
-    { name: 'United Kingdom', gdp: 3.07, growth: 0.5, debt: 101, inflation: 4.0, unemployment: 4.2, currency: 'GBP', rating: 'AA' },
-    { name: 'France', gdp: 2.78, growth: 0.9, debt: 111, inflation: 5.7, unemployment: 7.3, currency: 'EUR', rating: 'AA' },
-    { name: 'Brazil', gdp: 2.08, growth: 2.9, debt: 88, inflation: 4.6, unemployment: 8.5, currency: 'BRL', rating: 'BB-' },
-    { name: 'Italy', gdp: 2.01, growth: 0.7, debt: 144, inflation: 5.9, unemployment: 7.8, currency: 'EUR', rating: 'BBB' },
-    { name: 'Canada', gdp: 2.14, growth: 1.5, debt: 106, inflation: 3.9, unemployment: 5.4, currency: 'CAD', rating: 'AAA' },
-    { name: 'South Korea', gdp: 1.67, growth: 1.4, debt: 54, inflation: 3.6, unemployment: 2.7, currency: 'KRW', rating: 'AA' },
-    { name: 'Russia', gdp: 2.24, growth: 2.1, debt: 17, inflation: 5.9, unemployment: 3.3, currency: 'RUB', rating: 'BBB-' },
-    { name: 'Australia', gdp: 1.55, growth: 1.8, debt: 57, inflation: 5.4, unemployment: 3.7, currency: 'AUD', rating: 'AAA' },
-    { name: 'Spain', gdp: 1.43, growth: 2.5, debt: 113, inflation: 3.5, unemployment: 12.9, currency: 'EUR', rating: 'A' },
-    { name: 'Mexico', gdp: 1.41, growth: 3.2, debt: 60, inflation: 4.7, unemployment: 2.8, currency: 'MXN', rating: 'BBB' },
-    { name: 'Indonesia', gdp: 1.32, growth: 5.3, debt: 39, inflation: 3.7, unemployment: 5.3, currency: 'IDR', rating: 'BBB' },
-    { name: 'Netherlands', gdp: 1.01, growth: 0.1, debt: 47, inflation: 4.1, unemployment: 3.6, currency: 'EUR', rating: 'AAA' },
-    { name: 'Saudi Arabia', gdp: 1.06, growth: 3.7, debt: 26, inflation: 2.3, unemployment: 4.8, currency: 'SAR', rating: 'A' },
-    { name: 'Turkey', gdp: 0.91, growth: 4.5, debt: 31, inflation: 64.8, unemployment: 10.2, currency: 'TRY', rating: 'B+' },
-    { name: 'Switzerland', gdp: 0.84, growth: 0.9, debt: 38, inflation: 2.2, unemployment: 2.0, currency: 'CHF', rating: 'AAA' }
+    { name: 'Afghanistan', code: 'AF', gdp: 0.02, growth: -6.2, debt: 7, inflation: 2.3, unemployment: 13.3, currency: 'AFN', rating: 'N/A' },
+    { name: 'Albania', code: 'AL', gdp: 0.02, growth: 3.5, debt: 74, inflation: 6.7, unemployment: 11.6, currency: 'ALL', rating: 'B+' },
+    { name: 'Algeria', code: 'DZ', gdp: 0.19, growth: 3.2, debt: 58, inflation: 9.3, unemployment: 12.7, currency: 'DZD', rating: 'N/A' },
+    { name: 'Argentina', code: 'AR', gdp: 0.63, growth: -1.6, debt: 90, inflation: 133.5, unemployment: 6.2, currency: 'ARS', rating: 'CCC' },
+    { name: 'Australia', code: 'AU', gdp: 1.55, growth: 1.8, debt: 57, inflation: 5.4, unemployment: 3.7, currency: 'AUD', rating: 'AAA' },
+    { name: 'Austria', code: 'AT', gdp: 0.48, growth: 0.4, debt: 78, inflation: 7.7, unemployment: 5.3, currency: 'EUR', rating: 'AA+' },
+    { name: 'Bangladesh', code: 'BD', gdp: 0.46, growth: 6.0, debt: 39, inflation: 9.0, unemployment: 5.1, currency: 'BDT', rating: 'BB-' },
+    { name: 'Belgium', code: 'BE', gdp: 0.59, growth: 1.4, debt: 105, inflation: 9.6, unemployment: 5.6, currency: 'EUR', rating: 'AA' },
+    { name: 'Brazil', code: 'BR', gdp: 2.08, growth: 2.9, debt: 88, inflation: 4.6, unemployment: 8.5, currency: 'BRL', rating: 'BB-' },
+    { name: 'Canada', code: 'CA', gdp: 2.14, growth: 1.5, debt: 106, inflation: 3.9, unemployment: 5.4, currency: 'CAD', rating: 'AAA' },
+    { name: 'Chile', code: 'CL', gdp: 0.30, growth: 0.2, debt: 39, inflation: 11.6, unemployment: 8.9, currency: 'CLP', rating: 'A' },
+    { name: 'China', code: 'CN', gdp: 17.96, growth: 5.2, debt: 77, inflation: 0.2, unemployment: 5.2, currency: 'CNY', rating: 'A+' },
+    { name: 'Colombia', code: 'CO', gdp: 0.36, growth: 1.0, debt: 72, inflation: 11.8, unemployment: 10.7, currency: 'COP', rating: 'BB+' },
+    { name: 'Czech Republic', code: 'CZ', gdp: 0.29, growth: -0.2, debt: 44, inflation: 15.1, unemployment: 2.6, currency: 'CZK', rating: 'AA-' },
+    { name: 'Denmark', code: 'DK', gdp: 0.40, growth: 1.8, debt: 30, inflation: 7.7, unemployment: 4.5, currency: 'DKK', rating: 'AAA' },
+    { name: 'Egypt', code: 'EG', gdp: 0.48, growth: 3.8, debt: 95, inflation: 33.7, unemployment: 7.1, currency: 'EGP', rating: 'B' },
+    { name: 'Finland', code: 'FI', gdp: 0.30, growth: -0.5, debt: 73, inflation: 7.1, unemployment: 7.2, currency: 'EUR', rating: 'AA+' },
+    { name: 'France', code: 'FR', gdp: 2.78, growth: 0.9, debt: 111, inflation: 5.7, unemployment: 7.3, currency: 'EUR', rating: 'AA' },
+    { name: 'Germany', code: 'DE', gdp: 4.08, growth: -0.3, debt: 66, inflation: 6.1, unemployment: 3.0, currency: 'EUR', rating: 'AAA' },
+    { name: 'Greece', code: 'GR', gdp: 0.22, growth: 2.0, debt: 171, inflation: 4.2, unemployment: 11.2, currency: 'EUR', rating: 'BB+' },
+    { name: 'Hong Kong', code: 'HK', gdp: 0.38, growth: -3.5, debt: 5, inflation: 1.9, unemployment: 4.3, currency: 'HKD', rating: 'AA+' },
+    { name: 'Hungary', code: 'HU', gdp: 0.18, growth: -0.9, debt: 73, inflation: 17.0, unemployment: 4.1, currency: 'HUF', rating: 'BBB' },
+    { name: 'India', code: 'IN', gdp: 3.73, growth: 7.2, debt: 84, inflation: 5.4, unemployment: 7.8, currency: 'INR', rating: 'BBB-' },
+    { name: 'Indonesia', code: 'ID', gdp: 1.32, growth: 5.3, debt: 39, inflation: 3.7, unemployment: 5.3, currency: 'IDR', rating: 'BBB' },
+    { name: 'Iran', code: 'IR', gdp: 0.39, growth: 3.0, debt: 43, inflation: 40.2, unemployment: 9.1, currency: 'IRR', rating: 'N/A' },
+    { name: 'Iraq', code: 'IQ', gdp: 0.26, growth: -2.4, debt: 60, inflation: 5.0, unemployment: 16.5, currency: 'IQD', rating: 'B-' },
+    { name: 'Ireland', code: 'IE', gdp: 0.53, growth: 9.4, debt: 45, inflation: 8.1, unemployment: 4.5, currency: 'EUR', rating: 'AA-' },
+    { name: 'Israel', code: 'IL', gdp: 0.52, growth: 2.0, debt: 60, inflation: 4.4, unemployment: 3.4, currency: 'ILS', rating: 'AA-' },
+    { name: 'Italy', code: 'IT', gdp: 2.01, growth: 0.7, debt: 144, inflation: 5.9, unemployment: 7.8, currency: 'EUR', rating: 'BBB' },
+    { name: 'Japan', code: 'JP', gdp: 4.23, growth: 1.9, debt: 264, inflation: 3.3, unemployment: 2.6, currency: 'JPY', rating: 'A+' },
+    { name: 'Kenya', code: 'KE', gdp: 0.11, growth: 5.3, debt: 68, inflation: 7.7, unemployment: 5.7, currency: 'KES', rating: 'B+' },
+    { name: 'Malaysia', code: 'MY', gdp: 0.40, growth: 8.7, debt: 60, inflation: 3.4, unemployment: 3.5, currency: 'MYR', rating: 'A-' },
+    { name: 'Mexico', code: 'MX', gdp: 1.41, growth: 3.2, debt: 60, inflation: 4.7, unemployment: 2.8, currency: 'MXN', rating: 'BBB' },
+    { name: 'Netherlands', code: 'NL', gdp: 1.01, growth: 0.1, debt: 47, inflation: 4.1, unemployment: 3.6, currency: 'EUR', rating: 'AAA' },
+    { name: 'New Zealand', code: 'NZ', gdp: 0.25, growth: 2.2, debt: 39, inflation: 7.3, unemployment: 3.3, currency: 'NZD', rating: 'AA' },
+    { name: 'Nigeria', code: 'NG', gdp: 0.48, growth: 3.3, debt: 37, inflation: 24.5, unemployment: 33.3, currency: 'NGN', rating: 'B-' },
+    { name: 'Norway', code: 'NO', gdp: 0.58, growth: 0.8, debt: 42, inflation: 5.8, unemployment: 3.5, currency: 'NOK', rating: 'AAA' },
+    { name: 'Pakistan', code: 'PK', gdp: 0.34, growth: 0.3, debt: 77, inflation: 29.2, unemployment: 6.3, currency: 'PKR', rating: 'CCC+' },
+    { name: 'Peru', code: 'PE', gdp: 0.24, growth: -0.6, debt: 35, inflation: 8.5, unemployment: 7.2, currency: 'PEN', rating: 'BBB' },
+    { name: 'Philippines', code: 'PH', gdp: 0.44, growth: 5.5, debt: 60, inflation: 5.8, unemployment: 4.5, currency: 'PHP', rating: 'BBB' },
+    { name: 'Poland', code: 'PL', gdp: 0.69, growth: 0.2, debt: 49, inflation: 14.4, unemployment: 2.9, currency: 'PLN', rating: 'A-' },
+    { name: 'Portugal', code: 'PT', gdp: 0.26, growth: 6.8, debt: 114, inflation: 8.1, unemployment: 6.6, currency: 'EUR', rating: 'BBB+' },
+    { name: 'Qatar', code: 'QA', gdp: 0.24, growth: 4.2, debt: 68, inflation: 5.0, unemployment: 0.1, currency: 'QAR', rating: 'AA' },
+    { name: 'Romania', code: 'RO', gdp: 0.30, growth: 2.1, debt: 47, inflation: 13.8, unemployment: 5.6, currency: 'RON', rating: 'BBB-' },
+    { name: 'Russia', code: 'RU', gdp: 2.24, growth: 2.1, debt: 17, inflation: 5.9, unemployment: 3.3, currency: 'RUB', rating: 'BBB-' },
+    { name: 'Saudi Arabia', code: 'SA', gdp: 1.06, growth: 3.7, debt: 26, inflation: 2.3, unemployment: 4.8, currency: 'SAR', rating: 'A' },
+    { name: 'Singapore', code: 'SG', gdp: 0.47, growth: 1.1, debt: 168, inflation: 6.1, unemployment: 2.1, currency: 'SGD', rating: 'AAA' },
+    { name: 'South Africa', code: 'ZA', gdp: 0.40, growth: 0.6, debt: 71, inflation: 6.9, unemployment: 32.9, currency: 'ZAR', rating: 'BB-' },
+    { name: 'South Korea', code: 'KR', gdp: 1.67, growth: 1.4, debt: 54, inflation: 3.6, unemployment: 2.7, currency: 'KRW', rating: 'AA' },
+    { name: 'Spain', code: 'ES', gdp: 1.43, growth: 2.5, debt: 113, inflation: 3.5, unemployment: 12.9, currency: 'EUR', rating: 'A' },
+    { name: 'Sweden', code: 'SE', gdp: 0.59, growth: -0.2, debt: 33, inflation: 8.4, unemployment: 7.5, currency: 'SEK', rating: 'AAA' },
+    { name: 'Switzerland', code: 'CH', gdp: 0.84, growth: 0.9, debt: 38, inflation: 2.2, unemployment: 2.0, currency: 'CHF', rating: 'AAA' },
+    { name: 'Taiwan', code: 'TW', gdp: 0.76, growth: 1.4, debt: 28, inflation: 2.9, unemployment: 3.5, currency: 'TWD', rating: 'AA' },
+    { name: 'Thailand', code: 'TH', gdp: 0.51, growth: 2.6, debt: 61, inflation: 6.1, unemployment: 1.1, currency: 'THB', rating: 'BBB+' },
+    { name: 'Turkey', code: 'TR', gdp: 0.91, growth: 4.5, debt: 31, inflation: 64.8, unemployment: 10.2, currency: 'TRY', rating: 'B+' },
+    { name: 'Ukraine', code: 'UA', gdp: 0.16, growth: -29.1, debt: 78, inflation: 26.6, unemployment: 9.9, currency: 'UAH', rating: 'CCC' },
+    { name: 'United Arab Emirates', code: 'AE', gdp: 0.50, growth: 3.9, debt: 39, inflation: 4.8, unemployment: 2.7, currency: 'AED', rating: 'AA' },
+    { name: 'United Kingdom', code: 'GB', gdp: 3.07, growth: 0.5, debt: 101, inflation: 4.0, unemployment: 4.2, currency: 'GBP', rating: 'AA' },
+    { name: 'United States', code: 'US', gdp: 25.46, growth: 2.1, debt: 123, inflation: 3.2, unemployment: 3.7, currency: 'USD', rating: 'AA+' },
+    { name: 'Venezuela', code: 'VE', gdp: 0.10, growth: 4.0, debt: 350, inflation: 234.1, unemployment: 7.9, currency: 'VES', rating: 'N/A' },
+    { name: 'Vietnam', code: 'VN', gdp: 0.43, growth: 5.0, debt: 43, inflation: 3.2, unemployment: 2.3, currency: 'VND', rating: 'BB' }
 ];
 
 const initCountryFinancial = () => {
-    countriesData = [...countryFinancialData];
+    countriesData = [...countryFinancialData].sort((a, b) => a.name.localeCompare(b.name));
     renderCountries();
     
     // Add search functionality
@@ -5056,49 +5098,72 @@ const sortCountries = () => {
     renderCountries();
 };
 
+const toggleCountry = (countryName) => {
+    if (expandedCountries.has(countryName)) {
+        expandedCountries.delete(countryName);
+    } else {
+        expandedCountries.add(countryName);
+    }
+    renderCountries();
+};
+
 const renderCountries = () => {
     const grid = document.getElementById('countries-grid');
     if (!grid) return;
     
     grid.innerHTML = countriesData.map(country => {
+        const isExpanded = expandedCountries.has(country.name);
         const growthPositive = country.growth >= 0;
         const debtLevel = country.debt > 100 ? 'high' : country.debt > 60 ? 'medium' : 'low';
         
         return `
-            <div class="country-card">
-                <div class="country-card-header">
-                    <h3>${country.name}</h3>
-                    <span class="country-rating rating-${country.rating.replace(/[+-]/g, '').toLowerCase()}">${country.rating}</span>
+            <div class="country-item ${isExpanded ? 'expanded' : ''}" onclick="toggleCountry('${country.name}')">
+                <div class="country-item-header">
+                    <div class="country-basic-info">
+                        <img src="https://flagcdn.com/w40/${country.code.toLowerCase()}.png" 
+                             alt="${country.name}" 
+                             class="country-flag"
+                             onerror="this.style.display='none'">
+                        <span class="country-name">${country.name}</span>
+                    </div>
+                    <div class="country-quick-info">
+                        <span class="country-rating rating-${country.rating.replace(/[+-]/g, '').toLowerCase()}">${country.rating}</span>
+                        <ion-icon name="${isExpanded ? 'chevron-up' : 'chevron-down'}" class="expand-icon"></ion-icon>
+                    </div>
                 </div>
                 
-                <div class="country-stats">
-                    <div class="stat-item">
-                        <span class="stat-label">GDP (Trillion)</span>
-                        <span class="stat-value">$${country.gdp}T</span>
+                ${isExpanded ? `
+                    <div class="country-details">
+                        <div class="country-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">GDP (Trillion)</span>
+                                <span class="stat-value">$${country.gdp}T</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Growth Rate</span>
+                                <span class="stat-value ${growthPositive ? 'positive' : 'negative'}">
+                                    ${growthPositive ? '+' : ''}${country.growth}%
+                                </span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Debt to GDP</span>
+                                <span class="stat-value debt-${debtLevel}">${country.debt}%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Inflation</span>
+                                <span class="stat-value">${country.inflation}%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Unemployment</span>
+                                <span class="stat-value">${country.unemployment}%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Currency</span>
+                                <span class="stat-value">${country.currency}</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Growth Rate</span>
-                        <span class="stat-value ${growthPositive ? 'positive' : 'negative'}">
-                            ${growthPositive ? '+' : ''}${country.growth}%
-                        </span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Debt to GDP</span>
-                        <span class="stat-value debt-${debtLevel}">${country.debt}%</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Inflation</span>
-                        <span class="stat-value">${country.inflation}%</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Unemployment</span>
-                        <span class="stat-value">${country.unemployment}%</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Currency</span>
-                        <span class="stat-value">${country.currency}</span>
-                    </div>
-                </div>
+                ` : ''}
             </div>
         `;
     }).join('');
