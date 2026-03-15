@@ -6045,7 +6045,57 @@ const richestPeopleByCountry = [
     }
 ];
 
-const initRichestPeople = () => {
+const fetchRealTimeBillionaires = async () => {
+    try {
+        const response = await fetch('https://cdn.statically.io/gh/komed3/rtb-api/main/api/list/rtb/latest.json');
+        const data = await response.json();
+        
+        // Update last updated time
+        const updateTimeEl = document.getElementById('richest-update-time');
+        if (updateTimeEl) {
+            const now = new Date();
+            updateTimeEl.textContent = `Last updated: ${now.toLocaleString()} • Auto-refreshes every 5 minutes`;
+            updateTimeEl.style.color = '#10b981';
+        }
+        
+        // Map API data to our format and merge with portfolio data
+        const apiPeople = data.slice(0, 50).map(person => {
+            // Find matching person in our static data for portfolio info
+            const staticPerson = richestPeopleByCountry.find(p => 
+                p.name.toLowerCase().includes(person.personName.toLowerCase()) ||
+                person.personName.toLowerCase().includes(p.name.toLowerCase())
+            );
+            
+            return {
+                name: person.personName,
+                country: person.countryOfCitizenship || 'Unknown',
+                countryCode: person.countryCode || 'US',
+                wealth: Math.round(person.finalWorth / 1000), // Convert to billions
+                source: person.source || person.industries?.[0] || 'Various',
+                age: person.age || 0,
+                industry: person.industries?.join(', ') || 'Various',
+                portfolio: staticPerson?.portfolio || []
+            };
+        });
+        
+        return apiPeople;
+    } catch (error) {
+        console.error('Failed to fetch real-time billionaires:', error);
+        const updateTimeEl = document.getElementById('richest-update-time');
+        if (updateTimeEl) {
+            updateTimeEl.textContent = 'Using cached data • Real-time updates unavailable';
+            updateTimeEl.style.color = '#f59e0b';
+        }
+        return richestPeopleByCountry; // Fallback to static data
+    }
+};
+
+const initRichestPeople = async () => {
+    // Fetch real-time data
+    const realtimeData = await fetchRealTimeBillionaires();
+    richestPeopleByCountry.length = 0;
+    richestPeopleByCountry.push(...realtimeData);
+    
     richestPeopleData = [...richestPeopleByCountry].sort((a, b) => b.wealth - a.wealth);
     renderRichestPeople();
     
@@ -6062,6 +6112,15 @@ const initRichestPeople = () => {
             renderRichestPeople();
         });
     }
+    
+    // Auto-refresh every 5 minutes
+    setInterval(async () => {
+        const realtimeData = await fetchRealTimeBillionaires();
+        richestPeopleByCountry.length = 0;
+        richestPeopleByCountry.push(...realtimeData);
+        richestPeopleData = [...richestPeopleByCountry].sort((a, b) => b.wealth - a.wealth);
+        renderRichestPeople();
+    }, 300000); // 5 minutes
 };
 
 const sortRichestPeople = () => {

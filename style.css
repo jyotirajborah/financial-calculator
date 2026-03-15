@@ -5156,6 +5156,16 @@ body, html {
     margin: 0 0 1rem 0;
 }
 
+.richest-update-time {
+    color: #10b981;
+    font-size: 0.85rem;
+    margin: 0.5rem 0 1rem 0;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .richest-controls {
     display: flex;
     align-items: center;
