@@ -3315,10 +3315,6 @@ const initWorldClocks = () => {
             <div class="clock-time" data-timezone="${clock.timezone}">--:--:--</div>
             <div class="clock-date" data-timezone="${clock.timezone}">---</div>
             <div class="clock-day" data-timezone="${clock.timezone}">---</div>
-            <div class="market-status" data-market="${clock.market}">
-                <ion-icon name="pulse"></ion-icon>
-                <span>Checking...</span>
-            </div>
         </div>
     `).join('');
     
@@ -3858,9 +3854,6 @@ const updateWorldClocks = () => {
                 });
                 dayElement.textContent = dayStr;
             }
-            
-            // Update market status
-            updateMarketStatus(clock.market, clock.timezone);
             
         } catch (error) {
             console.error(`Error updating clock for ${clock.city}:`, error);
