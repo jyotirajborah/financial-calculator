@@ -4805,7 +4805,9 @@ const generateMockMarketData = () => {
         
         const isPositive = changePercent >= 0;
         const isOpen = isMarketOpen(index.timezone);
-        const reopenTime = getMarketReopenTime(index.timezone, selectedTimezone);
+        const timeInfo = isOpen 
+            ? getMarketCloseTime(index.timezone, selectedTimezone)
+            : getMarketReopenTime(index.timezone, selectedTimezone);
         
         return `
             <div class="index-card ${isPositive ? 'positive' : 'negative'}">
@@ -4825,7 +4827,7 @@ const generateMockMarketData = () => {
                     <span>${isPositive ? '+' : ''}${changeValue.toFixed(2)}</span>
                     <span class="index-percent">(${isPositive ? '+' : ''}${changePercent.toFixed(2)}%)</span>
                 </div>
-                ${!isOpen ? `<div class="index-reopen">${reopenTime}</div>` : ''}
+                <div class="index-time-info ${isOpen ? 'open' : 'closed'}">${timeInfo}</div>
             </div>
         `;
     }).join('');
@@ -4924,6 +4926,41 @@ const getMarketReopenTime = (marketTimezone, displayTimezone) => {
         }
     } catch (error) {
         return 'Market closed';
+    }
+};
+
+const getMarketCloseTime = (marketTimezone, displayTimezone) => {
+    try {
+        const now = new Date();
+        const marketTime = new Date(now.toLocaleString('en-US', { timeZone: marketTimezone }));
+        
+        // Set to 4:00 PM market time today
+        const closeDate = new Date(marketTime);
+        closeDate.setHours(16, 0, 0, 0);
+        
+        // Convert to display timezone
+        const closeTimeStr = closeDate.toLocaleString('en-US', { 
+            timeZone: displayTimezone,
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        });
+        
+        // Calculate hours until close
+        const nowInMarket = new Date(now.toLocaleString('en-US', { timeZone: marketTimezone }));
+        const minutesUntil = Math.round((closeDate - nowInMarket) / (1000 * 60));
+        const hoursUntil = Math.floor(minutesUntil / 60);
+        const remainingMinutes = minutesUntil % 60;
+        
+        if (minutesUntil < 60) {
+            return `Closes in ${minutesUntil}m`;
+        } else if (hoursUntil < 2) {
+            return `Closes in ${hoursUntil}h ${remainingMinutes}m`;
+        } else {
+            return `Closes at ${closeTimeStr}`;
+        }
+    } catch (error) {
+        return 'Open';
     }
 };
 

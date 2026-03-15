@@ -4693,15 +4693,12 @@ body, html {
     opacity: 0.9;
 }
 
-.index-reopen {
+.index-time-info {
     margin-top: 0.75rem;
     padding: 0.5rem 0.75rem;
-    background: rgba(255, 193, 7, 0.1);
-    border: 1px solid rgba(255, 193, 7, 0.3);
     border-radius: 6px;
     font-size: 0.85rem;
     font-weight: 600;
-    color: #f59e0b;
     text-align: center;
     display: flex;
     align-items: center;
@@ -4709,8 +4706,25 @@ body, html {
     gap: 0.5rem;
 }
 
-.index-reopen::before {
+.index-time-info.closed {
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    color: #f59e0b;
+}
+
+.index-time-info.closed::before {
     content: '⏰';
+    font-size: 1rem;
+}
+
+.index-time-info.open {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #22c55e;
+}
+
+.index-time-info.open::before {
+    content: '⏱️';
     font-size: 1rem;
 }
 
