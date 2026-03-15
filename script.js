@@ -4120,34 +4120,75 @@ let currentSize = 3;
 let lastX = 0;
 let lastY = 0;
 let zoomLevel = 1;
-let canvasOffsetX = 0;
-let canvasOffsetY = 0;
+let panOffsetX = 0;
+let panOffsetY = 0;
 let isPanning = false;
 let panStartX = 0;
 let panStartY = 0;
-let scrollStartX = 0;
-let scrollStartY = 0;
+let drawingPaths = []; // Store all drawing paths
 
 // Function to draw dotted grid background
 const drawDottedBackground = () => {
     if (!whiteboardCtx || !whiteboardCanvas) return;
     
-    // Fill with white background
+    // Clear and fill with white background
     whiteboardCtx.fillStyle = 'white';
     whiteboardCtx.fillRect(0, 0, whiteboardCanvas.width, whiteboardCanvas.height);
     
-    // Draw dots
-    const dotSpacing = 20; // Space between dots
-    const dotRadius = 1.5; // Dot size
-    whiteboardCtx.fillStyle = '#e0e0e0'; // Light gray dots
+    // Draw dots at fixed size (not affected by zoom)
+    const dotSpacing = 20;
+    const dotRadius = 1.5;
+    whiteboardCtx.fillStyle = '#e0e0e0';
     
-    for (let x = dotSpacing; x < whiteboardCanvas.width; x += dotSpacing) {
-        for (let y = dotSpacing; y < whiteboardCanvas.height; y += dotSpacing) {
-            whiteboardCtx.beginPath();
-            whiteboardCtx.arc(x, y, dotRadius, 0, Math.PI * 2);
-            whiteboardCtx.fill();
+    // Calculate visible area based on pan offset
+    const startX = Math.floor(-panOffsetX / dotSpacing) * dotSpacing;
+    const startY = Math.floor(-panOffsetY / dotSpacing) * dotSpacing;
+    
+    for (let x = startX; x < whiteboardCanvas.width - panOffsetX; x += dotSpacing) {
+        for (let y = startY; y < whiteboardCanvas.height - panOffsetY; y += dotSpacing) {
+            const screenX = x + panOffsetX;
+            const screenY = y + panOffsetY;
+            
+            if (screenX >= 0 && screenX <= whiteboardCanvas.width && 
+                screenY >= 0 && screenY <= whiteboardCanvas.height) {
+                whiteboardCtx.beginPath();
+                whiteboardCtx.arc(screenX, screenY, dotRadius, 0, Math.PI * 2);
+                whiteboardCtx.fill();
+            }
         }
     }
+};
+
+// Redraw everything (background + all paths)
+const redrawCanvas = () => {
+    if (!whiteboardCtx || !whiteboardCanvas) return;
+    
+    // Draw background
+    drawDottedBackground();
+    
+    // Apply transformations
+    whiteboardCtx.save();
+    whiteboardCtx.translate(panOffsetX, panOffsetY);
+    whiteboardCtx.scale(zoomLevel, zoomLevel);
+    
+    // Redraw all paths
+    drawingPaths.forEach(path => {
+        whiteboardCtx.beginPath();
+        whiteboardCtx.strokeStyle = path.color;
+        whiteboardCtx.lineWidth = path.size;
+        whiteboardCtx.lineCap = 'round';
+        whiteboardCtx.lineJoin = 'round';
+        
+        if (path.points.length > 0) {
+            whiteboardCtx.moveTo(path.points[0].x, path.points[0].y);
+            for (let i = 1; i < path.points.length; i++) {
+                whiteboardCtx.lineTo(path.points[i].x, path.points[i].y);
+            }
+            whiteboardCtx.stroke();
+        }
+    });
+    
+    whiteboardCtx.restore();
 };
 
 const initWhiteboard = () => {
@@ -4168,20 +4209,11 @@ const initWhiteboard = () => {
         const height = wrapper.clientHeight;
         console.log('Resizing canvas to:', width, 'x', height);
         
-        // Store the current drawing
-        const imageData = whiteboardCtx ? whiteboardCtx.getImageData(0, 0, whiteboardCanvas.width, whiteboardCanvas.height) : null;
-        
-        // Set canvas to base size (will be scaled by zoom)
         whiteboardCanvas.width = width;
         whiteboardCanvas.height = height;
         
-        // Restore the drawing if it existed
-        if (imageData) {
-            whiteboardCtx.putImageData(imageData, 0, 0);
-        }
-        
-        // Draw dotted background
-        drawDottedBackground();
+        // Redraw everything
+        redrawCanvas();
     };
     
     resizeCanvas();
@@ -4309,23 +4341,28 @@ const startDrawing = (e) => {
         console.log('Starting pan mode');
         e.preventDefault();
         isPanning = true;
-        const wrapper = whiteboardCanvas.parentElement;
         panStartX = e.clientX;
         panStartY = e.clientY;
-        scrollStartX = wrapper.scrollLeft;
-        scrollStartY = wrapper.scrollTop;
         whiteboardCanvas.style.cursor = 'grabbing';
-        console.log('Pan started at:', panStartX, panStartY, 'scroll:', scrollStartX, scrollStartY);
         return;
     }
     
     // Left mouse button for drawing
-    if (e.button === 0 && !isPanning) {
+    if (e.button === 0 && !isPanning && currentTool !== 'pan') {
         console.log('Starting drawing');
         isDrawing = true;
         const rect = whiteboardCanvas.getBoundingClientRect();
-        lastX = (e.clientX - rect.left) / zoomLevel;
-        lastY = (e.clientY - rect.top) / zoomLevel;
+        const x = (e.clientX - rect.left - panOffsetX) / zoomLevel;
+        const y = (e.clientY - rect.top - panOffsetY) / zoomLevel;
+        lastX = x;
+        lastY = y;
+        
+        // Start a new path
+        drawingPaths.push({
+            color: currentTool === 'eraser' ? 'white' : currentColor,
+            size: currentTool === 'eraser' ? currentSize * 3 : currentSize,
+            points: [{ x, y }]
+        });
     }
 };
 
@@ -4333,38 +4370,44 @@ const draw = (e) => {
     // Handle panning
     if (isPanning) {
         e.preventDefault();
-        const wrapper = whiteboardCanvas.parentElement;
-        const deltaX = panStartX - e.clientX;
-        const deltaY = panStartY - e.clientY;
-        wrapper.scrollLeft = scrollStartX + deltaX;
-        wrapper.scrollTop = scrollStartY + deltaY;
+        const deltaX = e.clientX - panStartX;
+        const deltaY = e.clientY - panStartY;
+        panOffsetX += deltaX;
+        panOffsetY += deltaY;
+        panStartX = e.clientX;
+        panStartY = e.clientY;
+        redrawCanvas();
         return;
     }
     
     // Handle drawing
-    if (!isDrawing) return;
+    if (!isDrawing || currentTool === 'pan') return;
     
     const rect = whiteboardCanvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / zoomLevel;
-    const y = (e.clientY - rect.top) / zoomLevel;
+    const x = (e.clientX - rect.left - panOffsetX) / zoomLevel;
+    const y = (e.clientY - rect.top - panOffsetY) / zoomLevel;
     
-    whiteboardCtx.beginPath();
-    whiteboardCtx.moveTo(lastX, lastY);
-    whiteboardCtx.lineTo(x, y);
-    
-    if (currentTool === 'pen') {
-        whiteboardCtx.strokeStyle = currentColor;
-        whiteboardCtx.lineWidth = currentSize;
+    // Add point to current path
+    const currentPath = drawingPaths[drawingPaths.length - 1];
+    if (currentPath) {
+        currentPath.points.push({ x, y });
+        
+        // Draw the new segment
+        whiteboardCtx.save();
+        whiteboardCtx.translate(panOffsetX, panOffsetY);
+        whiteboardCtx.scale(zoomLevel, zoomLevel);
+        
+        whiteboardCtx.beginPath();
+        whiteboardCtx.moveTo(lastX, lastY);
+        whiteboardCtx.lineTo(x, y);
+        whiteboardCtx.strokeStyle = currentPath.color;
+        whiteboardCtx.lineWidth = currentPath.size;
         whiteboardCtx.lineCap = 'round';
         whiteboardCtx.lineJoin = 'round';
-    } else if (currentTool === 'eraser') {
-        whiteboardCtx.strokeStyle = 'white';
-        whiteboardCtx.lineWidth = currentSize * 3;
-        whiteboardCtx.lineCap = 'round';
-        whiteboardCtx.lineJoin = 'round';
+        whiteboardCtx.stroke();
+        
+        whiteboardCtx.restore();
     }
-    
-    whiteboardCtx.stroke();
     
     lastX = x;
     lastY = y;
@@ -4388,9 +4431,18 @@ const handleTouchStart = (e) => {
     e.preventDefault();
     const touch = e.touches[0];
     const rect = whiteboardCanvas.getBoundingClientRect();
-    lastX = (touch.clientX - rect.left) / zoomLevel;
-    lastY = (touch.clientY - rect.top) / zoomLevel;
+    const x = (touch.clientX - rect.left - panOffsetX) / zoomLevel;
+    const y = (touch.clientY - rect.top - panOffsetY) / zoomLevel;
+    lastX = x;
+    lastY = y;
     isDrawing = true;
+    
+    // Start a new path
+    drawingPaths.push({
+        color: currentTool === 'eraser' ? 'white' : currentColor,
+        size: currentTool === 'eraser' ? currentSize * 3 : currentSize,
+        points: [{ x, y }]
+    });
 };
 
 const handleTouchMove = (e) => {
@@ -4399,26 +4451,30 @@ const handleTouchMove = (e) => {
     
     const touch = e.touches[0];
     const rect = whiteboardCanvas.getBoundingClientRect();
-    const x = (touch.clientX - rect.left) / zoomLevel;
-    const y = (touch.clientY - rect.top) / zoomLevel;
+    const x = (touch.clientX - rect.left - panOffsetX) / zoomLevel;
+    const y = (touch.clientY - rect.top - panOffsetY) / zoomLevel;
     
-    whiteboardCtx.beginPath();
-    whiteboardCtx.moveTo(lastX, lastY);
-    whiteboardCtx.lineTo(x, y);
-    
-    if (currentTool === 'pen') {
-        whiteboardCtx.strokeStyle = currentColor;
-        whiteboardCtx.lineWidth = currentSize;
+    // Add point to current path
+    const currentPath = drawingPaths[drawingPaths.length - 1];
+    if (currentPath) {
+        currentPath.points.push({ x, y });
+        
+        // Draw the new segment
+        whiteboardCtx.save();
+        whiteboardCtx.translate(panOffsetX, panOffsetY);
+        whiteboardCtx.scale(zoomLevel, zoomLevel);
+        
+        whiteboardCtx.beginPath();
+        whiteboardCtx.moveTo(lastX, lastY);
+        whiteboardCtx.lineTo(x, y);
+        whiteboardCtx.strokeStyle = currentPath.color;
+        whiteboardCtx.lineWidth = currentPath.size;
         whiteboardCtx.lineCap = 'round';
         whiteboardCtx.lineJoin = 'round';
-    } else if (currentTool === 'eraser') {
-        whiteboardCtx.strokeStyle = 'white';
-        whiteboardCtx.lineWidth = currentSize * 3;
-        whiteboardCtx.lineCap = 'round';
-        whiteboardCtx.lineJoin = 'round';
+        whiteboardCtx.stroke();
+        
+        whiteboardCtx.restore();
     }
-    
-    whiteboardCtx.stroke();
     
     lastX = x;
     lastY = y;
@@ -4427,8 +4483,11 @@ const handleTouchMove = (e) => {
 window.clearWhiteboard = () => {
     if (!whiteboardCtx || !whiteboardCanvas) return;
     
-    // Redraw dotted background
-    drawDottedBackground();
+    // Clear all paths
+    drawingPaths = [];
+    
+    // Redraw background
+    redrawCanvas();
     showToast('Whiteboard cleared', 'success');
 };
 
@@ -4475,13 +4534,8 @@ window.resetZoom = () => {
 };
 
 const applyZoom = () => {
-    const wrapper = whiteboardCanvas.parentElement;
-    const baseWidth = wrapper.clientWidth;
-    const baseHeight = wrapper.clientHeight;
-    
-    // Set canvas display size based on zoom
-    whiteboardCanvas.style.width = `${baseWidth * zoomLevel}px`;
-    whiteboardCanvas.style.height = `${baseHeight * zoomLevel}px`;
+    // Redraw everything with new zoom level
+    redrawCanvas();
     
     // Update zoom display
     const zoomDisplay = document.getElementById('zoom-display');
@@ -4489,7 +4543,7 @@ const applyZoom = () => {
         zoomDisplay.textContent = `${Math.round(zoomLevel * 100)}%`;
     }
     
-    console.log('Zoom level:', zoomLevel, 'Canvas display size:', baseWidth * zoomLevel, 'x', baseHeight * zoomLevel);
+    console.log('Zoom level:', zoomLevel);
 };
 
 // --- Finance News Functions ---

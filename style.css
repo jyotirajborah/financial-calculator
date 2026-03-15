@@ -4360,7 +4360,7 @@ body, html {
     background: white;
     border-radius: 12px;
     border: 2px solid var(--border-color);
-    overflow: auto;
+    overflow: hidden;
     position: relative;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
