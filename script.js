@@ -3105,6 +3105,13 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     
     try {
+        initWhiteboard();
+        console.log('Whiteboard initialized');
+    } catch (err) {
+        console.error('Whiteboard initialization failed:', err);
+    }
+    
+    try {
         openViewFromQuery();
         console.log('View from query opened');
     } catch (err) {
@@ -4099,6 +4106,190 @@ window.addEventListener('beforeunload', () => {
         clearInterval(clockInterval);
     }
 });
+
+// --- Whiteboard Functions ---
+let whiteboardCanvas = null;
+let whiteboardCtx = null;
+let isDrawing = false;
+let currentTool = 'pen';
+let currentColor = '#6366f1';
+let currentSize = 3;
+let lastX = 0;
+let lastY = 0;
+
+const initWhiteboard = () => {
+    whiteboardCanvas = document.getElementById('whiteboard-canvas');
+    if (!whiteboardCanvas) return;
+    
+    whiteboardCtx = whiteboardCanvas.getContext('2d');
+    
+    // Set canvas size to match container
+    const resizeCanvas = () => {
+        const wrapper = whiteboardCanvas.parentElement;
+        whiteboardCanvas.width = wrapper.clientWidth;
+        whiteboardCanvas.height = wrapper.clientHeight;
+        
+        // Fill with white background
+        whiteboardCtx.fillStyle = 'white';
+        whiteboardCtx.fillRect(0, 0, whiteboardCanvas.width, whiteboardCanvas.height);
+    };
+    
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    // Tool selection
+    document.querySelectorAll('.tool-btn[data-tool]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tool-btn[data-tool]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentTool = btn.getAttribute('data-tool');
+            
+            // Update cursor
+            if (currentTool === 'eraser') {
+                whiteboardCanvas.classList.add('eraser-mode');
+            } else {
+                whiteboardCanvas.classList.remove('eraser-mode');
+            }
+        });
+    });
+    
+    // Color picker
+    const colorPicker = document.getElementById('pen-color');
+    if (colorPicker) {
+        colorPicker.addEventListener('change', (e) => {
+            currentColor = e.target.value;
+        });
+    }
+    
+    // Size picker
+    const sizePicker = document.getElementById('pen-size');
+    const sizeDisplay = document.getElementById('size-display');
+    if (sizePicker && sizeDisplay) {
+        sizePicker.addEventListener('input', (e) => {
+            currentSize = parseInt(e.target.value);
+            sizeDisplay.textContent = `${currentSize}px`;
+        });
+    }
+    
+    // Drawing events
+    whiteboardCanvas.addEventListener('mousedown', startDrawing);
+    whiteboardCanvas.addEventListener('mousemove', draw);
+    whiteboardCanvas.addEventListener('mouseup', stopDrawing);
+    whiteboardCanvas.addEventListener('mouseout', stopDrawing);
+    
+    // Touch events for mobile
+    whiteboardCanvas.addEventListener('touchstart', handleTouchStart);
+    whiteboardCanvas.addEventListener('touchmove', handleTouchMove);
+    whiteboardCanvas.addEventListener('touchend', stopDrawing);
+};
+
+const startDrawing = (e) => {
+    isDrawing = true;
+    const rect = whiteboardCanvas.getBoundingClientRect();
+    lastX = e.clientX - rect.left;
+    lastY = e.clientY - rect.top;
+};
+
+const draw = (e) => {
+    if (!isDrawing) return;
+    
+    const rect = whiteboardCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    whiteboardCtx.beginPath();
+    whiteboardCtx.moveTo(lastX, lastY);
+    whiteboardCtx.lineTo(x, y);
+    
+    if (currentTool === 'pen') {
+        whiteboardCtx.strokeStyle = currentColor;
+        whiteboardCtx.lineWidth = currentSize;
+        whiteboardCtx.lineCap = 'round';
+        whiteboardCtx.lineJoin = 'round';
+    } else if (currentTool === 'eraser') {
+        whiteboardCtx.strokeStyle = 'white';
+        whiteboardCtx.lineWidth = currentSize * 3;
+        whiteboardCtx.lineCap = 'round';
+        whiteboardCtx.lineJoin = 'round';
+    }
+    
+    whiteboardCtx.stroke();
+    
+    lastX = x;
+    lastY = y;
+};
+
+const stopDrawing = () => {
+    isDrawing = false;
+};
+
+const handleTouchStart = (e) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const rect = whiteboardCanvas.getBoundingClientRect();
+    lastX = touch.clientX - rect.left;
+    lastY = touch.clientY - rect.top;
+    isDrawing = true;
+};
+
+const handleTouchMove = (e) => {
+    e.preventDefault();
+    if (!isDrawing) return;
+    
+    const touch = e.touches[0];
+    const rect = whiteboardCanvas.getBoundingClientRect();
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+    
+    whiteboardCtx.beginPath();
+    whiteboardCtx.moveTo(lastX, lastY);
+    whiteboardCtx.lineTo(x, y);
+    
+    if (currentTool === 'pen') {
+        whiteboardCtx.strokeStyle = currentColor;
+        whiteboardCtx.lineWidth = currentSize;
+        whiteboardCtx.lineCap = 'round';
+        whiteboardCtx.lineJoin = 'round';
+    } else if (currentTool === 'eraser') {
+        whiteboardCtx.strokeStyle = 'white';
+        whiteboardCtx.lineWidth = currentSize * 3;
+        whiteboardCtx.lineCap = 'round';
+        whiteboardCtx.lineJoin = 'round';
+    }
+    
+    whiteboardCtx.stroke();
+    
+    lastX = x;
+    lastY = y;
+};
+
+window.clearWhiteboard = () => {
+    if (!whiteboardCtx || !whiteboardCanvas) return;
+    
+    whiteboardCtx.fillStyle = 'white';
+    whiteboardCtx.fillRect(0, 0, whiteboardCanvas.width, whiteboardCanvas.height);
+    showToast('Whiteboard cleared', 'success');
+};
+
+window.saveWhiteboard = () => {
+    if (!whiteboardCanvas) return;
+    
+    try {
+        // Convert canvas to blob and download
+        whiteboardCanvas.toBlob((blob) => {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.download = `whiteboard-${Date.now()}.png`;
+            link.href = url;
+            link.click();
+            URL.revokeObjectURL(url);
+            showToast('Whiteboard saved as image', 'success');
+        });
+    } catch (error) {
+        console.error('Error saving whiteboard:', error);
+        showToast('Failed to save whiteboard', 'error');
+    }
+};
 
 // --- Finance News Functions ---
 let currentNewsRegion = 'indian';

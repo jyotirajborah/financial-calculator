@@ -372,6 +372,10 @@
                     <ion-icon name="globe"></ion-icon>
                     <span>Clocks & Calendars</span>
                 </button>
+                <button class="nav-item" data-target="whiteboard">
+                    <ion-icon name="brush"></ion-icon>
+                    <span>Whiteboard</span>
+                </button>
                 <button class="nav-item" data-target="help-shortcuts">
                     <ion-icon name="help-circle"></ion-icon>
                     <span>Help & Shortcuts</span>
@@ -1588,6 +1592,43 @@
                             <div class="clocks-grid" id="calendars-grid">
                                 <!-- Calendars will be dynamically generated here -->
                             </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Whiteboard View -->
+                <section class="calculator-view" id="whiteboard">
+                    <div class="whiteboard-container">
+                        <div class="whiteboard-header">
+                            <div class="whiteboard-title">
+                                <ion-icon name="brush"></ion-icon>
+                                <h2>Whiteboard</h2>
+                            </div>
+                            <div class="whiteboard-toolbar">
+                                <button class="tool-btn active" data-tool="pen" title="Pen">
+                                    <ion-icon name="create"></ion-icon>
+                                </button>
+                                <button class="tool-btn" data-tool="eraser" title="Eraser">
+                                    <ion-icon name="remove-circle"></ion-icon>
+                                </button>
+                                <div class="color-picker-group">
+                                    <input type="color" id="pen-color" value="#6366f1" title="Pen Color">
+                                    <label for="pen-color"><ion-icon name="color-palette"></ion-icon></label>
+                                </div>
+                                <div class="size-picker-group">
+                                    <input type="range" id="pen-size" min="1" max="20" value="3" title="Pen Size">
+                                    <span id="size-display">3px</span>
+                                </div>
+                                <button class="tool-btn" onclick="clearWhiteboard()" title="Clear All">
+                                    <ion-icon name="trash"></ion-icon>
+                                </button>
+                                <button class="tool-btn" onclick="saveWhiteboard()" title="Save as Image">
+                                    <ion-icon name="download"></ion-icon>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="whiteboard-canvas-wrapper">
+                            <canvas id="whiteboard-canvas"></canvas>
                         </div>
                     </div>
                 </section>
