@@ -4125,7 +4125,9 @@ let panOffsetY = 0;
 let isPanning = false;
 let panStartX = 0;
 let panStartY = 0;
-let drawingPaths = []; // Store all drawing paths
+let currentPage = 1;
+let whiteboardPages = {}; // Store pages: { 1: { paths: [], panX: 0, panY: 0, zoom: 1 }, ... }
+let drawingPaths = []; // Current page drawing paths
 
 // Function to draw dotted grid background
 const drawDottedBackground = () => {
@@ -4183,6 +4185,94 @@ const updateEraserCursor = () => {
     const encodedSvg = encodeURIComponent(svg);
     const center = Math.floor(cursorSize / 2);
     whiteboardCanvas.style.cursor = `url('data:image/svg+xml;utf8,${encodedSvg}') ${center} ${center}, auto`;
+};
+
+// Initialize page if it doesn't exist
+const initPage = (pageNum) => {
+    if (!whiteboardPages[pageNum]) {
+        whiteboardPages[pageNum] = {
+            paths: [],
+            panX: 0,
+            panY: 0,
+            zoom: 1
+        };
+    }
+};
+
+// Save current page state
+const saveCurrentPage = () => {
+    if (!whiteboardPages[currentPage]) {
+        whiteboardPages[currentPage] = {};
+    }
+    whiteboardPages[currentPage].paths = JSON.parse(JSON.stringify(getCurrentPaths()));
+    whiteboardPages[currentPage].panX = panOffsetX;
+    whiteboardPages[currentPage].panY = panOffsetY;
+    whiteboardPages[currentPage].zoom = zoomLevel;
+};
+
+// Load page state
+const loadPage = (pageNum) => {
+    initPage(pageNum);
+    const page = whiteboardPages[pageNum];
+    
+    // Restore page state
+    setCurrentPaths(JSON.parse(JSON.stringify(page.paths)));
+    panOffsetX = page.panX;
+    panOffsetY = page.panY;
+    zoomLevel = page.zoom;
+    
+    // Update UI
+    const zoomDisplay = document.getElementById('zoom-display');
+    if (zoomDisplay) {
+        zoomDisplay.value = `${Math.round(zoomLevel * 100)}%`;
+    }
+    
+    // Redraw
+    redrawCanvas();
+};
+
+// Switch to a specific page
+const switchToPage = (pageNum) => {
+    if (pageNum < 1 || pageNum > 50) return;
+    
+    // Save current page
+    saveCurrentPage();
+    
+    // Load new page
+    currentPage = pageNum;
+    loadPage(pageNum);
+    
+    // Update page number input
+    const pageInput = document.getElementById('page-number');
+    if (pageInput) {
+        pageInput.value = pageNum;
+    }
+    
+    console.log('Switched to page:', pageNum);
+};
+
+// Navigation functions
+window.nextWhiteboardPage = () => {
+    if (currentPage < 50) {
+        switchToPage(currentPage + 1);
+    }
+};
+
+window.previousWhiteboardPage = () => {
+    if (currentPage > 1) {
+        switchToPage(currentPage - 1);
+    }
+};
+
+// Helper functions to get/set paths (will be defined with drawingPaths)
+const getCurrentPaths = () => {
+    return typeof drawingPaths !== 'undefined' ? drawingPaths : [];
+};
+
+const setCurrentPaths = (paths) => {
+    if (typeof drawingPaths !== 'undefined') {
+        drawingPaths = paths;
+    }
 };
 
 // Redraw everything (background + all paths)
@@ -4327,6 +4417,49 @@ const initWhiteboard = () => {
             zoomDisplay.value = `${Math.round(zoomLevel * 100)}%`;
         });
     }
+    
+    // Page number input
+    const pageInput = document.getElementById('page-number');
+    if (pageInput) {
+        pageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const pageNum = parseInt(pageInput.value);
+                if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= 50) {
+                    switchToPage(pageNum);
+                    pageInput.blur();
+                } else {
+                    showToast('Please enter a page number between 1 and 50', 'error');
+                    pageInput.value = currentPage;
+                }
+            } else if (e.key === 'Escape') {
+                pageInput.value = currentPage;
+                pageInput.blur();
+            }
+        });
+        
+        pageInput.addEventListener('blur', () => {
+            pageInput.value = currentPage;
+        });
+    }
+    
+    // Keyboard navigation for pages (Arrow keys)
+    document.addEventListener('keydown', (e) => {
+        // Only handle if whiteboard is active and not typing in an input
+        if (!document.querySelector('#whiteboard.active')) return;
+        if (e.target.tagName === 'INPUT') return;
+        
+        if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            previousWhiteboardPage();
+        } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            nextWhiteboardPage();
+        }
+    });
+    
+    // Initialize first page
+    initPage(1);
     
     // Keyboard support for panning with Space key
     let spacePressed = false;

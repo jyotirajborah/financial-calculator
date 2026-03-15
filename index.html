@@ -1643,6 +1643,19 @@
                             </div>
                         </div>
                         <div class="whiteboard-canvas-wrapper">
+                            <div class="whiteboard-navigation">
+                                <button class="nav-arrow" onclick="previousWhiteboardPage()" title="Previous Page (Left Arrow)">
+                                    <ion-icon name="chevron-back"></ion-icon>
+                                </button>
+                                <div class="page-selector">
+                                    <span>Page</span>
+                                    <input type="number" id="page-number" min="1" max="50" value="1" title="Enter page number (1-50)" />
+                                    <span>of 50</span>
+                                </div>
+                                <button class="nav-arrow" onclick="nextWhiteboardPage()" title="Next Page (Right Arrow)">
+                                    <ion-icon name="chevron-forward"></ion-icon>
+                                </button>
+                            </div>
                             <canvas id="whiteboard-canvas"></canvas>
                         </div>
                     </div>
