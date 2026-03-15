@@ -5267,6 +5267,122 @@ body, html {
     color: #fbbf24;
 }
 
+.view-portfolio-btn {
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.1));
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 8px;
+    color: #fbbf24;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.view-portfolio-btn:hover {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.2));
+    border-color: #fbbf24;
+    transform: translateY(-2px);
+}
+
+.view-portfolio-btn ion-icon {
+    font-size: 1.2rem;
+}
+
+.portfolio-section {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid rgba(251, 191, 36, 0.3);
+    animation: slideDown 0.3s ease;
+}
+
+.portfolio-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fbbf24;
+    margin: 0 0 1rem 0;
+}
+
+.portfolio-title ion-icon {
+    font-size: 1.3rem;
+}
+
+.portfolio-items {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.portfolio-item {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    transition: all 0.3s ease;
+}
+
+.portfolio-item:hover {
+    background: rgba(251, 191, 36, 0.05);
+    border-color: rgba(251, 191, 36, 0.3);
+}
+
+.portfolio-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.portfolio-company {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.portfolio-value {
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: #fbbf24;
+}
+
+.portfolio-item-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.portfolio-stake {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--accent-color);
+}
+
+.portfolio-description {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* =============================================
    HELP & SHORTCUTS SECTION
    ============================================= */

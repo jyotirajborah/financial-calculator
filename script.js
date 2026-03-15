@@ -5674,20 +5674,78 @@ const renderCountries = () => {
 
 // --- Richest People Functions ---
 let richestPeopleData = [];
+let expandedPeople = new Set();
+
 
 const richestPeopleByCountry = [
-    { name: 'Elon Musk', country: 'United States', countryCode: 'US', wealth: 230, source: 'Tesla, SpaceX', age: 52, industry: 'Technology, Automotive' },
-    { name: 'Bernard Arnault', country: 'France', countryCode: 'FR', wealth: 211, source: 'LVMH', age: 74, industry: 'Luxury Goods' },
-    { name: 'Jeff Bezos', country: 'United States', countryCode: 'US', wealth: 165, source: 'Amazon', age: 60, industry: 'E-commerce, Technology' },
-    { name: 'Larry Ellison', country: 'United States', countryCode: 'US', wealth: 141, source: 'Oracle', age: 79, industry: 'Software' },
-    { name: 'Warren Buffett', country: 'United States', countryCode: 'US', wealth: 120, source: 'Berkshire Hathaway', age: 93, industry: 'Investments' },
-    { name: 'Bill Gates', country: 'United States', countryCode: 'US', wealth: 118, source: 'Microsoft', age: 68, industry: 'Software' },
-    { name: 'Mark Zuckerberg', country: 'United States', countryCode: 'US', wealth: 115, source: 'Meta (Facebook)', age: 39, industry: 'Social Media' },
-    { name: 'Larry Page', country: 'United States', countryCode: 'US', wealth: 111, source: 'Google', age: 50, industry: 'Technology' },
-    { name: 'Sergey Brin', country: 'United States', countryCode: 'US', wealth: 107, source: 'Google', age: 50, industry: 'Technology' },
-    { name: 'Steve Ballmer', country: 'United States', countryCode: 'US', wealth: 101, source: 'Microsoft', age: 67, industry: 'Software' },
-    { name: 'Mukesh Ambani', country: 'India', countryCode: 'IN', wealth: 92, source: 'Reliance Industries', age: 66, industry: 'Oil, Telecom, Retail' },
-    { name: 'Gautam Adani', country: 'India', countryCode: 'IN', wealth: 84, source: 'Adani Group', age: 61, industry: 'Infrastructure, Energy' },
+    { name: 'Elon Musk', country: 'United States', countryCode: 'US', wealth: 230, source: 'Tesla, SpaceX', age: 52, industry: 'Technology, Automotive', 
+      portfolio: [
+        { company: 'Tesla', stake: '13%', value: 95, description: 'Electric vehicles and clean energy' },
+        { company: 'SpaceX', stake: '42%', value: 85, description: 'Aerospace and space transportation' },
+        { company: 'X (Twitter)', stake: '100%', value: 20, description: 'Social media platform' },
+        { company: 'Neuralink', stake: 'Majority', value: 5, description: 'Brain-computer interfaces' },
+        { company: 'The Boring Company', stake: 'Majority', value: 3, description: 'Infrastructure and tunneling' }
+      ]
+    },
+    { name: 'Bernard Arnault', country: 'France', countryCode: 'FR', wealth: 211, source: 'LVMH', age: 74, industry: 'Luxury Goods',
+      portfolio: [
+        { company: 'LVMH', stake: '48%', value: 180, description: 'Luxury goods conglomerate' },
+        { company: 'Christian Dior', stake: '97%', value: 25, description: 'Luxury fashion house' },
+        { company: 'Hermès', stake: '0.1%', value: 3, description: 'Luxury goods manufacturer' }
+      ]
+    },
+    { name: 'Jeff Bezos', country: 'United States', countryCode: 'US', wealth: 165, source: 'Amazon', age: 60, industry: 'E-commerce, Technology',
+      portfolio: [
+        { company: 'Amazon', stake: '10%', value: 140, description: 'E-commerce and cloud computing' },
+        { company: 'Blue Origin', stake: '100%', value: 10, description: 'Aerospace and space tourism' },
+        { company: 'The Washington Post', stake: '100%', value: 0.25, description: 'Newspaper publisher' },
+        { company: 'Real Estate', stake: 'N/A', value: 5, description: 'Properties across the US' }
+      ]
+    },
+    { name: 'Larry Ellison', country: 'United States', countryCode: 'US', wealth: 141, source: 'Oracle', age: 79, industry: 'Software',
+      portfolio: [
+        { company: 'Oracle', stake: '42%', value: 120, description: 'Enterprise software and cloud' },
+        { company: 'Tesla', stake: '1.5%', value: 12, description: 'Electric vehicles' },
+        { company: 'Lanai Island', stake: '98%', value: 0.3, description: 'Hawaiian island ownership' }
+      ]
+    },
+    { name: 'Warren Buffett', country: 'United States', countryCode: 'US', wealth: 120, source: 'Berkshire Hathaway', age: 93, industry: 'Investments',
+      portfolio: [
+        { company: 'Berkshire Hathaway', stake: '15%', value: 120, description: 'Holding company with diverse investments' },
+        { company: 'Apple (via BH)', stake: '5.9%', value: 150, description: 'Technology company' },
+        { company: 'Bank of America (via BH)', stake: '11%', value: 35, description: 'Financial services' },
+        { company: 'Coca-Cola (via BH)', stake: '9.2%', value: 25, description: 'Beverage company' }
+      ]
+    },
+    { name: 'Bill Gates', country: 'United States', countryCode: 'US', wealth: 118, source: 'Microsoft', age: 68, industry: 'Software',
+      portfolio: [
+        { company: 'Microsoft', stake: '1.3%', value: 35, description: 'Software and cloud services' },
+        { company: 'Cascade Investment', stake: '100%', value: 70, description: 'Investment vehicle' },
+        { company: 'Canadian National Railway', stake: '10%', value: 8, description: 'Railway transportation' },
+        { company: 'Farmland', stake: 'N/A', value: 5, description: 'Largest private farmland owner in US' }
+      ]
+    },
+    { name: 'Mark Zuckerberg', country: 'United States', countryCode: 'US', wealth: 115, source: 'Meta (Facebook)', age: 39, industry: 'Social Media',
+      portfolio: [
+        { company: 'Meta Platforms', stake: '13%', value: 110, description: 'Social media and metaverse' },
+        { company: 'Real Estate', stake: 'N/A', value: 3, description: 'Properties in California and Hawaii' }
+      ]
+    },
+    { name: 'Mukesh Ambani', country: 'India', countryCode: 'IN', wealth: 92, source: 'Reliance Industries', age: 66, industry: 'Oil, Telecom, Retail',
+      portfolio: [
+        { company: 'Reliance Industries', stake: '50.4%', value: 85, description: 'Oil, gas, petrochemicals' },
+        { company: 'Jio Platforms', stake: '67%', value: 25, description: 'Telecommunications' },
+        { company: 'Reliance Retail', stake: '77%', value: 20, description: 'Retail operations' }
+      ]
+    },
+    { name: 'Gautam Adani', country: 'India', countryCode: 'IN', wealth: 84, source: 'Adani Group', age: 61, industry: 'Infrastructure, Energy',
+      portfolio: [
+        { company: 'Adani Enterprises', stake: '75%', value: 30, description: 'Diversified conglomerate' },
+        { company: 'Adani Ports', stake: '65%', value: 20, description: 'Port operations' },
+        { company: 'Adani Green Energy', stake: '75%', value: 18, description: 'Renewable energy' },
+        { company: 'Adani Transmission', stake: '75%', value: 10, description: 'Power transmission' }
+      ]
+    },
     { name: 'Francoise Bettencourt Meyers', country: 'France', countryCode: 'FR', wealth: 80, source: "L'Oréal", age: 70, industry: 'Cosmetics' },
     { name: 'Amancio Ortega', country: 'Spain', countryCode: 'ES', wealth: 77, source: 'Zara, Inditex', age: 87, industry: 'Fashion Retail' },
     { name: 'Carlos Slim Helu', country: 'Mexico', countryCode: 'MX', wealth: 68, source: 'Telecom', age: 84, industry: 'Telecommunications' },
@@ -5765,21 +5823,34 @@ const sortRichestPeople = () => {
     renderRichestPeople();
 };
 
+const togglePersonPortfolio = (personName) => {
+    if (expandedPeople.has(personName)) {
+        expandedPeople.delete(personName);
+    } else {
+        expandedPeople.clear();
+        expandedPeople.add(personName);
+    }
+    renderRichestPeople();
+};
+
 const renderRichestPeople = () => {
     const grid = document.getElementById('richest-grid');
     if (!grid) return;
-    
+
     grid.innerHTML = richestPeopleData.map((person, index) => {
+        const isExpanded = expandedPeople.has(person.name);
+        const hasPortfolio = person.portfolio && person.portfolio.length > 0;
+
         return `
-            <div class="richest-card">
+            <div class="richest-card ${isExpanded ? 'expanded' : ''}">
                 <div class="richest-rank">#${index + 1}</div>
                 <div class="richest-info">
                     <div class="richest-header-row">
                         <div class="richest-name-country">
                             <h3 class="richest-name">${person.name}</h3>
                             <div class="richest-country">
-                                <img src="https://flagcdn.com/w20/${person.countryCode.toLowerCase()}.png" 
-                                     alt="${person.country}" 
+                                <img src="https://flagcdn.com/w20/${person.countryCode.toLowerCase()}.png"
+                                     alt="${person.country}"
                                      class="richest-flag"
                                      onerror="this.style.display='none'">
                                 <span>${person.country}</span>
@@ -5801,6 +5872,36 @@ const renderRichestPeople = () => {
                             <span>Age: ${person.age}</span>
                         </div>
                     </div>
+
+                    ${hasPortfolio ? `
+                        <button class="view-portfolio-btn" onclick="togglePersonPortfolio('${person.name}')">
+                            <ion-icon name="${isExpanded ? 'chevron-up' : 'chevron-down'}"></ion-icon>
+                            ${isExpanded ? 'Hide' : 'View'} Portfolio
+                        </button>
+                    ` : ''}
+
+                    ${isExpanded && hasPortfolio ? `
+                        <div class="portfolio-section">
+                            <h4 class="portfolio-title">
+                                <ion-icon name="pie-chart"></ion-icon>
+                                Investment Portfolio
+                            </h4>
+                            <div class="portfolio-items">
+                                ${person.portfolio.map(item => `
+                                    <div class="portfolio-item">
+                                        <div class="portfolio-item-header">
+                                            <span class="portfolio-company">${item.company}</span>
+                                            <span class="portfolio-value">$${item.value}B</span>
+                                        </div>
+                                        <div class="portfolio-item-details">
+                                            <span class="portfolio-stake">Stake: ${item.stake}</span>
+                                            <span class="portfolio-description">${item.description}</span>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
                 </div>
             </div>
         `;
