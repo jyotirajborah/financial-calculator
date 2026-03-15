@@ -384,6 +384,10 @@
                     <ion-icon name="globe"></ion-icon>
                     <span>Country Financial</span>
                 </button>
+                <button class="nav-item" data-target="richest-people">
+                    <ion-icon name="trophy"></ion-icon>
+                    <span>Richest People</span>
+                </button>
                 <button class="nav-item" data-target="help-shortcuts">
                     <ion-icon name="help-circle"></ion-icon>
                     <span>Help & Shortcuts</span>
@@ -1738,6 +1742,40 @@
                         
                         <div class="countries-grid" id="countries-grid">
                             <!-- Countries will be dynamically loaded here -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Richest People View -->
+                <section class="calculator-view" id="richest-people">
+                    <div class="richest-container">
+                        <div class="richest-header">
+                            <div class="richest-title">
+                                <ion-icon name="trophy"></ion-icon>
+                                <h2>Richest People by Country</h2>
+                            </div>
+                            <p class="richest-subtitle">Billionaires and wealthiest individuals worldwide</p>
+                            <div class="richest-controls">
+                                <div class="search-box">
+                                    <ion-icon name="search"></ion-icon>
+                                    <input type="text" id="richest-search" placeholder="Search by name or country...">
+                                </div>
+                                <div class="sort-selector">
+                                    <label for="richest-sort">
+                                        <ion-icon name="funnel"></ion-icon>
+                                        <span>Sort by:</span>
+                                    </label>
+                                    <select id="richest-sort" onchange="sortRichestPeople()">
+                                        <option value="wealth">Net Worth</option>
+                                        <option value="name">Name</option>
+                                        <option value="country">Country</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="richest-grid" id="richest-grid">
+                            <!-- Richest people will be dynamically loaded here -->
                         </div>
                     </div>
                 </section>

@@ -312,6 +312,11 @@ document.querySelectorAll('.nav-item').forEach(btn => {
             initCountryFinancial();
         }
         
+        // Initialize richest people if target is richest-people
+        if (targetId === 'richest-people') {
+            initRichestPeople();
+        }
+        
         // Initialize notes if target is my notes
         if (targetId === 'my-notes') {
             initNotesSection();
@@ -5662,6 +5667,141 @@ const renderCountries = () => {
                         </div>
                     </div>
                 ` : ''}
+            </div>
+        `;
+    }).join('');
+};
+
+// --- Richest People Functions ---
+let richestPeopleData = [];
+
+const richestPeopleByCountry = [
+    { name: 'Elon Musk', country: 'United States', countryCode: 'US', wealth: 230, source: 'Tesla, SpaceX', age: 52, industry: 'Technology, Automotive' },
+    { name: 'Bernard Arnault', country: 'France', countryCode: 'FR', wealth: 211, source: 'LVMH', age: 74, industry: 'Luxury Goods' },
+    { name: 'Jeff Bezos', country: 'United States', countryCode: 'US', wealth: 165, source: 'Amazon', age: 60, industry: 'E-commerce, Technology' },
+    { name: 'Larry Ellison', country: 'United States', countryCode: 'US', wealth: 141, source: 'Oracle', age: 79, industry: 'Software' },
+    { name: 'Warren Buffett', country: 'United States', countryCode: 'US', wealth: 120, source: 'Berkshire Hathaway', age: 93, industry: 'Investments' },
+    { name: 'Bill Gates', country: 'United States', countryCode: 'US', wealth: 118, source: 'Microsoft', age: 68, industry: 'Software' },
+    { name: 'Mark Zuckerberg', country: 'United States', countryCode: 'US', wealth: 115, source: 'Meta (Facebook)', age: 39, industry: 'Social Media' },
+    { name: 'Larry Page', country: 'United States', countryCode: 'US', wealth: 111, source: 'Google', age: 50, industry: 'Technology' },
+    { name: 'Sergey Brin', country: 'United States', countryCode: 'US', wealth: 107, source: 'Google', age: 50, industry: 'Technology' },
+    { name: 'Steve Ballmer', country: 'United States', countryCode: 'US', wealth: 101, source: 'Microsoft', age: 67, industry: 'Software' },
+    { name: 'Mukesh Ambani', country: 'India', countryCode: 'IN', wealth: 92, source: 'Reliance Industries', age: 66, industry: 'Oil, Telecom, Retail' },
+    { name: 'Gautam Adani', country: 'India', countryCode: 'IN', wealth: 84, source: 'Adani Group', age: 61, industry: 'Infrastructure, Energy' },
+    { name: 'Francoise Bettencourt Meyers', country: 'France', countryCode: 'FR', wealth: 80, source: "L'Oréal", age: 70, industry: 'Cosmetics' },
+    { name: 'Amancio Ortega', country: 'Spain', countryCode: 'ES', wealth: 77, source: 'Zara, Inditex', age: 87, industry: 'Fashion Retail' },
+    { name: 'Carlos Slim Helu', country: 'Mexico', countryCode: 'MX', wealth: 68, source: 'Telecom', age: 84, industry: 'Telecommunications' },
+    { name: 'Zhong Shanshan', country: 'China', countryCode: 'CN', wealth: 62, source: 'Nongfu Spring', age: 69, industry: 'Beverages' },
+    { name: 'Michael Bloomberg', country: 'United States', countryCode: 'US', wealth: 96, source: 'Bloomberg LP', age: 81, industry: 'Media, Finance' },
+    { name: 'Jim Walton', country: 'United States', countryCode: 'US', wealth: 65, source: 'Walmart', age: 75, industry: 'Retail' },
+    { name: 'Rob Walton', country: 'United States', countryCode: 'US', wealth: 64, source: 'Walmart', age: 79, industry: 'Retail' },
+    { name: 'Alice Walton', country: 'United States', countryCode: 'US', wealth: 63, source: 'Walmart', age: 74, industry: 'Retail' },
+    { name: 'Jack Ma', country: 'China', countryCode: 'CN', wealth: 34, source: 'Alibaba', age: 59, industry: 'E-commerce' },
+    { name: 'Ma Huateng', country: 'China', countryCode: 'CN', wealth: 38, source: 'Tencent', age: 52, industry: 'Technology, Gaming' },
+    { name: 'Colin Huang', country: 'China', countryCode: 'CN', wealth: 36, source: 'Pinduoduo', age: 43, industry: 'E-commerce' },
+    { name: 'Tadashi Yanai', country: 'Japan', countryCode: 'JP', wealth: 35, source: 'Uniqlo, Fast Retailing', age: 74, industry: 'Fashion Retail' },
+    { name: 'Giovanni Ferrero', country: 'Italy', countryCode: 'IT', wealth: 39, source: 'Ferrero', age: 59, industry: 'Confectionery' },
+    { name: 'Klaus-Michael Kuehne', country: 'Germany', countryCode: 'DE', wealth: 36, source: 'Logistics', age: 86, industry: 'Shipping, Logistics' },
+    { name: 'Dieter Schwarz', country: 'Germany', countryCode: 'DE', wealth: 47, source: 'Lidl, Kaufland', age: 84, industry: 'Retail' },
+    { name: 'Gina Rinehart', country: 'Australia', countryCode: 'AU', wealth: 30, source: 'Mining', age: 69, industry: 'Mining, Agriculture' },
+    { name: 'Alain Wertheimer', country: 'France', countryCode: 'FR', wealth: 40, source: 'Chanel', age: 75, industry: 'Luxury Fashion' },
+    { name: 'Gerard Wertheimer', country: 'France', countryCode: 'FR', wealth: 40, source: 'Chanel', age: 73, industry: 'Luxury Fashion' },
+    { name: 'David Thomson', country: 'Canada', countryCode: 'CA', wealth: 55, source: 'Thomson Reuters', age: 66, industry: 'Media' },
+    { name: 'Len Blavatnik', country: 'United Kingdom', countryCode: 'GB', wealth: 32, source: 'Access Industries', age: 66, industry: 'Investments, Music' },
+    { name: 'Lee Shau Kee', country: 'Hong Kong', countryCode: 'HK', wealth: 29, source: 'Real Estate', age: 96, industry: 'Real Estate' },
+    { name: 'Li Ka-shing', country: 'Hong Kong', countryCode: 'HK', wealth: 37, source: 'Diversified', age: 95, industry: 'Conglomerate' },
+    { name: 'Shiv Nadar', country: 'India', countryCode: 'IN', wealth: 28, source: 'HCL Technologies', age: 78, industry: 'Technology' },
+    { name: 'Cyril Ramaphosa', country: 'South Africa', countryCode: 'ZA', wealth: 0.45, source: 'Investments', age: 71, industry: 'Politics, Business' },
+    { name: 'Johann Rupert', country: 'South Africa', countryCode: 'ZA', wealth: 11, source: 'Richemont', age: 73, industry: 'Luxury Goods' },
+    { name: 'Aliko Dangote', country: 'Nigeria', countryCode: 'NG', wealth: 13.5, source: 'Cement, Sugar', age: 66, industry: 'Manufacturing' },
+    { name: 'Nicky Oppenheimer', country: 'South Africa', countryCode: 'ZA', wealth: 8.7, source: 'Diamonds', age: 78, industry: 'Mining' },
+    { name: 'Mohamed Al Fayed', country: 'Egypt', countryCode: 'EG', wealth: 2.0, source: 'Retail, Hotels', age: 94, industry: 'Retail, Hospitality' },
+    { name: 'Nassef Sawiris', country: 'Egypt', countryCode: 'EG', wealth: 7.4, source: 'Construction, Chemicals', age: 62, industry: 'Construction' },
+    { name: 'Naguib Sawiris', country: 'Egypt', countryCode: 'EG', wealth: 3.3, source: 'Telecom', age: 69, industry: 'Telecommunications' },
+    { name: 'Iris Fontbona', country: 'Chile', countryCode: 'CL', wealth: 23, source: 'Mining', age: 81, industry: 'Mining' },
+    { name: 'Jorge Paulo Lemann', country: 'Brazil', countryCode: 'BR', wealth: 15, source: 'AB InBev', age: 84, industry: 'Beverages' },
+    { name: 'Eduardo Saverin', country: 'Singapore', countryCode: 'SG', wealth: 18, source: 'Facebook', age: 41, industry: 'Technology' },
+    { name: 'Goh Cheng Liang', country: 'Singapore', countryCode: 'SG', wealth: 12, source: 'Paints', age: 96, industry: 'Manufacturing' },
+    { name: 'Robert Kuok', country: 'Malaysia', countryCode: 'MY', wealth: 11, source: 'Palm Oil, Shipping', age: 100, industry: 'Commodities' },
+    { name: 'Ananda Krishnan', country: 'Malaysia', countryCode: 'MY', wealth: 5.8, source: 'Telecom, Media', age: 85, industry: 'Telecommunications' },
+    { name: 'Pham Nhat Vuong', country: 'Vietnam', countryCode: 'VN', wealth: 4.2, source: 'Vingroup', age: 55, industry: 'Real Estate, Automotive' }
+];
+
+const initRichestPeople = () => {
+    richestPeopleData = [...richestPeopleByCountry].sort((a, b) => b.wealth - a.wealth);
+    renderRichestPeople();
+    
+    // Add search functionality
+    const searchInput = document.getElementById('richest-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filtered = richestPeopleByCountry.filter(person => 
+                person.name.toLowerCase().includes(searchTerm) || 
+                person.country.toLowerCase().includes(searchTerm)
+            );
+            richestPeopleData = filtered;
+            renderRichestPeople();
+        });
+    }
+};
+
+const sortRichestPeople = () => {
+    const sortBy = document.getElementById('richest-sort')?.value || 'wealth';
+    
+    richestPeopleData.sort((a, b) => {
+        switch(sortBy) {
+            case 'wealth':
+                return b.wealth - a.wealth;
+            case 'name':
+                return a.name.localeCompare(b.name);
+            case 'country':
+                return a.country.localeCompare(b.country);
+            default:
+                return 0;
+        }
+    });
+    
+    renderRichestPeople();
+};
+
+const renderRichestPeople = () => {
+    const grid = document.getElementById('richest-grid');
+    if (!grid) return;
+    
+    grid.innerHTML = richestPeopleData.map((person, index) => {
+        return `
+            <div class="richest-card">
+                <div class="richest-rank">#${index + 1}</div>
+                <div class="richest-info">
+                    <div class="richest-header-row">
+                        <div class="richest-name-country">
+                            <h3 class="richest-name">${person.name}</h3>
+                            <div class="richest-country">
+                                <img src="https://flagcdn.com/w20/${person.countryCode.toLowerCase()}.png" 
+                                     alt="${person.country}" 
+                                     class="richest-flag"
+                                     onerror="this.style.display='none'">
+                                <span>${person.country}</span>
+                            </div>
+                        </div>
+                        <div class="richest-wealth">$${person.wealth}B</div>
+                    </div>
+                    <div class="richest-details">
+                        <div class="richest-detail-item">
+                            <ion-icon name="briefcase"></ion-icon>
+                            <span>${person.source}</span>
+                        </div>
+                        <div class="richest-detail-item">
+                            <ion-icon name="business"></ion-icon>
+                            <span>${person.industry}</span>
+                        </div>
+                        <div class="richest-detail-item">
+                            <ion-icon name="calendar"></ion-icon>
+                            <span>Age: ${person.age}</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         `;
     }).join('');

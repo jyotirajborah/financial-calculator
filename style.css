@@ -5117,6 +5117,157 @@ body, html {
 }
 
 /* =============================================
+   RICHEST PEOPLE SECTION
+   ============================================= */
+
+.richest-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.richest-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.richest-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.richest-title ion-icon {
+    font-size: 2rem;
+    color: #fbbf24;
+}
+
+.richest-title h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0;
+}
+
+.richest-subtitle {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin: 0 0 1rem 0;
+}
+
+.richest-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.richest-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.richest-card {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.05), rgba(245, 158, 11, 0.05));
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.richest-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, #fbbf24, #f59e0b);
+}
+
+.richest-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(251, 191, 36, 0.2);
+    border-color: #fbbf24;
+}
+
+.richest-rank {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 2rem;
+    font-weight: 900;
+    color: rgba(251, 191, 36, 0.2);
+}
+
+.richest-info {
+    position: relative;
+    z-index: 1;
+}
+
+.richest-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.richest-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0 0 0.5rem 0;
+}
+
+.richest-country {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.richest-flag {
+    width: 20px;
+    height: 14px;
+    object-fit: cover;
+    border-radius: 2px;
+}
+
+.richest-wealth {
+    font-size: 1.75rem;
+    font-weight: 900;
+    color: #fbbf24;
+    text-shadow: 0 2px 4px rgba(251, 191, 36, 0.3);
+}
+
+.richest-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.richest-detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-main);
+}
+
+.richest-detail-item ion-icon {
+    font-size: 1.1rem;
+    color: #fbbf24;
+}
+
+/* =============================================
    HELP & SHORTCUTS SECTION
    ============================================= */
 
