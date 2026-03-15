@@ -4119,6 +4119,9 @@ let currentColor = '#6366f1';
 let currentSize = 3;
 let lastX = 0;
 let lastY = 0;
+let zoomLevel = 1;
+let canvasOffsetX = 0;
+let canvasOffsetY = 0;
 
 // Function to draw dotted grid background
 const drawDottedBackground = () => {
@@ -4218,22 +4221,39 @@ const initWhiteboard = () => {
     whiteboardCanvas.addEventListener('touchmove', handleTouchMove);
     whiteboardCanvas.addEventListener('touchend', stopDrawing);
     
+    // Mouse wheel zoom
+    whiteboardCanvas.addEventListener('wheel', (e) => {
+        if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            
+            if (e.deltaY < 0) {
+                // Zoom in
+                zoomLevel = Math.min(zoomLevel + 0.1, 3);
+            } else {
+                // Zoom out
+                zoomLevel = Math.max(zoomLevel - 0.1, 0.5);
+            }
+            
+            applyZoom();
+        }
+    }, { passive: false });
+    
     console.log('Whiteboard initialization complete');
 };
 
 const startDrawing = (e) => {
     isDrawing = true;
     const rect = whiteboardCanvas.getBoundingClientRect();
-    lastX = e.clientX - rect.left;
-    lastY = e.clientY - rect.top;
+    lastX = (e.clientX - rect.left) / zoomLevel;
+    lastY = (e.clientY - rect.top) / zoomLevel;
 };
 
 const draw = (e) => {
     if (!isDrawing) return;
     
     const rect = whiteboardCanvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const x = (e.clientX - rect.left) / zoomLevel;
+    const y = (e.clientY - rect.top) / zoomLevel;
     
     whiteboardCtx.beginPath();
     whiteboardCtx.moveTo(lastX, lastY);
@@ -4265,8 +4285,8 @@ const handleTouchStart = (e) => {
     e.preventDefault();
     const touch = e.touches[0];
     const rect = whiteboardCanvas.getBoundingClientRect();
-    lastX = touch.clientX - rect.left;
-    lastY = touch.clientY - rect.top;
+    lastX = (touch.clientX - rect.left) / zoomLevel;
+    lastY = (touch.clientY - rect.top) / zoomLevel;
     isDrawing = true;
 };
 
@@ -4276,8 +4296,8 @@ const handleTouchMove = (e) => {
     
     const touch = e.touches[0];
     const rect = whiteboardCanvas.getBoundingClientRect();
-    const x = touch.clientX - rect.left;
-    const y = touch.clientY - rect.top;
+    const x = (touch.clientX - rect.left) / zoomLevel;
+    const y = (touch.clientY - rect.top) / zoomLevel;
     
     whiteboardCtx.beginPath();
     whiteboardCtx.moveTo(lastX, lastY);
@@ -4327,6 +4347,40 @@ window.saveWhiteboard = () => {
         console.error('Error saving whiteboard:', error);
         showToast('Failed to save whiteboard', 'error');
     }
+};
+
+// Zoom functions
+window.zoomIn = () => {
+    if (!whiteboardCanvas) return;
+    
+    zoomLevel = Math.min(zoomLevel + 0.25, 3); // Max 300%
+    applyZoom();
+};
+
+window.zoomOut = () => {
+    if (!whiteboardCanvas) return;
+    
+    zoomLevel = Math.max(zoomLevel - 0.25, 0.5); // Min 50%
+    applyZoom();
+};
+
+window.resetZoom = () => {
+    if (!whiteboardCanvas) return;
+    
+    zoomLevel = 1;
+    applyZoom();
+};
+
+const applyZoom = () => {
+    whiteboardCanvas.style.transform = `scale(${zoomLevel})`;
+    
+    // Update zoom display
+    const zoomDisplay = document.getElementById('zoom-display');
+    if (zoomDisplay) {
+        zoomDisplay.textContent = `${Math.round(zoomLevel * 100)}%`;
+    }
+    
+    console.log('Zoom level:', zoomLevel);
 };
 
 // --- Finance News Functions ---
