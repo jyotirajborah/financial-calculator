@@ -292,6 +292,16 @@ document.querySelectorAll('.nav-item').forEach(btn => {
             initWorldClocks();
         }
         
+        // Initialize whiteboard if target is whiteboard
+        if (targetId === 'whiteboard') {
+            // Delay initialization to ensure canvas is rendered
+            setTimeout(() => {
+                if (!whiteboardCanvas) {
+                    initWhiteboard();
+                }
+            }, 100);
+        }
+        
         // Initialize notes if target is my notes
         if (targetId === 'my-notes') {
             initNotesSection();
@@ -3105,13 +3115,6 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     
     try {
-        initWhiteboard();
-        console.log('Whiteboard initialized');
-    } catch (err) {
-        console.error('Whiteboard initialization failed:', err);
-    }
-    
-    try {
         openViewFromQuery();
         console.log('View from query opened');
     } catch (err) {
@@ -4118,16 +4121,24 @@ let lastX = 0;
 let lastY = 0;
 
 const initWhiteboard = () => {
+    console.log('Initializing whiteboard...');
     whiteboardCanvas = document.getElementById('whiteboard-canvas');
-    if (!whiteboardCanvas) return;
+    if (!whiteboardCanvas) {
+        console.error('Whiteboard canvas not found!');
+        return;
+    }
     
+    console.log('Canvas found:', whiteboardCanvas);
     whiteboardCtx = whiteboardCanvas.getContext('2d');
     
     // Set canvas size to match container
     const resizeCanvas = () => {
         const wrapper = whiteboardCanvas.parentElement;
-        whiteboardCanvas.width = wrapper.clientWidth;
-        whiteboardCanvas.height = wrapper.clientHeight;
+        const width = wrapper.clientWidth;
+        const height = wrapper.clientHeight;
+        console.log('Resizing canvas to:', width, 'x', height);
+        whiteboardCanvas.width = width;
+        whiteboardCanvas.height = height;
         
         // Fill with white background
         whiteboardCtx.fillStyle = 'white';
@@ -4137,12 +4148,15 @@ const initWhiteboard = () => {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
     
+    console.log('Canvas initialized with size:', whiteboardCanvas.width, 'x', whiteboardCanvas.height);
+    
     // Tool selection
     document.querySelectorAll('.tool-btn[data-tool]').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.tool-btn[data-tool]').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentTool = btn.getAttribute('data-tool');
+            console.log('Tool changed to:', currentTool);
             
             // Update cursor
             if (currentTool === 'eraser') {
@@ -4158,6 +4172,7 @@ const initWhiteboard = () => {
     if (colorPicker) {
         colorPicker.addEventListener('change', (e) => {
             currentColor = e.target.value;
+            console.log('Color changed to:', currentColor);
         });
     }
     
@@ -4181,6 +4196,8 @@ const initWhiteboard = () => {
     whiteboardCanvas.addEventListener('touchstart', handleTouchStart);
     whiteboardCanvas.addEventListener('touchmove', handleTouchMove);
     whiteboardCanvas.addEventListener('touchend', stopDrawing);
+    
+    console.log('Whiteboard initialization complete');
 };
 
 const startDrawing = (e) => {
