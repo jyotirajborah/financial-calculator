@@ -274,7 +274,21 @@ app.post('/api/save-news', async (req, res) => {
         const { title, snippet, url, domain, region, category, published_date } = req.body;
         const authHeader = req.headers.authorization;
         
-        console.log('📰 Save news request received:', { title, region, category });
+        console.log('📰 Save news request received:', { 
+            title: title?.substring(0, 50) + '...', 
+            region, 
+            category,
+            url: url?.substring(0, 50) + '...',
+            hasSnippet: !!snippet,
+            hasDomain: !!domain,
+            hasPublishedDate: !!published_date
+        });
+        
+        // Validate required fields
+        if (!title || !url || !region) {
+            console.error('❌ Missing required fields:', { title: !!title, url: !!url, region: !!region });
+            return res.status(400).json({ error: 'Missing required fields: title, url, and region are required' });
+        }
         
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
             console.error('❌ No authorization header');
@@ -301,27 +315,37 @@ app.post('/api/save-news', async (req, res) => {
             .insert([
                 {
                     user_id: user.id,
-                    title,
-                    snippet,
-                    url,
-                    domain,
-                    region,
-                    category,
-                    published_date
+                    title: title || 'Untitled',
+                    snippet: snippet || '',
+                    url: url,
+                    domain: domain || 'Unknown',
+                    region: region,
+                    category: category || 'general',
+                    published_date: published_date ? new Date(published_date).toISOString() : null
                 }
-            ]);
+            ])
+            .select();
         
         if (error) {
             console.error('❌ Database error saving news:', error);
             console.error('Error details:', JSON.stringify(error, null, 2));
+            
+            // Check for specific error types
+            if (error.code === '23505') {
+                return res.status(409).json({ 
+                    error: 'Article already saved',
+                    details: 'You have already saved this article'
+                });
+            }
+            
             return res.status(500).json({ 
                 error: `Failed to save article: ${error.message || error.code || 'Unknown error'}`,
                 details: error.hint || error.details
             });
         }
         
-        console.log('✅ Article saved successfully');
-        res.json({ message: 'Article saved successfully' });
+        console.log('✅ Article saved successfully, data:', data);
+        res.json({ message: 'Article saved successfully', data: data });
         
     } catch (error) {
         console.error('❌ Error in save-news endpoint:', error);
