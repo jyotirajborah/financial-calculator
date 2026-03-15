@@ -4159,6 +4159,32 @@ const drawDottedBackground = () => {
     }
 };
 
+// Update eraser cursor based on size
+const updateEraserCursor = () => {
+    if (!whiteboardCanvas) return;
+    
+    // Calculate eraser size (3x the pen size)
+    const eraserSize = currentSize * 3;
+    const cursorSize = Math.max(20, Math.min(eraserSize * 2, 60)); // Between 20-60px
+    
+    // Create SVG cursor with square eraser
+    const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="${cursorSize}" height="${cursorSize}" viewBox="0 0 ${cursorSize} ${cursorSize}">
+            <rect x="2" y="2" width="${cursorSize - 4}" height="${cursorSize - 4}" 
+                  fill="rgba(255, 255, 255, 0.8)" 
+                  stroke="#ef4444" 
+                  stroke-width="2" 
+                  rx="2"/>
+            <line x1="0" y1="0" x2="${cursorSize}" y2="${cursorSize}" stroke="#ef4444" stroke-width="1" opacity="0.5"/>
+            <line x1="${cursorSize}" y1="0" x2="0" y2="${cursorSize}" stroke="#ef4444" stroke-width="1" opacity="0.5"/>
+        </svg>
+    `;
+    
+    const encodedSvg = encodeURIComponent(svg);
+    const center = Math.floor(cursorSize / 2);
+    whiteboardCanvas.style.cursor = `url('data:image/svg+xml;utf8,${encodedSvg}') ${center} ${center}, auto`;
+};
+
 // Redraw everything (background + all paths)
 const redrawCanvas = () => {
     if (!whiteboardCtx || !whiteboardCanvas) return;
@@ -4232,7 +4258,7 @@ const initWhiteboard = () => {
             // Update cursor
             if (currentTool === 'eraser') {
                 whiteboardCanvas.classList.add('eraser-mode');
-                whiteboardCanvas.style.cursor = 'pointer';
+                updateEraserCursor();
             } else if (currentTool === 'pan') {
                 whiteboardCanvas.classList.remove('eraser-mode');
                 whiteboardCanvas.style.cursor = 'grab';
@@ -4259,6 +4285,11 @@ const initWhiteboard = () => {
         sizePicker.addEventListener('input', (e) => {
             currentSize = parseInt(e.target.value);
             sizeDisplay.textContent = `${currentSize}px`;
+            
+            // Update eraser cursor if eraser is active
+            if (currentTool === 'eraser') {
+                updateEraserCursor();
+            }
         });
     }
     
@@ -4314,7 +4345,7 @@ const initWhiteboard = () => {
             spacePressed = false;
             if (whiteboardCanvas && !isPanning) {
                 if (currentTool === 'eraser') {
-                    whiteboardCanvas.style.cursor = 'pointer';
+                    updateEraserCursor();
                 } else if (currentTool === 'pan') {
                     whiteboardCanvas.style.cursor = 'grab';
                 } else {
@@ -4453,7 +4484,7 @@ const stopDrawing = () => {
     isPanning = false;
     if (whiteboardCanvas) {
         if (currentTool === 'eraser') {
-            whiteboardCanvas.style.cursor = 'pointer';
+            updateEraserCursor();
         } else if (currentTool === 'pan') {
             whiteboardCanvas.style.cursor = 'grab';
         } else {
