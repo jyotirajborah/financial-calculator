@@ -12,6 +12,7 @@ console.log('🚀 Starting FinCalc Server...');
 console.log('📍 Environment:', process.env.NODE_ENV || 'development');
 console.log('🌐 Site URL:', process.env.SITE_URL || 'Not configured');
 console.log('🔗 Port:', PORT);
+console.log('📊 Alpha Vantage API:', process.env.ALPHA_VANTAGE_API_KEY ? 'Configured ✅' : 'Not configured ⚠️');
 
 // Initialize Supabase Client
 const SUPABASE_URL = process.env.SUPABASE_URL;
