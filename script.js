@@ -5278,16 +5278,22 @@ const initCountryFinancial = async () => {
             };
         });
         
-        countriesData = enrichedData.sort((a, b) => a.name.localeCompare(b.name));
-        console.log('Loaded countries:', countriesData.length);
-        console.log('Sample country data:', countriesData[0]);
+        // Remove duplicates based on country code
+        const uniqueCountries = enrichedData.reduce((acc, country) => {
+            if (!acc.find(c => c.code === country.code)) {
+                acc.push(country);
+            }
+            return acc;
+        }, []);
+        
+        countriesData = uniqueCountries.sort((a, b) => a.name.localeCompare(b.name));
         console.log('Loaded countries:', countriesData.length);
         console.log('Sample country data:', countriesData[0]);
         renderCountries();
     } catch (error) {
         console.error('Error fetching country data:', error);
-        // Fallback to static data with enrichment
-        countriesData = countryFinancialData.map(country => ({
+        // Fallback to static data with enrichment and deduplication
+        const enrichedFallback = countryFinancialData.map(country => ({
             ...country,
             resources: country.resources || getCountryResources({ region: 'Unknown', subregion: '' }),
             knownFor: country.knownFor || getCountryKnownFor({ region: 'Unknown' }),
@@ -5299,7 +5305,17 @@ const initCountryFinancial = async () => {
             capital: country.capital || 'N/A',
             region: country.region || 'Unknown',
             subregion: country.subregion || 'Unknown'
-        })).sort((a, b) => a.name.localeCompare(b.name));
+        }));
+        
+        // Remove duplicates
+        const uniqueFallback = enrichedFallback.reduce((acc, country) => {
+            if (!acc.find(c => c.code === country.code)) {
+                acc.push(country);
+            }
+            return acc;
+        }, []);
+        
+        countriesData = uniqueFallback.sort((a, b) => a.name.localeCompare(b.name));
         console.log('Using fallback data:', countriesData.length, 'countries');
         renderCountries();
     }
