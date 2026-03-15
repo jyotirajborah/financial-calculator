@@ -2324,21 +2324,61 @@ const login = (user, token) => {
 };
 
 const logout = () => {
+    console.log('🚪 Logout initiated');
+    
     isGuestMode = false;
     currentUser = null;
     localStorage.removeItem('auth_token');
     
+    console.log('✅ Cleared auth state and token');
+    
     const overlay = document.getElementById('auth-overlay');
     const appContainer = document.getElementById('app-container');
     
+    if (!overlay || !appContainer) {
+        console.error('❌ Auth elements not found');
+        // Force page reload as fallback
+        window.location.reload();
+        return;
+    }
+    
+    // Hide app container
     appContainer.style.display = 'none';
+    appContainer.style.opacity = '0';
+    
+    // Show auth overlay
     overlay.classList.add('active');
+    overlay.style.display = 'flex';
+    
+    console.log('✅ Toggled overlay and app container');
+    
+    // Reset profile to guest icon
+    const guestIcon = document.getElementById('guest-icon');
+    const userInitials = document.getElementById('user-initials');
+    if (guestIcon) guestIcon.style.display = 'block';
+    if (userInitials) userInitials.style.display = 'none';
     
     // Reset to login tab
-    document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
-    document.querySelector('.auth-tab[data-form="login"]').classList.add('active');
-    document.getElementById('login-form').classList.add('active');
+    const loginTab = document.querySelector('.auth-tab[data-form="login"]');
+    const loginForm = document.getElementById('login-form');
+    
+    if (loginTab && loginForm) {
+        document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+        loginTab.classList.add('active');
+        loginForm.classList.add('active');
+        console.log('✅ Reset to login tab');
+    } else {
+        console.error('❌ Login tab/form not found');
+    }
+    
+    // Clear any form data
+    const loginEmailInput = document.getElementById('login-email');
+    const loginPasswordInput = document.getElementById('login-password');
+    if (loginEmailInput) loginEmailInput.value = '';
+    if (loginPasswordInput) loginPasswordInput.value = '';
+    
+    console.log('🎉 Logout complete');
 };
 
 // Update save buttons for guest users
