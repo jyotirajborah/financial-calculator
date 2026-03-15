@@ -4220,19 +4220,6 @@ const initWhiteboard = () => {
         });
     }
     
-    // Drawing events
-    whiteboardCanvas.addEventListener('mousedown', startDrawing);
-    whiteboardCanvas.addEventListener('mousemove', draw);
-    whiteboardCanvas.addEventListener('mouseup', stopDrawing);
-    whiteboardCanvas.addEventListener('mouseleave', stopDrawing);
-    
-    // Prevent context menu on middle click
-    whiteboardCanvas.addEventListener('contextmenu', (e) => {
-        if (e.button === 1) {
-            e.preventDefault();
-        }
-    });
-    
     // Keyboard support for panning with Space key
     let spacePressed = false;
     document.addEventListener('keydown', (e) => {
@@ -4249,18 +4236,35 @@ const initWhiteboard = () => {
         if (e.code === 'Space') {
             spacePressed = false;
             if (whiteboardCanvas && !isPanning) {
-                whiteboardCanvas.style.cursor = currentTool === 'eraser' ? 'pointer' : 'crosshair';
+                if (currentTool === 'eraser') {
+                    whiteboardCanvas.style.cursor = 'pointer';
+                } else if (currentTool === 'pan') {
+                    whiteboardCanvas.style.cursor = 'grab';
+                } else {
+                    whiteboardCanvas.style.cursor = 'crosshair';
+                }
             }
         }
     });
     
-    // Handle Space + click for panning
+    // Unified mousedown handler
     whiteboardCanvas.addEventListener('mousedown', (e) => {
+        // Add spaceKey flag if space is pressed
         if (spacePressed && e.button === 0) {
             e.spaceKey = true;
-            startDrawing(e);
         }
+        startDrawing(e);
     });
+    
+    // Prevent context menu on middle click
+    whiteboardCanvas.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+    });
+    
+    // Drawing events
+    whiteboardCanvas.addEventListener('mousemove', draw);
+    whiteboardCanvas.addEventListener('mouseup', stopDrawing);
+    whiteboardCanvas.addEventListener('mouseleave', stopDrawing);
     
     // Touch events for mobile
     whiteboardCanvas.addEventListener('touchstart', handleTouchStart);
@@ -4288,8 +4292,11 @@ const initWhiteboard = () => {
 };
 
 const startDrawing = (e) => {
+    console.log('Mouse down - button:', e.button, 'tool:', currentTool, 'spaceKey:', e.spaceKey);
+    
     // Middle mouse button (button 1) or Space key or Pan tool for panning
     if (e.button === 1 || e.spaceKey || currentTool === 'pan') {
+        console.log('Starting pan mode');
         e.preventDefault();
         isPanning = true;
         const wrapper = whiteboardCanvas.parentElement;
@@ -4298,11 +4305,13 @@ const startDrawing = (e) => {
         scrollStartX = wrapper.scrollLeft;
         scrollStartY = wrapper.scrollTop;
         whiteboardCanvas.style.cursor = 'grabbing';
+        console.log('Pan started at:', panStartX, panStartY, 'scroll:', scrollStartX, scrollStartY);
         return;
     }
     
     // Left mouse button for drawing
     if (e.button === 0 && !isPanning) {
+        console.log('Starting drawing');
         isDrawing = true;
         const rect = whiteboardCanvas.getBoundingClientRect();
         lastX = (e.clientX - rect.left) / zoomLevel;
