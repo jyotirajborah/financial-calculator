@@ -307,6 +307,11 @@ document.querySelectorAll('.nav-item').forEach(btn => {
             initMarketIndices();
         }
         
+        // Initialize country financial if target is country-financial
+        if (targetId === 'country-financial') {
+            initCountryFinancial();
+        }
+        
         // Initialize notes if target is my notes
         if (targetId === 'my-notes') {
             initNotesSection();
@@ -4984,6 +4989,119 @@ const updateLastUpdatedTime = () => {
         hour12: true
     });
     lastUpdated.textContent = `Updated: ${timeStr}`;
+};
+
+// --- Country Financial Functions ---
+let countriesData = [];
+
+const countryFinancialData = [
+    { name: 'United States', gdp: 25.46, growth: 2.1, debt: 123, inflation: 3.2, unemployment: 3.7, currency: 'USD', rating: 'AA+' },
+    { name: 'China', gdp: 17.96, growth: 5.2, debt: 77, inflation: 0.2, unemployment: 5.2, currency: 'CNY', rating: 'A+' },
+    { name: 'Japan', gdp: 4.23, growth: 1.9, debt: 264, inflation: 3.3, unemployment: 2.6, currency: 'JPY', rating: 'A+' },
+    { name: 'Germany', gdp: 4.08, growth: -0.3, debt: 66, inflation: 6.1, unemployment: 3.0, currency: 'EUR', rating: 'AAA' },
+    { name: 'India', gdp: 3.73, growth: 7.2, debt: 84, inflation: 5.4, unemployment: 7.8, currency: 'INR', rating: 'BBB-' },
+    { name: 'United Kingdom', gdp: 3.07, growth: 0.5, debt: 101, inflation: 4.0, unemployment: 4.2, currency: 'GBP', rating: 'AA' },
+    { name: 'France', gdp: 2.78, growth: 0.9, debt: 111, inflation: 5.7, unemployment: 7.3, currency: 'EUR', rating: 'AA' },
+    { name: 'Brazil', gdp: 2.08, growth: 2.9, debt: 88, inflation: 4.6, unemployment: 8.5, currency: 'BRL', rating: 'BB-' },
+    { name: 'Italy', gdp: 2.01, growth: 0.7, debt: 144, inflation: 5.9, unemployment: 7.8, currency: 'EUR', rating: 'BBB' },
+    { name: 'Canada', gdp: 2.14, growth: 1.5, debt: 106, inflation: 3.9, unemployment: 5.4, currency: 'CAD', rating: 'AAA' },
+    { name: 'South Korea', gdp: 1.67, growth: 1.4, debt: 54, inflation: 3.6, unemployment: 2.7, currency: 'KRW', rating: 'AA' },
+    { name: 'Russia', gdp: 2.24, growth: 2.1, debt: 17, inflation: 5.9, unemployment: 3.3, currency: 'RUB', rating: 'BBB-' },
+    { name: 'Australia', gdp: 1.55, growth: 1.8, debt: 57, inflation: 5.4, unemployment: 3.7, currency: 'AUD', rating: 'AAA' },
+    { name: 'Spain', gdp: 1.43, growth: 2.5, debt: 113, inflation: 3.5, unemployment: 12.9, currency: 'EUR', rating: 'A' },
+    { name: 'Mexico', gdp: 1.41, growth: 3.2, debt: 60, inflation: 4.7, unemployment: 2.8, currency: 'MXN', rating: 'BBB' },
+    { name: 'Indonesia', gdp: 1.32, growth: 5.3, debt: 39, inflation: 3.7, unemployment: 5.3, currency: 'IDR', rating: 'BBB' },
+    { name: 'Netherlands', gdp: 1.01, growth: 0.1, debt: 47, inflation: 4.1, unemployment: 3.6, currency: 'EUR', rating: 'AAA' },
+    { name: 'Saudi Arabia', gdp: 1.06, growth: 3.7, debt: 26, inflation: 2.3, unemployment: 4.8, currency: 'SAR', rating: 'A' },
+    { name: 'Turkey', gdp: 0.91, growth: 4.5, debt: 31, inflation: 64.8, unemployment: 10.2, currency: 'TRY', rating: 'B+' },
+    { name: 'Switzerland', gdp: 0.84, growth: 0.9, debt: 38, inflation: 2.2, unemployment: 2.0, currency: 'CHF', rating: 'AAA' }
+];
+
+const initCountryFinancial = () => {
+    countriesData = [...countryFinancialData];
+    renderCountries();
+    
+    // Add search functionality
+    const searchInput = document.getElementById('country-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filtered = countryFinancialData.filter(country => 
+                country.name.toLowerCase().includes(searchTerm)
+            );
+            countriesData = filtered;
+            renderCountries();
+        });
+    }
+};
+
+const sortCountries = () => {
+    const sortBy = document.getElementById('country-sort')?.value || 'name';
+    
+    countriesData.sort((a, b) => {
+        switch(sortBy) {
+            case 'name':
+                return a.name.localeCompare(b.name);
+            case 'gdp':
+                return b.gdp - a.gdp;
+            case 'growth':
+                return b.growth - a.growth;
+            case 'debt':
+                return a.debt - b.debt;
+            default:
+                return 0;
+        }
+    });
+    
+    renderCountries();
+};
+
+const renderCountries = () => {
+    const grid = document.getElementById('countries-grid');
+    if (!grid) return;
+    
+    grid.innerHTML = countriesData.map(country => {
+        const growthPositive = country.growth >= 0;
+        const debtLevel = country.debt > 100 ? 'high' : country.debt > 60 ? 'medium' : 'low';
+        
+        return `
+            <div class="country-card">
+                <div class="country-card-header">
+                    <h3>${country.name}</h3>
+                    <span class="country-rating rating-${country.rating.replace(/[+-]/g, '').toLowerCase()}">${country.rating}</span>
+                </div>
+                
+                <div class="country-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">GDP (Trillion)</span>
+                        <span class="stat-value">$${country.gdp}T</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Growth Rate</span>
+                        <span class="stat-value ${growthPositive ? 'positive' : 'negative'}">
+                            ${growthPositive ? '+' : ''}${country.growth}%
+                        </span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Debt to GDP</span>
+                        <span class="stat-value debt-${debtLevel}">${country.debt}%</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Inflation</span>
+                        <span class="stat-value">${country.inflation}%</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Unemployment</span>
+                        <span class="stat-value">${country.unemployment}%</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Currency</span>
+                        <span class="stat-value">${country.currency}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
 };
 
 // --- Finance News Functions ---

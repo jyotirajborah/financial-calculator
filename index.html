@@ -380,6 +380,10 @@
                     <ion-icon name="trending-up"></ion-icon>
                     <span>Live Markets</span>
                 </button>
+                <button class="nav-item" data-target="country-financial">
+                    <ion-icon name="globe"></ion-icon>
+                    <span>Country Financial</span>
+                </button>
                 <button class="nav-item" data-target="help-shortcuts">
                     <ion-icon name="help-circle"></ion-icon>
                     <span>Help & Shortcuts</span>
@@ -1699,6 +1703,41 @@
                         
                         <div class="indices-grid" id="indices-grid">
                             <!-- Indices will be dynamically loaded here -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Country Financial View -->
+                <section class="calculator-view" id="country-financial">
+                    <div class="country-financial-container">
+                        <div class="country-header">
+                            <div class="country-title">
+                                <ion-icon name="globe"></ion-icon>
+                                <h2>Country Financial Overview</h2>
+                            </div>
+                            <p class="country-subtitle">Global economic indicators and financial health</p>
+                            <div class="country-controls">
+                                <div class="search-box">
+                                    <ion-icon name="search"></ion-icon>
+                                    <input type="text" id="country-search" placeholder="Search countries...">
+                                </div>
+                                <div class="sort-selector">
+                                    <label for="country-sort">
+                                        <ion-icon name="funnel"></ion-icon>
+                                        <span>Sort by:</span>
+                                    </label>
+                                    <select id="country-sort" onchange="sortCountries()">
+                                        <option value="name">Country Name</option>
+                                        <option value="gdp">GDP</option>
+                                        <option value="growth">Growth Rate</option>
+                                        <option value="debt">Debt to GDP</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="countries-grid" id="countries-grid">
+                            <!-- Countries will be dynamically loaded here -->
                         </div>
                     </div>
                 </section>
