@@ -4967,6 +4967,19 @@ body, html {
     margin: 0;
 }
 
+.country-loading {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-muted);
+}
+
+.country-loading ion-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--accent-color);
+    animation: spin 2s linear infinite;
+}
+
 @keyframes slideDown {
     from {
         opacity: 0;

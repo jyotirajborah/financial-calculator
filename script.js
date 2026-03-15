@@ -5059,22 +5059,139 @@ const countryFinancialData = [
     { name: 'Vietnam', code: 'VN', gdp: 0.43, growth: 5.0, debt: 43, inflation: 3.2, unemployment: 2.3, currency: 'VND', rating: 'BB' }
 ];
 
-const initCountryFinancial = () => {
-    countriesData = [...countryFinancialData].sort((a, b) => a.name.localeCompare(b.name));
-    renderCountries();
+const initCountryFinancial = async () => {
+    // Show loading state
+    const grid = document.getElementById('countries-grid');
+    if (grid) {
+        grid.innerHTML = '<div class="country-loading"><ion-icon name="sync"></ion-icon><p>Loading country data...</p></div>';
+    }
+    
+    try {
+        // Fetch all countries from REST Countries API
+        const response = await fetch('https://restcountries.com/v3.1/all');
+        const allCountries = await response.json();
+        
+        // Enrich with our financial data
+        const enrichedData = allCountries.map(country => {
+            const existing = countryFinancialData.find(c => c.code === country.cca2);
+            
+            return {
+                name: country.name.common,
+                code: country.cca2,
+                gdp: existing?.gdp || 0,
+                growth: existing?.growth || 0,
+                debt: existing?.debt || 0,
+                inflation: existing?.inflation || 0,
+                unemployment: existing?.unemployment || 0,
+                currency: Object.keys(country.currencies || {})[0] || 'N/A',
+                rating: existing?.rating || 'N/A',
+                resources: existing?.resources || getDefaultResources(country),
+                knownFor: existing?.knownFor || getDefaultKnownFor(country),
+                exports: existing?.exports || 'Data not available',
+                imports: existing?.imports || 'Data not available',
+                military: existing?.military || 'Data not available',
+                government: getGovernmentType(country.name.common) || 'Data not available',
+                population: country.population,
+                capital: country.capital?.[0] || 'N/A',
+                region: country.region,
+                subregion: country.subregion
+            };
+        });
+        
+        countriesData = enrichedData.sort((a, b) => a.name.localeCompare(b.name));
+        renderCountries();
+    } catch (error) {
+        console.error('Error fetching country data:', error);
+        // Fallback to static data
+        countriesData = [...countryFinancialData].sort((a, b) => a.name.localeCompare(b.name));
+        renderCountries();
+    }
     
     // Add search functionality
     const searchInput = document.getElementById('country-search');
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase();
-            const filtered = countryFinancialData.filter(country => 
+            const filtered = countriesData.filter(country => 
                 country.name.toLowerCase().includes(searchTerm)
             );
+            const tempData = countriesData;
             countriesData = filtered;
             renderCountries();
+            if (searchTerm === '') countriesData = tempData;
         });
     }
+};
+
+const getDefaultResources = (country) => {
+    // Basic resource mapping based on region
+    const resourceMap = {
+        'Africa': 'Minerals, Oil, Agricultural Products, Timber',
+        'Asia': 'Manufacturing, Technology, Agriculture, Natural Resources',
+        'Europe': 'Manufacturing, Services, Agriculture, Technology',
+        'Americas': 'Agriculture, Minerals, Oil, Manufacturing',
+        'Oceania': 'Mining, Agriculture, Tourism, Natural Resources'
+    };
+    return resourceMap[country.region] || 'Various natural and economic resources';
+};
+
+const getDefaultKnownFor = (country) => {
+    // Basic known-for based on region
+    const knownForMap = {
+        'Africa': 'Natural Resources, Agriculture, Mining',
+        'Asia': 'Manufacturing, Technology, Trade',
+        'Europe': 'Manufacturing, Services, Tourism',
+        'Americas': 'Agriculture, Manufacturing, Services',
+        'Oceania': 'Mining, Agriculture, Tourism'
+    };
+    return knownForMap[country.region] || 'Economic and cultural activities';
+};
+
+const getGovernmentType = (countryName) => {
+    const govTypes = {
+        'United States': 'Federal Presidential Republic',
+        'China': 'Socialist Republic (One-Party State)',
+        'India': 'Federal Parliamentary Republic',
+        'United Kingdom': 'Parliamentary Constitutional Monarchy',
+        'Germany': 'Federal Parliamentary Republic',
+        'France': 'Semi-Presidential Republic',
+        'Japan': 'Parliamentary Constitutional Monarchy',
+        'Russia': 'Federal Semi-Presidential Republic',
+        'Brazil': 'Federal Presidential Republic',
+        'Canada': 'Federal Parliamentary Democracy',
+        'Australia': 'Federal Parliamentary Democracy',
+        'South Korea': 'Presidential Republic',
+        'Mexico': 'Federal Presidential Republic',
+        'Spain': 'Parliamentary Constitutional Monarchy',
+        'Italy': 'Parliamentary Republic',
+        'Saudi Arabia': 'Absolute Monarchy',
+        'Turkey': 'Presidential Republic',
+        'Switzerland': 'Federal Directorial Republic',
+        'Netherlands': 'Parliamentary Constitutional Monarchy',
+        'Sweden': 'Parliamentary Constitutional Monarchy',
+        'Norway': 'Parliamentary Constitutional Monarchy',
+        'Denmark': 'Parliamentary Constitutional Monarchy',
+        'Belgium': 'Parliamentary Constitutional Monarchy',
+        'Poland': 'Parliamentary Republic',
+        'Argentina': 'Federal Presidential Republic',
+        'South Africa': 'Parliamentary Republic',
+        'Egypt': 'Presidential Republic',
+        'Nigeria': 'Federal Presidential Republic',
+        'Singapore': 'Parliamentary Republic',
+        'Israel': 'Parliamentary Republic',
+        'United Arab Emirates': 'Federal Absolute Monarchy',
+        'Thailand': 'Constitutional Monarchy',
+        'Vietnam': 'Socialist Republic (One-Party State)',
+        'Indonesia': 'Presidential Republic',
+        'Philippines': 'Presidential Republic',
+        'Pakistan': 'Federal Parliamentary Republic',
+        'Bangladesh': 'Parliamentary Republic',
+        'Iran': 'Islamic Republic',
+        'Iraq': 'Federal Parliamentary Republic',
+        'Ukraine': 'Semi-Presidential Republic',
+        'Venezuela': 'Federal Presidential Republic'
+    };
+    return govTypes[countryName] || 'Republic';
 };
 
 const sortCountries = () => {
