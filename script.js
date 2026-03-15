@@ -5068,8 +5068,11 @@ const initCountryFinancial = async () => {
     
     try {
         // Fetch all countries from REST Countries API
+        console.log('Fetching countries from API...');
         const response = await fetch('https://restcountries.com/v3.1/all');
+        console.log('API response status:', response.status);
         const allCountries = await response.json();
+        console.log('Fetched countries from API:', allCountries.length);
         
         // Enrich with our financial data
         const enrichedData = allCountries.map(country => {
@@ -5103,11 +5106,26 @@ const initCountryFinancial = async () => {
         countriesData = enrichedData.sort((a, b) => a.name.localeCompare(b.name));
         console.log('Loaded countries:', countriesData.length);
         console.log('Sample country data:', countriesData[0]);
+        console.log('Loaded countries:', countriesData.length);
+        console.log('Sample country data:', countriesData[0]);
         renderCountries();
     } catch (error) {
         console.error('Error fetching country data:', error);
-        // Fallback to static data
-        countriesData = [...countryFinancialData].sort((a, b) => a.name.localeCompare(b.name));
+        // Fallback to static data with enrichment
+        countriesData = countryFinancialData.map(country => ({
+            ...country,
+            resources: country.resources || getCountryResources({ region: 'Unknown', subregion: '' }),
+            knownFor: country.knownFor || getCountryKnownFor({ region: 'Unknown' }),
+            exports: country.exports || getCountryExports({ region: 'Unknown' }),
+            imports: country.imports || getCountryImports({ region: 'Unknown' }),
+            military: country.military || getMilitaryInfo({ population: 50000000 }),
+            government: country.government || 'Republic',
+            population: country.population || 0,
+            capital: country.capital || 'N/A',
+            region: country.region || 'Unknown',
+            subregion: country.subregion || 'Unknown'
+        })).sort((a, b) => a.name.localeCompare(b.name));
+        console.log('Using fallback data:', countriesData.length, 'countries');
         renderCountries();
     }
     
