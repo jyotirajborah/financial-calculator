@@ -122,6 +122,143 @@ app.post('/api/search-news', async (req, res) => {
     }
 });
 
+// Save News Article Endpoint
+app.post('/api/save-news', async (req, res) => {
+    try {
+        const { title, snippet, url, domain, region, category, published_date } = req.body;
+        const authHeader = req.headers.authorization;
+        
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ error: 'Authorization token required' });
+        }
+        
+        const token = authHeader.split(' ')[1];
+        
+        // Verify the token with Supabase
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        
+        if (authError || !user) {
+            return res.status(401).json({ error: 'Invalid or expired token' });
+        }
+        
+        // Save the news article to the database
+        const { data, error } = await supabase
+            .from('saved_news')
+            .insert([
+                {
+                    user_id: user.id,
+                    title,
+                    snippet,
+                    url,
+                    domain,
+                    region,
+                    category,
+                    published_date
+                }
+            ]);
+        
+        if (error) {
+            console.error('Database error saving news:', error);
+            return res.status(500).json({ error: 'Failed to save article' });
+        }
+        
+        res.json({ message: 'Article saved successfully' });
+        
+    } catch (error) {
+        console.error('Error in save-news endpoint:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Get Saved News Articles Endpoint
+app.get('/api/saved-news', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        const { filter } = req.query;
+        
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ error: 'Authorization token required' });
+        }
+        
+        const token = authHeader.split(' ')[1];
+        
+        // Verify the token with Supabase
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        
+        if (authError || !user) {
+            return res.status(401).json({ error: 'Invalid or expired token' });
+        }
+        
+        // Build query with optional filter
+        let query = supabase
+            .from('saved_news')
+            .select('*')
+            .eq('user_id', user.id);
+            
+        // Apply filter if provided
+        if (filter && filter !== 'all') {
+            if (filter === 'indian' || filter === 'global') {
+                query = query.eq('region', filter);
+            } else {
+                // Filter by category
+                query = query.eq('category', filter);
+            }
+        }
+        
+        const { data, error } = await query.order('created_at', { ascending: false });
+        
+        if (error) {
+            console.error('Database error fetching saved news:', error);
+            return res.status(500).json({ error: 'Failed to fetch saved articles' });
+        }
+        
+        res.json({ articles: data || [] });
+        
+    } catch (error) {
+        console.error('Error in saved-news endpoint:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Delete Saved News Article Endpoint
+app.delete('/api/saved-news/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const authHeader = req.headers.authorization;
+        
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ error: 'Authorization token required' });
+        }
+        
+        const token = authHeader.split(' ')[1];
+        
+        // Verify the token with Supabase
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        
+        if (authError || !user) {
+            return res.status(401).json({ error: 'Invalid or expired token' });
+        }
+        
+        // Delete the saved news article
+        const { error } = await supabase
+            .from('saved_news')
+            .delete()
+            .eq('id', id)
+            .eq('user_id', user.id);
+        
+        if (error) {
+            console.error('Database error deleting saved news:', error);
+            return res.status(500).json({ error: 'Failed to delete article' });
+        }
+        
+        res.json({ message: 'Article deleted successfully' });
+        
+    } catch (error) {
+        console.error('Error in delete saved-news endpoint:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 // Fetch real news from multiple APIs
 const fetchRealNews = async (query, region) => {
     const newsResults = [];
