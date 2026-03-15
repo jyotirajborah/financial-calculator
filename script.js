@@ -6689,8 +6689,8 @@ const loadSavedNews = async () => {
             throw new Error('Failed to fetch saved news');
         }
         
-        const savedNews = await response.json();
-        displaySavedNews(savedNews);
+        const data = await response.json();
+        displaySavedNews(data.articles || []);
         
     } catch (error) {
         console.error('Error loading saved news:', error);
