@@ -4176,6 +4176,7 @@ body, html {
 
 .whiteboard-container {
     height: 100%;
+    min-height: 600px;
     display: flex;
     flex-direction: column;
 }
@@ -4338,6 +4339,7 @@ body, html {
 
 .whiteboard-canvas-wrapper {
     flex: 1;
+    min-height: 500px;
     background: white;
     border-radius: 12px;
     border: 2px solid var(--border-color);
