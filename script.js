@@ -4167,8 +4167,18 @@ const initWhiteboard = () => {
         const width = wrapper.clientWidth;
         const height = wrapper.clientHeight;
         console.log('Resizing canvas to:', width, 'x', height);
+        
+        // Store the current drawing
+        const imageData = whiteboardCtx ? whiteboardCtx.getImageData(0, 0, whiteboardCanvas.width, whiteboardCanvas.height) : null;
+        
+        // Set canvas to base size (will be scaled by zoom)
         whiteboardCanvas.width = width;
         whiteboardCanvas.height = height;
+        
+        // Restore the drawing if it existed
+        if (imageData) {
+            whiteboardCtx.putImageData(imageData, 0, 0);
+        }
         
         // Draw dotted background
         drawDottedBackground();
@@ -4465,7 +4475,13 @@ window.resetZoom = () => {
 };
 
 const applyZoom = () => {
-    whiteboardCanvas.style.transform = `scale(${zoomLevel})`;
+    const wrapper = whiteboardCanvas.parentElement;
+    const baseWidth = wrapper.clientWidth;
+    const baseHeight = wrapper.clientHeight;
+    
+    // Set canvas display size based on zoom
+    whiteboardCanvas.style.width = `${baseWidth * zoomLevel}px`;
+    whiteboardCanvas.style.height = `${baseHeight * zoomLevel}px`;
     
     // Update zoom display
     const zoomDisplay = document.getElementById('zoom-display');
@@ -4473,7 +4489,7 @@ const applyZoom = () => {
         zoomDisplay.textContent = `${Math.round(zoomLevel * 100)}%`;
     }
     
-    console.log('Zoom level:', zoomLevel);
+    console.log('Zoom level:', zoomLevel, 'Canvas display size:', baseWidth * zoomLevel, 'x', baseHeight * zoomLevel);
 };
 
 // --- Finance News Functions ---

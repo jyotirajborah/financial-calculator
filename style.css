@@ -4368,8 +4368,6 @@ body, html {
 #whiteboard-canvas {
     display: block;
     cursor: crosshair;
-    transform-origin: top left;
-    transition: transform 0.2s ease;
 }
 
 #whiteboard-canvas.eraser-mode {
