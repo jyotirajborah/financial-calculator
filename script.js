@@ -4122,6 +4122,11 @@ let lastY = 0;
 let zoomLevel = 1;
 let canvasOffsetX = 0;
 let canvasOffsetY = 0;
+let isPanning = false;
+let panStartX = 0;
+let panStartY = 0;
+let scrollStartX = 0;
+let scrollStartY = 0;
 
 // Function to draw dotted grid background
 const drawDottedBackground = () => {
@@ -4185,8 +4190,13 @@ const initWhiteboard = () => {
             // Update cursor
             if (currentTool === 'eraser') {
                 whiteboardCanvas.classList.add('eraser-mode');
+                whiteboardCanvas.style.cursor = 'pointer';
+            } else if (currentTool === 'pan') {
+                whiteboardCanvas.classList.remove('eraser-mode');
+                whiteboardCanvas.style.cursor = 'grab';
             } else {
                 whiteboardCanvas.classList.remove('eraser-mode');
+                whiteboardCanvas.style.cursor = 'crosshair';
             }
         });
     });
@@ -4214,7 +4224,43 @@ const initWhiteboard = () => {
     whiteboardCanvas.addEventListener('mousedown', startDrawing);
     whiteboardCanvas.addEventListener('mousemove', draw);
     whiteboardCanvas.addEventListener('mouseup', stopDrawing);
-    whiteboardCanvas.addEventListener('mouseout', stopDrawing);
+    whiteboardCanvas.addEventListener('mouseleave', stopDrawing);
+    
+    // Prevent context menu on middle click
+    whiteboardCanvas.addEventListener('contextmenu', (e) => {
+        if (e.button === 1) {
+            e.preventDefault();
+        }
+    });
+    
+    // Keyboard support for panning with Space key
+    let spacePressed = false;
+    document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && !spacePressed && document.querySelector('#whiteboard.active')) {
+            e.preventDefault();
+            spacePressed = true;
+            if (whiteboardCanvas) {
+                whiteboardCanvas.style.cursor = 'grab';
+            }
+        }
+    });
+    
+    document.addEventListener('keyup', (e) => {
+        if (e.code === 'Space') {
+            spacePressed = false;
+            if (whiteboardCanvas && !isPanning) {
+                whiteboardCanvas.style.cursor = currentTool === 'eraser' ? 'pointer' : 'crosshair';
+            }
+        }
+    });
+    
+    // Handle Space + click for panning
+    whiteboardCanvas.addEventListener('mousedown', (e) => {
+        if (spacePressed && e.button === 0) {
+            e.spaceKey = true;
+            startDrawing(e);
+        }
+    });
     
     // Touch events for mobile
     whiteboardCanvas.addEventListener('touchstart', handleTouchStart);
@@ -4242,13 +4288,41 @@ const initWhiteboard = () => {
 };
 
 const startDrawing = (e) => {
-    isDrawing = true;
-    const rect = whiteboardCanvas.getBoundingClientRect();
-    lastX = (e.clientX - rect.left) / zoomLevel;
-    lastY = (e.clientY - rect.top) / zoomLevel;
+    // Middle mouse button (button 1) or Space key or Pan tool for panning
+    if (e.button === 1 || e.spaceKey || currentTool === 'pan') {
+        e.preventDefault();
+        isPanning = true;
+        const wrapper = whiteboardCanvas.parentElement;
+        panStartX = e.clientX;
+        panStartY = e.clientY;
+        scrollStartX = wrapper.scrollLeft;
+        scrollStartY = wrapper.scrollTop;
+        whiteboardCanvas.style.cursor = 'grabbing';
+        return;
+    }
+    
+    // Left mouse button for drawing
+    if (e.button === 0 && !isPanning) {
+        isDrawing = true;
+        const rect = whiteboardCanvas.getBoundingClientRect();
+        lastX = (e.clientX - rect.left) / zoomLevel;
+        lastY = (e.clientY - rect.top) / zoomLevel;
+    }
 };
 
 const draw = (e) => {
+    // Handle panning
+    if (isPanning) {
+        e.preventDefault();
+        const wrapper = whiteboardCanvas.parentElement;
+        const deltaX = panStartX - e.clientX;
+        const deltaY = panStartY - e.clientY;
+        wrapper.scrollLeft = scrollStartX + deltaX;
+        wrapper.scrollTop = scrollStartY + deltaY;
+        return;
+    }
+    
+    // Handle drawing
     if (!isDrawing) return;
     
     const rect = whiteboardCanvas.getBoundingClientRect();
@@ -4279,6 +4353,16 @@ const draw = (e) => {
 
 const stopDrawing = () => {
     isDrawing = false;
+    isPanning = false;
+    if (whiteboardCanvas) {
+        if (currentTool === 'eraser') {
+            whiteboardCanvas.style.cursor = 'pointer';
+        } else if (currentTool === 'pan') {
+            whiteboardCanvas.style.cursor = 'grab';
+        } else {
+            whiteboardCanvas.style.cursor = 'crosshair';
+        }
+    }
 };
 
 const handleTouchStart = (e) => {
