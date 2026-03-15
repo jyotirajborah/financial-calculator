@@ -2214,9 +2214,24 @@ const loginAsGuest = () => {
 const login = (user, token) => {
     console.log('🔐 LOGIN FUNCTION CALLED:', { user, token: !!token });
     
+    if (!token) {
+        console.error('❌ LOGIN FAILED: No token provided!');
+        showAlertModal('Login failed: No authentication token received', 'error');
+        return;
+    }
+    
+    if (!user) {
+        console.error('❌ LOGIN FAILED: No user data provided!');
+        showAlertModal('Login failed: No user data received', 'error');
+        return;
+    }
+    
     isGuestMode = false;
     currentUser = user;
-    if (token) localStorage.setItem('auth_token', token);
+    localStorage.setItem('auth_token', token);
+    
+    console.log('✅ Set isGuestMode to false, currentUser:', currentUser);
+    console.log('✅ Stored auth_token in localStorage');
     
     const overlay = document.getElementById('auth-overlay');
     const appContainer = document.getElementById('app-container');
@@ -2236,12 +2251,22 @@ const login = (user, token) => {
     const guestIcon = document.getElementById('guest-icon');
     const userInitials = document.getElementById('user-initials');
     
-    if (user && user.name) {
+    if (user && user.user_metadata?.name) {
         // Extract initials from user name
-        const initials = user.name.split(' ').map(word => word.charAt(0)).join('').substring(0, 2);
+        const initials = user.user_metadata.name.split(' ').map(word => word.charAt(0)).join('').substring(0, 2);
         if (userInitials) {
             userInitials.textContent = initials;
             console.log('👤 SET USER INITIALS:', initials);
+        }
+        
+        if (guestIcon) guestIcon.style.display = 'none';
+        if (userInitials) userInitials.style.display = 'block';
+    } else if (user && user.email) {
+        // Fallback to email initial
+        const initial = user.email.charAt(0).toUpperCase();
+        if (userInitials) {
+            userInitials.textContent = initial;
+            console.log('👤 SET USER INITIAL FROM EMAIL:', initial);
         }
         
         if (guestIcon) guestIcon.style.display = 'none';
@@ -2283,6 +2308,12 @@ const login = (user, token) => {
     if (signupForm) signupForm.reset();
     
     console.log('🎉 LOGIN FUNCTION COMPLETED SUCCESSFULLY');
+    console.log('📊 Final state - isGuestMode:', isGuestMode, 'currentUser:', currentUser);
+    
+    // Show success message
+    setTimeout(() => {
+        showToast('Login successful! Welcome to FinCalc', 'success');
+    }, 500);
     
     // Refresh charts now that container is visible
     calculateSIP();
@@ -3084,13 +3115,19 @@ window.addEventListener('DOMContentLoaded', () => {
             method: 'GET',
             headers: { 'Authorization': `Bearer ${authToken}` }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                console.log('❌ Token verification failed with status:', response.status);
+                localStorage.removeItem('auth_token');
+                return null;
+            }
+            return response.json();
+        })
         .then(data => {
-            if (data.user) {
+            if (data && data.user) {
                 console.log('✅ Auto-login successful:', data.user);
                 login(data.user, authToken);
-                return;
-            } else {
+            } else if (data) {
                 console.log('❌ Token invalid, clearing...');
                 localStorage.removeItem('auth_token');
             }
