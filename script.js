@@ -6103,7 +6103,6 @@ const renderRichestPeople = () => {
 
         return `
             <div class="richest-card ${isExpanded ? 'expanded' : ''}">
-                <div class="richest-rank">#${index + 1}</div>
                 <div class="richest-info">
                     <div class="richest-header-row">
                         <div class="richest-name-country">
