@@ -5070,9 +5070,18 @@ const initCountryFinancial = async () => {
         // Fetch all countries from REST Countries API
         console.log('Fetching countries from API...');
         const response = await fetch('https://restcountries.com/v3.1/all');
+        
+        if (!response.ok) {
+            throw new Error(`API returned status ${response.status}`);
+        }
+        
         console.log('API response status:', response.status);
         const allCountries = await response.json();
         console.log('Fetched countries from API:', allCountries.length);
+        
+        if (!allCountries || allCountries.length === 0) {
+            throw new Error('No countries returned from API');
+        }
         
         // Enrich with our financial data
         const enrichedData = allCountries.map(country => {
@@ -5364,6 +5373,8 @@ const toggleCountry = (countryName) => {
     if (expandedCountries.has(countryName)) {
         expandedCountries.delete(countryName);
     } else {
+        // Close all other countries (accordion behavior)
+        expandedCountries.clear();
         expandedCountries.add(countryName);
     }
     renderCountries();
@@ -5373,7 +5384,7 @@ const renderCountries = () => {
     const grid = document.getElementById('countries-grid');
     if (!grid) return;
 
-    grid.innerHTML = countriesData.map(country => {
+    grid.innerHTML = countriesData.map((country, index) => {
         const isExpanded = expandedCountries.has(country.name);
         const growthPositive = country.growth >= 0;
         const debtLevel = country.debt > 100 ? 'high' : country.debt > 60 ? 'medium' : 'low';
@@ -5382,6 +5393,7 @@ const renderCountries = () => {
             <div class="country-item ${isExpanded ? 'expanded' : ''}" onclick="toggleCountry('${country.name}')">
                 <div class="country-item-header">
                     <div class="country-basic-info">
+                        <span class="country-number">${index + 1}.</span>
                         <img src="https://flagcdn.com/w40/${country.code.toLowerCase()}.png"
                              alt="${country.name}"
                              class="country-flag"

@@ -4900,6 +4900,13 @@ body, html {
     gap: 1rem;
 }
 
+.country-number {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent-color);
+    min-width: 35px;
+}
+
 .country-flag {
     width: 40px;
     height: 28px;
