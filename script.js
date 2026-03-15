@@ -6047,36 +6047,21 @@ const richestPeopleByCountry = [
 
 const fetchRealTimeBillionaires = async () => {
     try {
-        // Try multiple API endpoints
-        const endpoints = [
-            'https://forbes-billionaires-api.p.rapidapi.com/billionaires',
-            'https://api.allorigins.win/raw?url=https://www.forbes.com/forbesapi/person/rtb/0/position/true.json'
-        ];
+        // Call our server-side endpoint to avoid CORS issues
+        const response = await fetch('/api/billionaires');
+        const result = await response.json();
         
-        let data = null;
-        
-        // Try first endpoint (no auth needed via proxy)
-        try {
-            const proxyResponse = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent('https://www.forbes.com/forbesapi/person/rtb/0/position/true.json'));
-            const proxyData = await proxyResponse.json();
-            if (proxyData.contents) {
-                data = JSON.parse(proxyData.contents);
-            }
-        } catch (e) {
-            console.log('Proxy attempt failed, using static data');
-        }
-        
-        if (data && data.personList && data.personList.personsLists) {
+        if (result.success && result.data) {
             // Update last updated time
             const updateTimeEl = document.getElementById('richest-update-time');
             if (updateTimeEl) {
                 const now = new Date();
-                updateTimeEl.textContent = `Last updated: ${now.toLocaleString()} • Auto-refreshes every 5 minutes`;
+                updateTimeEl.textContent = `Last updated: ${now.toLocaleString()} • Live data from Forbes`;
                 updateTimeEl.style.color = '#10b981';
             }
             
             // Map API data to our format and merge with portfolio data
-            const apiPeople = data.personList.personsLists.slice(0, 50).map(person => {
+            const apiPeople = result.data.map(person => {
                 // Find matching person in our static data for portfolio info
                 const staticPerson = richestPeopleByCountry.find(p => 
                     p.name.toLowerCase().includes(person.personName.toLowerCase()) ||

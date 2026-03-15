@@ -754,6 +754,54 @@ app.get('/api/get-notes', async (req, res) => {
     res.json(data || { notes_data: { board: { todo: [], inprogress: [], done: [] }, sticky: [] } });
 });
 
+// Billionaires API endpoint - server-side fetch to avoid CORS
+app.get('/api/billionaires', async (req, res) => {
+    try {
+        const https = require('https');
+        
+        const options = {
+            hostname: 'www.forbes.com',
+            path: '/forbesapi/person/rtb/0/position/true.json',
+            method: 'GET',
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept': 'application/json'
+            }
+        };
+        
+        https.get(options, (apiRes) => {
+            let data = '';
+            
+            apiRes.on('data', (chunk) => {
+                data += chunk;
+            });
+            
+            apiRes.on('end', () => {
+                try {
+                    const jsonData = JSON.parse(data);
+                    if (jsonData.personList && jsonData.personList.personsLists) {
+                        res.json({
+                            success: true,
+                            data: jsonData.personList.personsLists.slice(0, 50)
+                        });
+                    } else {
+                        res.status(500).json({ success: false, error: 'Invalid data format' });
+                    }
+                } catch (e) {
+                    res.status(500).json({ success: false, error: 'Failed to parse data' });
+                }
+            });
+        }).on('error', (e) => {
+            console.error('Forbes API error:', e);
+            res.status(500).json({ success: false, error: e.message });
+        });
+        
+    } catch (error) {
+        console.error('Billionaires API error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // [DEPRECATED] Server-side PDF rendering endpoint removed - Puppeteer dependency removed to speed up builds
 // The /api/render-pdf endpoint is no longer available. Use client-side Excel export (exportToExcel) instead.
 
