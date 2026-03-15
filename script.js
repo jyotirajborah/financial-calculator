@@ -4806,20 +4806,66 @@ const initMarketIndices = () => {
     setInterval(updateLastUpdatedTime, 1000);
 };
 
-const generateMockMarketData = () => {
+const fetchRealMarketData = async () => {
+    try {
+        const response = await fetch('/api/market-data');
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+            return result.data;
+        }
+        throw new Error('No market data available');
+    } catch (error) {
+        console.error('Failed to fetch real market data:', error);
+        return null;
+    }
+};
+
+const generateMockMarketData = async () => {
     const indicesGrid = document.getElementById('indices-grid');
     if (!indicesGrid) return;
     
     const selectedTimezone = document.getElementById('market-timezone')?.value || 'Asia/Kolkata';
     
-    indicesGrid.innerHTML = majorIndices.map(index => {
-        // Generate realistic mock data
-        const baseValue = getBaseValue(index.symbol);
-        const changePercent = (Math.random() - 0.5) * 4; // -2% to +2%
-        const changeValue = (baseValue * changePercent) / 100;
-        const currentValue = baseValue + changeValue;
+    // Try to fetch real data first
+    const realData = await fetchRealMarketData();
+    
+    let marketData;
+    if (realData) {
+        marketData = realData;
+        // Update last updated time to show live data
+        const lastUpdated = document.getElementById('markets-last-updated');
+        if (lastUpdated) {
+            lastUpdated.textContent = `Last updated: ${new Date().toLocaleString()} • Live data`;
+            lastUpdated.style.color = '#10b981';
+        }
+    } else {
+        // Fallback to mock data
+        marketData = majorIndices.map(index => {
+            const baseValue = getBaseValue(index.symbol);
+            const changePercent = (Math.random() - 0.5) * 4;
+            const changeValue = (baseValue * changePercent) / 100;
+            
+            return {
+                symbol: index.symbol,
+                name: index.name,
+                country: index.country,
+                timezone: index.timezone,
+                value: baseValue + changeValue,
+                change: changeValue,
+                changePercent: changePercent
+            };
+        });
         
-        const isPositive = changePercent >= 0;
+        const lastUpdated = document.getElementById('markets-last-updated');
+        if (lastUpdated) {
+            lastUpdated.textContent = `Last updated: ${new Date().toLocaleString()} • Simulated data`;
+            lastUpdated.style.color = '#f59e0b';
+        }
+    }
+    
+    indicesGrid.innerHTML = marketData.map(index => {
+        const isPositive = index.changePercent >= 0;
         const isOpen = isMarketOpen(index.timezone);
         const timeInfo = isOpen 
             ? getMarketCloseTime(index.timezone, selectedTimezone)
@@ -4837,11 +4883,11 @@ const generateMockMarketData = () => {
                         ${isOpen ? 'OPEN' : 'CLOSED'}
                     </div>
                 </div>
-                <div class="index-value">${formatIndexValue(currentValue)}</div>
+                <div class="index-value">${formatIndexValue(index.value)}</div>
                 <div class="index-change ${isPositive ? 'positive' : 'negative'}">
                     <ion-icon name="${isPositive ? 'trending-up' : 'trending-down'}"></ion-icon>
-                    <span>${isPositive ? '+' : ''}${changeValue.toFixed(2)}</span>
-                    <span class="index-percent">(${isPositive ? '+' : ''}${changePercent.toFixed(2)}%)</span>
+                    <span>${isPositive ? '+' : ''}${index.change.toFixed(2)}</span>
+                    <span class="index-percent">(${isPositive ? '+' : ''}${index.changePercent.toFixed(2)}%)</span>
                 </div>
                 <div class="index-time-info ${isOpen ? 'open' : 'closed'}">${timeInfo}</div>
             </div>

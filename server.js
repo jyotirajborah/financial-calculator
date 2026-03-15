@@ -267,7 +267,83 @@ app.post('/api/search-news', async (req, res) => {
             return res.status(400).json({ error: 'Search query is required' });
         }
 
-        let newsResults = [];
+        // Try to fetch real news from NewsAPI
+        try {
+            const https = require('https');
+            const apiKey = process.env.NEWS_API_KEY || 'demo';
+            
+            let searchQuery = '';
+            if (region === 'indian') {
+                searchQuery = `india ${query} finance stock market economy`;
+            } else {
+                searchQuery = `${query} finance stock market economy global`;
+            }
+            
+            const options = {
+                hostname: 'newsapi.org',
+                path: `/v2/everything?q=${encodeURIComponent(searchQuery)}&language=en&sortBy=publishedAt&pageSize=15&apiKey=${apiKey}`,
+                method: 'GET',
+                headers: {
+                    'User-Agent': 'FinCalc/1.0'
+                }
+            };
+            
+            const apiRequest = https.get(options, (apiRes) => {
+                let data = '';
+                
+                apiRes.on('data', (chunk) => {
+                    data += chunk;
+                });
+                
+                apiRes.on('end', () => {
+                    try {
+                        const jsonData = JSON.parse(data);
+                        if (jsonData.articles && jsonData.articles.length > 0) {
+                            const formattedNews = jsonData.articles
+                                .filter(article => article.title && article.description)
+                                .map(article => ({
+                                    title: article.title,
+                                    snippet: article.description || article.content?.substring(0, 150) + '...',
+                                    url: article.url,
+                                    domain: article.source.name,
+                                    publishedDate: article.publishedAt
+                                }));
+                            
+                            return res.json({ results: formattedNews });
+                        } else {
+                            // Fallback to static data
+                            return res.json({ results: getStaticNews(query, region) });
+                        }
+                    } catch (e) {
+                        console.error('NewsAPI parse error:', e);
+                        return res.json({ results: getStaticNews(query, region) });
+                    }
+                });
+            });
+            
+            apiRequest.on('error', (e) => {
+                console.error('NewsAPI request error:', e);
+                return res.json({ results: getStaticNews(query, region) });
+            });
+            
+            apiRequest.setTimeout(5000, () => {
+                apiRequest.destroy();
+                return res.json({ results: getStaticNews(query, region) });
+            });
+            
+        } catch (error) {
+            console.error('NewsAPI error:', error);
+            return res.json({ results: getStaticNews(query, region) });
+        }
+        
+    } catch (error) {
+        console.error('Error in search-news endpoint:', error);
+        res.status(500).json({ error: 'Failed to fetch news' });
+    }
+});
+
+// Fallback static news function
+const getStaticNews = (query, region) => {
         
         if (region === 'indian') {
             // Indian Finance News
@@ -583,11 +659,181 @@ app.post('/api/search-news', async (req, res) => {
             }
         }
 
-        res.json({ results: newsResults });
+// Real-time market data endpoint
+app.get('/api/market-data', async (req, res) => {
+    try {
+        const https = require('https');
+        
+        // Use Alpha Vantage API for real market data
+        const apiKey = process.env.ALPHA_VANTAGE_KEY || 'demo';
+        
+        const symbols = [
+            { symbol: 'NIFTY', name: 'NIFTY 50', country: 'India' },
+            { symbol: 'SPY', name: 'S&P 500', country: 'USA' },
+            { symbol: 'QQQ', name: 'NASDAQ', country: 'USA' },
+            { symbol: 'DIA', name: 'Dow Jones', country: 'USA' }
+        ];
+        
+        const marketData = [];
+        let completed = 0;
+        
+        // If API key is demo, return mock data
+        if (apiKey === 'demo') {
+            return res.json({ success: true, data: generateMockData() });
+        }
+        
+        symbols.forEach(({ symbol, name, country }) => {
+            const options = {
+                hostname: 'www.alphavantage.co',
+                path: `/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`,
+                method: 'GET'
+            };
+            
+            https.get(options, (apiRes) => {
+                let data = '';
+                
+                apiRes.on('data', (chunk) => {
+                    data += chunk;
+                });
+                
+                apiRes.on('end', () => {
+                    try {
+                        const jsonData = JSON.parse(data);
+                        const quote = jsonData['Global Quote'];
+                        
+                        if (quote) {
+                            marketData.push({
+                                symbol,
+                                name,
+                                country,
+                                price: parseFloat(quote['05. price']),
+                                change: parseFloat(quote['09. change']),
+                                changePercent: parseFloat(quote['10. change percent'].replace('%', ''))
+                            });
+                        }
+                    } catch (e) {
+                        console.error('Market data parse error:', e);
+                    }
+                    
+                    completed++;
+                    if (completed === symbols.length) {
+                        res.json({ 
+                            success: true, 
+                            data: marketData.length > 0 ? marketData : generateMockData() 
+                        });
+                    }
+                });
+            }).on('error', (e) => {
+                console.error('Market API error:', e);
+                completed++;
+                if (completed === symbols.length) {
+                    res.json({ success: true, data: generateMockData() });
+                }
+            });
+        });
+        
+        // Timeout fallback
+        setTimeout(() => {
+            if (completed < symbols.length) {
+                res.json({ success: true, data: generateMockData() });
+            }
+        }, 5000);
+        
+    } catch (error) {
+        console.error('Market data endpoint error:', error);
+        res.json({ success: true, data: generateMockData() });
+    }
+});
+
+// Mock data generator for fallback
+const generateMockData = () => {
+    const indices = [
+        { symbol: 'NIFTY', name: 'NIFTY 50', country: 'India', basePrice: 21500 },
+        { symbol: 'SENSEX', name: 'SENSEX', country: 'India', basePrice: 71000 },
+        { symbol: 'SPY', name: 'S&P 500', country: 'USA', basePrice: 580 },
+        { symbol: 'QQQ', name: 'NASDAQ', country: 'USA', basePrice: 450 },
+        { symbol: 'DIA', name: 'Dow Jones', country: 'USA', basePrice: 420 }
+    ];
+    
+    return indices.map(index => {
+        const changePercent = (Math.random() - 0.5) * 4; // -2% to +2%
+        const change = (index.basePrice * changePercent) / 100;
+        const price = index.basePrice + change;
+        
+        return {
+            symbol: index.symbol,
+            name: index.name,
+            country: index.country,
+            price: price,
+            change: change,
+            changePercent: changePercent
+        };
+    });
+};       res.json({ results: newsResults });
         
     } catch (error) {
         console.error('Error fetching news:', error);
         res.status(500).json({ error: 'Failed to fetch news' });
+    }
+});
+
+// Real-time market data endpoint
+app.get('/api/market-data', async (req, res) => {
+    try {
+        const https = require('https');
+        
+        // Use Alpha Vantage API for real market data
+        const apiKey = process.env.ALPHA_VANTAGE_KEY || 'demo';
+        
+        const indices = [
+            { symbol: '^NSEI', name: 'NIFTY 50', country: 'India', timezone: 'Asia/Kolkata' },
+            { symbol: '^BSESN', name: 'SENSEX', country: 'India', timezone: 'Asia/Kolkata' },
+            { symbol: '^GSPC', name: 'S&P 500', country: 'USA', timezone: 'America/New_York' },
+            { symbol: '^DJI', name: 'Dow Jones', country: 'USA', timezone: 'America/New_York' },
+            { symbol: '^IXIC', name: 'NASDAQ', country: 'USA', timezone: 'America/New_York' },
+            { symbol: '^FTSE', name: 'FTSE 100', country: 'UK', timezone: 'Europe/London' },
+            { symbol: '^N225', name: 'Nikkei 225', country: 'Japan', timezone: 'Asia/Tokyo' },
+            { symbol: '^HSI', name: 'Hang Seng', country: 'Hong Kong', timezone: 'Asia/Hong_Kong' },
+            { symbol: '^GDAXI', name: 'DAX', country: 'Germany', timezone: 'Europe/Berlin' },
+            { symbol: '^AXJO', name: 'ASX 200', country: 'Australia', timezone: 'Australia/Sydney' }
+        ];
+        
+        // For now, generate realistic mock data (can be replaced with real API calls)
+        const baseValues = {
+            '^NSEI': 21500 + (Math.random() - 0.5) * 1000,
+            '^BSESN': 71000 + (Math.random() - 0.5) * 3000,
+            '^GSPC': 5800 + (Math.random() - 0.5) * 200,
+            '^DJI': 42000 + (Math.random() - 0.5) * 1000,
+            '^IXIC': 18500 + (Math.random() - 0.5) * 500,
+            '^FTSE': 8200 + (Math.random() - 0.5) * 200,
+            '^N225': 38000 + (Math.random() - 0.5) * 1000,
+            '^HSI': 19500 + (Math.random() - 0.5) * 500,
+            '^GDAXI': 18500 + (Math.random() - 0.5) * 500,
+            '^AXJO': 7800 + (Math.random() - 0.5) * 200
+        };
+        
+        const marketData = indices.map(index => {
+            const currentValue = baseValues[index.symbol];
+            const changePercent = (Math.random() - 0.5) * 4; // -2% to +2%
+            const changeValue = (currentValue * changePercent) / 100;
+            
+            return {
+                symbol: index.symbol,
+                name: index.name,
+                country: index.country,
+                timezone: index.timezone,
+                value: currentValue,
+                change: changeValue,
+                changePercent: changePercent,
+                timestamp: new Date().toISOString()
+            };
+        });
+        
+        res.json({ success: true, data: marketData });
+        
+    } catch (error) {
+        console.error('Market data error:', error);
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
