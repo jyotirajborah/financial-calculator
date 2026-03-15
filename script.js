@@ -4794,6 +4794,8 @@ const generateMockMarketData = () => {
     const indicesGrid = document.getElementById('indices-grid');
     if (!indicesGrid) return;
     
+    const selectedTimezone = document.getElementById('market-timezone')?.value || 'Asia/Kolkata';
+    
     indicesGrid.innerHTML = majorIndices.map(index => {
         // Generate realistic mock data
         const baseValue = getBaseValue(index.symbol);
@@ -4803,6 +4805,7 @@ const generateMockMarketData = () => {
         
         const isPositive = changePercent >= 0;
         const isOpen = isMarketOpen(index.timezone);
+        const reopenTime = getMarketReopenTime(index.timezone, selectedTimezone);
         
         return `
             <div class="index-card ${isPositive ? 'positive' : 'negative'}">
@@ -4822,6 +4825,7 @@ const generateMockMarketData = () => {
                     <span>${isPositive ? '+' : ''}${changeValue.toFixed(2)}</span>
                     <span class="index-percent">(${isPositive ? '+' : ''}${changePercent.toFixed(2)}%)</span>
                 </div>
+                ${!isOpen ? `<div class="index-reopen">${reopenTime}</div>` : ''}
             </div>
         `;
     }).join('');
@@ -4869,12 +4873,80 @@ const isMarketOpen = (timezone) => {
     }
 };
 
+const getMarketReopenTime = (marketTimezone, displayTimezone) => {
+    try {
+        const now = new Date();
+        const marketTime = new Date(now.toLocaleString('en-US', { timeZone: marketTimezone }));
+        const day = marketTime.getDay();
+        const hours = marketTime.getHours();
+        const minutes = marketTime.getMinutes();
+        
+        let nextOpenDate = new Date(marketTime);
+        
+        // If weekend, move to Monday
+        if (day === 0) { // Sunday
+            nextOpenDate.setDate(nextOpenDate.getDate() + 1);
+        } else if (day === 6) { // Saturday
+            nextOpenDate.setDate(nextOpenDate.getDate() + 2);
+        } else if (hours >= 16 || (hours === 16 && minutes > 0)) {
+            // After market close, next day
+            nextOpenDate.setDate(nextOpenDate.getDate() + 1);
+            // Check if next day is weekend
+            if (nextOpenDate.getDay() === 6) {
+                nextOpenDate.setDate(nextOpenDate.getDate() + 2);
+            } else if (nextOpenDate.getDay() === 0) {
+                nextOpenDate.setDate(nextOpenDate.getDate() + 1);
+            }
+        }
+        
+        // Set to 9:00 AM market time
+        nextOpenDate.setHours(9, 0, 0, 0);
+        
+        // Convert to display timezone
+        const openTimeStr = nextOpenDate.toLocaleString('en-US', { 
+            timeZone: displayTimezone,
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric'
+        });
+        
+        // Calculate hours until open
+        const nowInMarket = new Date(now.toLocaleString('en-US', { timeZone: marketTimezone }));
+        const hoursUntil = Math.round((nextOpenDate - nowInMarket) / (1000 * 60 * 60));
+        
+        if (hoursUntil < 24) {
+            return `Opens in ${hoursUntil}h`;
+        } else {
+            return `Opens ${openTimeStr}`;
+        }
+    } catch (error) {
+        return 'Market closed';
+    }
+};
+
+const changeMarketTimezone = () => {
+    // Regenerate market data with new timezone
+    generateMockMarketData();
+    updateLastUpdatedTime();
+};
+
 const updateLastUpdatedTime = () => {
     const lastUpdated = document.getElementById('markets-last-updated');
     if (!lastUpdated) return;
     
+    const selectedTimezone = document.getElementById('market-timezone')?.value || 'Asia/Kolkata';
     const now = new Date();
-    lastUpdated.textContent = `Updated: ${now.toLocaleTimeString()}`;
+    const timeStr = now.toLocaleTimeString('en-US', { 
+        timeZone: selectedTimezone,
+        hour: 'numeric',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+    });
+    lastUpdated.textContent = `Updated: ${timeStr}`;
 };
 
 // --- Finance News Functions ---
