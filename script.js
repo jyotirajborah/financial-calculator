@@ -6516,7 +6516,7 @@ const displayFinanceNews = (newsItems, listId, countId, region) => {
                 </div>
                 <div class="news-actions-right">
                     <button class="btn-news-save ${isAlreadySaved ? 'saved' : ''}" 
-                            onclick="saveNewsArticle('${region}', ${index})" 
+                            onclick="saveNewsArticle('${region}', ${index}, event)" 
                             title="${isAlreadySaved ? 'Already saved' : 'Save article'}">
                         <ion-icon name="${isAlreadySaved ? 'bookmark' : 'bookmark-outline'}"></ion-icon>
                     </button>
@@ -6531,7 +6531,7 @@ const displayFinanceNews = (newsItems, listId, countId, region) => {
     });
 };
 
-const saveNewsArticle = async (region, index) => {
+const saveNewsArticle = async (region, index, event) => {
     const article = currentNewsData[region][index];
     if (!article) {
         console.error('❌ Article not found:', { region, index });
@@ -6588,11 +6588,14 @@ const saveNewsArticle = async (region, index) => {
         if (response.ok) {
             console.log('✅ Article saved successfully');
             // Update UI to show saved state
-            const saveBtn = event.target.closest('.btn-news-save');
-            if (saveBtn) {
-                saveBtn.classList.add('saved');
-                saveBtn.querySelector('ion-icon').setAttribute('name', 'bookmark');
-                saveBtn.title = 'Already saved';
+            if (event && event.target) {
+                const saveBtn = event.target.closest('.btn-news-save');
+                if (saveBtn) {
+                    saveBtn.classList.add('saved');
+                    const icon = saveBtn.querySelector('ion-icon');
+                    if (icon) icon.setAttribute('name', 'bookmark');
+                    saveBtn.title = 'Already saved';
+                }
             }
             
             // Show success message
