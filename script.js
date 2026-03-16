@@ -7303,8 +7303,10 @@ const upgradeProperty = (propId) => {
 
 const nextTurn = () => {
     gameState.turn++;
-    
-    // Player collects income
+
+    // REAL WORLD MECHANICS
+
+    // 1. Player collects income
     let playerIncome = 0;
     properties.forEach(prop => {
         if (gameState.playerProperties[prop.id].owner === 'player') {
@@ -7313,16 +7315,65 @@ const nextTurn = () => {
         }
     });
     gameState.playerCash += playerIncome;
-    addGameLog(`You collected $${playerIncome.toFixed(0)} in income`);
-    
-    // Pay debt interest
+    addGameLog(`💰 Rental income: +$${playerIncome.toFixed(0)}`);
+
+    // 2. Pay debt interest (5% per turn = 60% annually)
     const debtInterest = gameState.playerDebt * 0.05;
     gameState.playerCash -= debtInterest;
-    addGameLog(`Paid $${debtInterest.toFixed(0)} in debt interest`);
-    
-    // Computer plays
+    if (debtInterest > 0) {
+        addGameLog(`💳 Debt interest: -$${debtInterest.toFixed(0)}`);
+    }
+
+    // 3. Property maintenance costs (1% of property value per turn)
+    let maintenanceCost = 0;
+    properties.forEach(prop => {
+        if (gameState.playerProperties[prop.id].owner === 'player') {
+            const level = gameState.playerProperties[prop.id].level;
+            const propValue = prop.price + (level * 50);
+            maintenanceCost += propValue * 0.01;
+        }
+    });
+    gameState.playerCash -= maintenanceCost;
+    if (maintenanceCost > 0) {
+        addGameLog(`🔧 Maintenance: -$${maintenanceCost.toFixed(0)}`);
+    }
+
+    // 4. Market volatility - property values fluctuate
+    const volatility = (Math.random() - 0.5) * 0.1;
+    let volatilityImpact = 0;
+    properties.forEach(prop => {
+        if (gameState.playerProperties[prop.id].owner === 'player') {
+            const level = gameState.playerProperties[prop.id].level;
+            const propValue = prop.price + (level * 50);
+            const change = propValue * volatility;
+            volatilityImpact += change;
+        }
+    });
+    if (volatilityImpact > 0) {
+        addGameLog(`📈 Market boom: +$${volatilityImpact.toFixed(0)}`);
+    } else if (volatilityImpact < 0) {
+        addGameLog(`📉 Market crash: -$${Math.abs(volatilityImpact).toFixed(0)}`);
+    }
+
+    // 5. Bankruptcy check
+    if (gameState.playerCash < 0) {
+        const deficit = Math.abs(gameState.playerCash);
+        gameState.playerDebt += deficit;
+        gameState.playerCash = 0;
+        addGameLog(`⚠️ BANKRUPTCY! Debt increased to $${gameState.playerDebt.toFixed(0)}`);
+    }
+
+    // 6. Debt spiral warning
+    if (gameState.playerDebt > gameState.playerCash * 2 && gameState.playerDebt > 0) {
+        addGameLog(`🚨 DANGER: Debt is ${(gameState.playerDebt / (gameState.playerCash || 1)).toFixed(1)}x your cash!`);
+    }
+
+    // 7. Computer plays
     computerTurn();
-    
+
+    // 8. Check win/lose conditions
+    checkGameStatus();
+
     renderGameBoard();
 };
 
@@ -8463,4 +8514,35 @@ window.saveCalculation = async (type, e) => {
         showToast(`${type} calculation saved successfully!`, 'success');
     }
     return result;
+};
+
+const checkGameStatus = () => {
+    const playerNetWorth = gameState.playerCash - gameState.playerDebt + calculatePropertyValue('player');
+    const computerNetWorth = gameState.computerCash - gameState.computerDebt + calculatePropertyValue('computer');
+    
+    // Player bankruptcy
+    if (playerNetWorth < -1000) {
+        addGameLog(`💀 GAME OVER! You're bankrupt with -$${Math.abs(playerNetWorth).toFixed(0)} net worth`);
+        document.getElementById('next-turn-btn').disabled = true;
+    }
+    
+    // Computer bankruptcy
+    if (computerNetWorth < -1000) {
+        addGameLog(`🎉 YOU WIN! Computer is bankrupt with -$${Math.abs(computerNetWorth).toFixed(0)} net worth`);
+        document.getElementById('next-turn-btn').disabled = true;
+    }
+    
+    // Milestone achievements
+    if (gameState.turn === 10) {
+        addGameLog(`🏆 Milestone: 10 turns completed!`);
+    }
+    if (gameState.turn === 25) {
+        addGameLog(`🏆 Milestone: 25 turns completed! You're building an empire!`);
+    }
+    if (playerNetWorth > 10000) {
+        addGameLog(`🌟 ACHIEVEMENT: Net worth exceeded $10,000!`);
+    }
+    if (playerNetWorth > 50000) {
+        addGameLog(`👑 ACHIEVEMENT: Net worth exceeded $50,000! You're a real estate mogul!`);
+    }
 };
