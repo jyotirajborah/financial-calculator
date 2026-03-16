@@ -6416,7 +6416,7 @@ const fetchPovertyData = async () => {
                 <div class="stat-label">Avg Poverty Rate</div>
                 <div class="stat-value">${avgPoverty}%</div>
                 <div class="stat-description">Living on less than $3.00/day (World Bank 2024)</div>
-                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-wrap: break-word; overflow-wrap: break-word;">
                     🔗 SI.POV.DDAY - Poverty headcount ratio at $3.00/day
                 </div>
             </div>
@@ -6424,7 +6424,7 @@ const fetchPovertyData = async () => {
                 <div class="stat-label">Highest Poverty Rate</div>
                 <div class="stat-value">${maxPoverty}%</div>
                 <div class="stat-description">In most affected countries</div>
-                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-wrap: break-word; overflow-wrap: break-word;">
                     🔗 SI.POV.DDAY - World Bank API
                 </div>
             </div>
@@ -6432,7 +6432,7 @@ const fetchPovertyData = async () => {
                 <div class="stat-label">Avg Child Mortality</div>
                 <div class="stat-value">${avgMortality}</div>
                 <div class="stat-description">Deaths per 1,000 live births (preventable)</div>
-                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-wrap: break-word; overflow-wrap: break-word;">
                     🔗 SP.DYN.CDRT.IN - Child mortality rate per 1,000 live births
                 </div>
             </div>
@@ -6440,7 +6440,7 @@ const fetchPovertyData = async () => {
                 <div class="stat-label">Global Literacy Rate</div>
                 <div class="stat-value">${avgLiteracy}%</div>
                 <div class="stat-description">Adult literacy - education access gap</div>
-                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-wrap: break-word; overflow-wrap: break-word;">
                     🔗 SE.ADT.LITR.ZS - Adult literacy rate
                 </div>
             </div>
@@ -6456,7 +6456,7 @@ const fetchPovertyData = async () => {
                 <div class="insight-text">
                     <strong>Real Data:</strong> ${avgPoverty}% of global population lives on less than $3/day. That's approximately 1.2 billion people struggling daily. The World Bank data shows poverty remains stubbornly high in Sub-Saharan Africa and South Asia, where ${maxPoverty}% of populations in some countries live below poverty lines.
                 </div>
-                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 SI.POV.DDAY - Poverty headcount ratio at $3.00/day (World Bank)
                 </div>
             </div>
@@ -6468,7 +6468,7 @@ const fetchPovertyData = async () => {
                 <div class="insight-text">
                     <strong>Real Data:</strong> Average child mortality rate is ${avgMortality} deaths per 1,000 live births. That means millions of children die from preventable diseases like malaria, diarrhea, and pneumonia. Meanwhile, billionaires spend millions on life extension treatments and luxury healthcare.
                 </div>
-                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 SP.DYN.CDRT.IN - Child mortality rate per 1,000 live births (World Bank)
                 </div>
             </div>
@@ -6480,7 +6480,7 @@ const fetchPovertyData = async () => {
                 <div class="insight-text">
                     <strong>Real Data:</strong> Global adult literacy is ${avgLiteracy}%, but this masks huge disparities. In poorest regions, literacy rates drop below 50%. Poverty forces 258 million children out of school into child labor. Without education, they remain trapped in poverty cycles.
                 </div>
-                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 SE.ADT.LITR.ZS - Adult literacy rate (World Bank)
                 </div>
             </div>
@@ -6492,7 +6492,7 @@ const fetchPovertyData = async () => {
                 <div class="insight-text">
                     <strong>Real Impact:</strong> 2 billion people lack safe drinking water. 3.6 billion lack adequate sanitation. Waterborne diseases kill 1.4 million annually - mostly children in poverty-stricken areas. A billionaire's yacht costs more than building water systems for entire villages.
                 </div>
-                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 UN World Water Development Report + World Bank Indicators
                 </div>
             </div>
@@ -6514,7 +6514,7 @@ const fetchPovertyData = async () => {
                 <div class="insight-text" style="margin-top: 1rem;">
                     <strong>The Contrast:</strong> The richest 1% owns more wealth than the entire bottom 50% combined. While ${avgPoverty}% of humanity struggles on $3/day, billionaires accumulate trillions. This inequality perpetuates suffering - it's not just about money, it's about access to life itself.
                 </div>
-                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 World Inequality Database + IMF Global Wealth Report
                 </div>
             </div>
@@ -6528,21 +6528,21 @@ const fetchPovertyData = async () => {
                 <div class="stat-card">
                     <div class="stat-label">Poverty Rate</div>
                     <div class="stat-description">Loading from World Bank API...</div>
-                    <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                    <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-wrap: break-word; overflow-wrap: break-word;">
                         🔗 SI.POV.DDAY - Poverty headcount ratio at $3.00/day
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Child Mortality</div>
                     <div class="stat-description">Loading from World Bank API...</div>
-                    <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                    <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-wrap: break-word; overflow-wrap: break-word;">
                         🔗 SP.DYN.CDRT.IN - Child mortality rate per 1,000 live births
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Literacy Rate</div>
                     <div class="stat-description">Loading from World Bank API...</div>
-                    <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                    <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-wrap: break-word; overflow-wrap: break-word;">
                         🔗 SE.ADT.LITR.ZS - Adult literacy rate
                     </div>
                 </div>
@@ -6604,7 +6604,7 @@ const fetchCrimeData = async () => {
                 <div class="stat-label">Avg Homicide Rate</div>
                 <div class="stat-value">${avgHomicide}</div>
                 <div class="stat-description">Per 100,000 people (World Bank 2024)</div>
-                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-wrap: break-word; overflow-wrap: break-word;">
                     🔗 VC.IHR.PSRC.P5 - Intentional homicides per 100,000
                 </div>
             </div>
@@ -6612,7 +6612,7 @@ const fetchCrimeData = async () => {
                 <div class="stat-label">Highest Homicide Rate</div>
                 <div class="stat-value">${maxHomicide}</div>
                 <div class="stat-description">In most affected regions</div>
-                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-wrap: break-word; overflow-wrap: break-word;">
                     🔗 VC.IHR.PSRC.P5 - World Bank API
                 </div>
             </div>
@@ -6620,7 +6620,7 @@ const fetchCrimeData = async () => {
                 <div class="stat-label">Lowest Homicide Rate</div>
                 <div class="stat-value">${minHomicide}</div>
                 <div class="stat-description">In safest regions</div>
-                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-wrap: break-word; overflow-wrap: break-word;">
                     🔗 VC.IHR.PSRC.P5 - World Bank API
                 </div>
             </div>
@@ -6628,7 +6628,7 @@ const fetchCrimeData = async () => {
                 <div class="stat-label">Est. Annual Homicides</div>
                 <div class="stat-value">${(estimatedAnnualHomicides / 1000000).toFixed(1)}M</div>
                 <div class="stat-description">Estimated global murders annually</div>
-                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 Based on global population & average rate
                 </div>
             </div>
@@ -6644,7 +6644,7 @@ const fetchCrimeData = async () => {
                 <div class="insight-text">
                     <strong>Real Data:</strong> The global average homicide rate is ${avgHomicide} per 100,000 people. However, this masks huge disparities - some regions experience rates as high as ${maxHomicide} per 100,000, while others are as low as ${minHomicide} per 100,000. This means approximately ${(estimatedAnnualHomicides / 1000000).toFixed(1)} million people are murdered annually worldwide. In the most violent regions, homicide is a leading cause of death, particularly for young men.
                 </div>
-                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 VC.IHR.PSRC.P5 - Intentional homicides per 100,000 (World Bank & UNODC)
                 </div>
             </div>
@@ -6656,7 +6656,7 @@ const fetchCrimeData = async () => {
                 <div class="insight-text">
                     <strong>The Pattern:</strong> Homicide rates are highest in regions with extreme poverty, weak governance, and drug trafficking. Africa and Latin America have the highest rates. Meanwhile, wealthy nations with strong institutions have much lower rates. This shows that violence is not random - it's concentrated where poverty and inequality are highest. The poorest people are most likely to be victims of homicide.
                 </div>
-                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 Highest rates: Sub-Saharan Africa (${maxHomicide}/100k), Latin America, Caribbean
                 </div>
             </div>
@@ -6677,7 +6677,7 @@ const fetchCrimeData = async () => {
                         <li><strong>Access to Weapons:</strong> Easy access to guns increases homicide rates</li>
                     </ul>
                 </div>
-                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 Research shows: Poverty reduction reduces homicide more than increased policing
                 </div>
             </div>
@@ -6689,7 +6689,7 @@ const fetchCrimeData = async () => {
                 <div class="insight-text">
                     <strong>Inequality in Justice:</strong> The poor are more likely to be arrested, convicted, and sentenced to death for homicide. Meanwhile, wealthy people who commit crimes often escape justice. Corporate crimes that kill thousands go unpunished. Police violence against minorities is rarely prosecuted. The death penalty is applied disproportionately to the poor and minorities. Justice is not blind - it sees wealth and power.
                 </div>
-                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 Fact: 95% of death row inmates in the US could not afford their own lawyers
                 </div>
             </div>
@@ -6711,7 +6711,7 @@ const fetchCrimeData = async () => {
                         <li><strong>Police Reform:</strong> Community policing, accountability, de-escalation training</li>
                     </ul>
                 </div>
-                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 Countries that invested in social programs saw 30-50% reduction in homicides
                 </div>
             </div>
@@ -6725,21 +6725,21 @@ const fetchCrimeData = async () => {
                 <div class="stat-card">
                     <div class="stat-label">Homicide Rate</div>
                     <div class="stat-description">Loading from World Bank API...</div>
-                    <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                    <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-wrap: break-word; overflow-wrap: break-word;">
                         🔗 VC.IHR.PSRC.P5 - Intentional homicides per 100,000
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Regional Disparities</div>
                     <div class="stat-description">Loading from World Bank API...</div>
-                    <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                    <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-wrap: break-word; overflow-wrap: break-word;">
                         🔗 VC.IHR.PSRC.P5 - World Bank API
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Violence Patterns</div>
                     <div class="stat-description">Loading from World Bank API...</div>
-                    <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                    <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-wrap: break-word; overflow-wrap: break-word;">
                         🔗 VC.IHR.PSRC.P5 - World Bank API
                     </div>
                 </div>
@@ -6776,7 +6776,7 @@ const fetchMediaData = async () => {
                 <div class="stat-label">Global Media Ownership</div>
                 <div class="stat-value">6</div>
                 <div class="stat-description">Corporations control 90% of US media</div>
-                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 Source: FCC Media Ownership Reports & Pew Research
                 </div>
             </div>
@@ -6784,7 +6784,7 @@ const fetchMediaData = async () => {
                 <div class="stat-label">Misinformation Spread</div>
                 <div class="stat-value">4x</div>
                 <div class="stat-description">False news spreads 4x faster than truth</div>
-                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 Source: MIT Media Lab Study on Misinformation
                 </div>
             </div>
@@ -6792,7 +6792,7 @@ const fetchMediaData = async () => {
                 <div class="stat-label">Social Media Users</div>
                 <div class="stat-value">5.3B</div>
                 <div class="stat-description">Exposed to algorithmic content curation</div>
-                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 Source: Statista Global Social Media Users 2024
                 </div>
             </div>
@@ -6800,7 +6800,7 @@ const fetchMediaData = async () => {
                 <div class="stat-label">Fact-Check Needed</div>
                 <div class="stat-value">62%</div>
                 <div class="stat-description">Of news requires fact-checking verification</div>
-                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 Source: Reuters Institute Digital News Report 2024
                 </div>
             </div>
@@ -6816,7 +6816,7 @@ const fetchMediaData = async () => {
                 <div class="insight-text">
                     <strong>The Reality:</strong> Just 6 corporations control 90% of US media. This concentration of power means a handful of billionaires decide what billions of people see, hear, and believe. When media is owned by the wealthy, stories about inequality, corporate crimes, and systemic injustice are often buried or downplayed. The narrative is shaped to protect elite interests.
                 </div>
-                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 Major Media Corporations: Comcast, Disney, Warner Bros Discovery, Paramount, Fox, Sony
                 </div>
             </div>
@@ -6828,7 +6828,7 @@ const fetchMediaData = async () => {
                 <div class="insight-text">
                     <strong>How It Works:</strong> Governments and corporations use media to shape public opinion. Repeated narratives become "truth" even without evidence. Wars are justified through media propaganda. Corporate crimes are reframed as "business decisions." Poverty is blamed on individuals rather than systems. The wealthy control the narrative, and those without media access cannot counter it.
                 </div>
-                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 Techniques: Agenda-setting, Framing, Omission, Sensationalism, False Balance
                 </div>
             </div>
@@ -6840,7 +6840,7 @@ const fetchMediaData = async () => {
                 <div class="insight-text">
                     <strong>The Problem:</strong> False information spreads 4x faster than truth on social media. Misinformation (unintentional falsehoods) and disinformation (deliberate lies) are weaponized to manipulate public opinion. Algorithms amplify sensational content, not accurate content. Bots and coordinated campaigns spread false narratives. The average person cannot distinguish truth from lies in the information overload.
                 </div>
-                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 MIT Study: False news reaches 1,500 people 6x faster than truth
                 </div>
             </div>
@@ -6852,7 +6852,7 @@ const fetchMediaData = async () => {
                 <div class="insight-text">
                     <strong>The Trap:</strong> Social media algorithms don't show you diverse viewpoints - they show you what keeps you engaged. This creates "filter bubbles" where you only see content that confirms your beliefs. Algorithms are designed to maximize engagement, not truth. They amplify divisive, emotional content. 5.3 billion people are trapped in algorithmic echo chambers, unaware they're being manipulated.
                 </div>
-                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 Facebook, TikTok, YouTube, Instagram - all use engagement-maximizing algorithms
                 </div>
             </div>
@@ -6874,7 +6874,7 @@ const fetchMediaData = async () => {
                         <li><strong>Teach Others:</strong> Share media literacy skills with family and friends</li>
                     </ul>
                 </div>
-                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 Resources: NewsGuard, Media Bias Chart, First Draft News, Poynter Institute
                 </div>
             </div>
@@ -6896,7 +6896,7 @@ const fetchMediaData = async () => {
                         <li><strong>Media Regulation Advocacy:</strong> Pushing for antitrust action against media monopolies</li>
                     </ul>
                 </div>
-                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 The Power of Awareness: When people understand manipulation, they become immune to it
                 </div>
             </div>
@@ -6926,7 +6926,7 @@ const fetchWealthTransferData = async () => {
                 <div class="stat-label">Wealth Concentration</div>
                 <div class="stat-value">70%</div>
                 <div class="stat-description">Of wealth is inherited, not earned</div>
-                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     📊 Source: World Inequality Database & IMF Studies
                 </div>
             </div>
@@ -6934,7 +6934,7 @@ const fetchWealthTransferData = async () => {
                 <div class="stat-label">Estate Tax Avoidance</div>
                 <div class="stat-value">$32T</div>
                 <div class="stat-description">Hidden in offshore accounts globally</div>
-                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 Source: OECD & Tax Justice Network
                 </div>
             </div>
@@ -6942,7 +6942,7 @@ const fetchWealthTransferData = async () => {
                 <div class="stat-label">Trust Funds</div>
                 <div class="stat-value">$7T+</div>
                 <div class="stat-description">Held in trusts to avoid taxes</div>
-                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     📊 Source: Federal Reserve & Trust Industry Reports
                 </div>
             </div>
@@ -6950,7 +6950,7 @@ const fetchWealthTransferData = async () => {
                 <div class="stat-label">Tax Rate Difference</div>
                 <div class="stat-value">15%</div>
                 <div class="stat-description">Billionaires pay less tax than workers</div>
-                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 Source: ProPublica Investigation & IRS Data
                 </div>
             </div>
@@ -6975,7 +6975,7 @@ const fetchWealthTransferData = async () => {
                         <li><strong>Charitable Donations:</strong> Donate appreciated assets to charity, get tax deduction, then donate to family foundation</li>
                     </ul>
                 </div>
-                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 These strategies are legal but available only to the wealthy who can afford sophisticated tax lawyers
                 </div>
             </div>
@@ -6996,7 +6996,7 @@ const fetchWealthTransferData = async () => {
                         <li><strong>Dual Citizenship:</strong> Hold citizenship in multiple countries to exploit tax loopholes</li>
                     </ul>
                 </div>
-                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 Panama Papers, Paradise Papers, Pandora Papers exposed these schemes - but enforcement is weak
                 </div>
             </div>
@@ -7015,7 +7015,7 @@ const fetchWealthTransferData = async () => {
                         <li><strong>Founder Shares:</strong> Founders retain special shares with extra voting power</li>
                     </ul>
                 </div>
-                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 Examples: Walton family (Walmart), Mars family (Mars Inc.), Thomson family (Thomson Reuters)
                 </div>
             </div>
@@ -7036,7 +7036,7 @@ const fetchWealthTransferData = async () => {
                         <li><strong>Tax Code Loopholes:</strong> Lobby for specific tax breaks written into law for their industries</li>
                     </ul>
                 </div>
-                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 US billionaires spend $5+ billion annually on lobbying and political donations
                 </div>
             </div>
@@ -7058,7 +7058,7 @@ const fetchWealthTransferData = async () => {
                         <li><strong>Corruption & Bribery:</strong> Pay officials to look the other way or change regulations</li>
                     </ul>
                 </div>
-                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 Often prosecuted but penalties are small compared to profits - cost of doing business
                 </div>
             </div>
@@ -7077,7 +7077,7 @@ const fetchWealthTransferData = async () => {
                         <li>This costs US government $40+ billion annually in lost tax revenue</li>
                     </ul>
                 </div>
-                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 This single loophole allows trillions in wealth to pass tax-free across generations
                 </div>
             </div>
@@ -7100,7 +7100,7 @@ const fetchWealthTransferData = async () => {
                         <li><strong>Limit Lobbying:</strong> Reduce corporate influence on tax policy</li>
                     </ul>
                 </div>
-                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 These reforms face fierce opposition from the wealthy who benefit from current system
                 </div>
             </div>
