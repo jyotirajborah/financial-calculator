@@ -345,7 +345,7 @@ document.querySelectorAll('.nav-item').forEach(btn => {
         // Initialize death clock if target is death-clock
         if (targetId === 'death-clock') {
             initDeathClock();
-            // Auto-start the clock when tab is opened
+            // Auto-start the clock when tab is opened (no buttons needed)
             setTimeout(() => startDeathClock(), 500);
         }
         
