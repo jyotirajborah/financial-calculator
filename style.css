@@ -7409,6 +7409,7 @@ body, html {
     background: #ef4444;
     transform-origin: bottom center;
     border-radius: 2px;
+    transition: transform 0.1s ease-out;
 }
 
 .hour-hand {
@@ -7433,13 +7434,10 @@ body, html {
     top: -90px;
     left: -0.5px;
     background: #fbbf24;
-    animation: tick 1s infinite;
+    transition: transform 0.1s ease-out;
 }
 
-@keyframes tick {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(6deg); }
-}
+
 
 .center-dot {
     width: 12px;

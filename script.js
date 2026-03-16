@@ -8770,14 +8770,32 @@ const updateAnalogClock = () => {
     const minuteAngle = minutes * 6; // 6 degrees per minute
     const secondAngle = seconds * 6; // 6 degrees per second
     
-    // Apply rotations
+    // Get hand elements
     const hourHand = document.getElementById('hour-hand');
     const minuteHand = document.getElementById('minute-hand');
     const secondHand = document.getElementById('second-hand');
     
+    // Handle second hand transition from 59 to 0 (avoid reverse rotation)
+    if (secondHand) {
+        const currentTransform = secondHand.style.transform;
+        const currentAngle = currentTransform ? parseInt(currentTransform.match(/rotate\((-?\d+)deg\)/)?.[1] || 0) : 0;
+        
+        // If transitioning from 59 to 0 seconds, temporarily disable transition
+        if (seconds === 0 && currentAngle > 300) {
+            secondHand.style.transition = 'none';
+            secondHand.style.transform = `rotate(${secondAngle}deg)`;
+            // Re-enable transition after a brief moment
+            setTimeout(() => {
+                if (secondHand) secondHand.style.transition = 'transform 0.1s ease-out';
+            }, 50);
+        } else {
+            secondHand.style.transform = `rotate(${secondAngle}deg)`;
+        }
+    }
+    
+    // Apply rotations to other hands
     if (hourHand) hourHand.style.transform = `rotate(${hourAngle}deg)`;
     if (minuteHand) minuteHand.style.transform = `rotate(${minuteAngle}deg)`;
-    if (secondHand) secondHand.style.transform = `rotate(${secondAngle}deg)`;
 };
 
 // Change timezone
