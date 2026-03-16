@@ -7151,6 +7151,34 @@ body, html {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+}
+
+.clock-display::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500"><defs><style>.continent{fill:none;stroke:%23ef4444;stroke-width:1.5;stroke-opacity:0.2;}</style></defs><g class="continent"><path d="M50 150 Q100 120 150 140 Q200 130 250 150 Q300 140 350 160 Q400 150 450 170 Q500 160 550 180 Q600 170 650 190 Q700 180 750 200 Q800 190 850 210 Q900 200 950 220"/><path d="M80 200 Q130 180 180 200 Q230 190 280 210 Q330 200 380 220 Q430 210 480 230 Q530 220 580 240 Q630 230 680 250 Q730 240 780 260 Q830 250 880 270"/><path d="M100 280 Q150 260 200 280 Q250 270 300 290 Q350 280 400 300 Q450 290 500 310 Q550 300 600 320 Q650 310 700 330 Q750 320 800 340"/><path d="M120 350 Q170 330 220 350 Q270 340 320 360 Q370 350 420 370 Q470 360 520 380 Q570 370 620 390 Q670 380 720 400"/><circle cx="150" cy="180" r="15" class="continent"/><circle cx="300" cy="200" r="20" class="continent"/><circle cx="500" cy="220" r="25" class="continent"/><circle cx="700" cy="240" r="18" class="continent"/><circle cx="850" cy="260" r="12" class="continent"/><path d="M200 120 Q250 100 300 120 Q350 110 400 130"/><path d="M600 300 Q650 280 700 300 Q750 290 800 310"/></g></svg>');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.25;
+    z-index: 0;
+    animation: worldPulse 4s ease-in-out infinite;
+}
+
+@keyframes worldPulse {
+    0%, 100% { opacity: 0.25; }
+    50% { opacity: 0.35; }
+}
+
+.clock-display > * {
+    position: relative;
+    z-index: 1;
 }
 
 .clock-face {
