@@ -1975,6 +1975,43 @@
                                 <div class="clock-number" id="death-counter">0</div>
                                 <div class="clock-label">Deaths This Minute</div>
                             </div>
+                            
+                            <!-- Real Analog Clock -->
+                            <div class="analog-clock-container">
+                                <div class="analog-clock" id="analog-clock">
+                                    <div class="clock-numbers">
+                                        <div class="number" style="--i:1;"><span>1</span></div>
+                                        <div class="number" style="--i:2;"><span>2</span></div>
+                                        <div class="number" style="--i:3;"><span>3</span></div>
+                                        <div class="number" style="--i:4;"><span>4</span></div>
+                                        <div class="number" style="--i:5;"><span>5</span></div>
+                                        <div class="number" style="--i:6;"><span>6</span></div>
+                                        <div class="number" style="--i:7;"><span>7</span></div>
+                                        <div class="number" style="--i:8;"><span>8</span></div>
+                                        <div class="number" style="--i:9;"><span>9</span></div>
+                                        <div class="number" style="--i:10;"><span>10</span></div>
+                                        <div class="number" style="--i:11;"><span>11</span></div>
+                                        <div class="number" style="--i:12;"><span>12</span></div>
+                                    </div>
+                                    <div class="clock-hands">
+                                        <div class="hand hour-hand" id="hour-hand"></div>
+                                        <div class="hand minute-hand" id="minute-hand"></div>
+                                        <div class="hand second-hand" id="second-hand"></div>
+                                        <div class="center-dot"></div>
+                                    </div>
+                                </div>
+                                <div class="timezone-info">
+                                    <div class="current-timezone" id="current-timezone">IST (India)</div>
+                                    <div class="timezone-selector">
+                                        <button class="timezone-btn active" onclick="changeTimezone('IST')">IST</button>
+                                        <button class="timezone-btn" onclick="changeTimezone('UTC')">UTC</button>
+                                        <button class="timezone-btn" onclick="changeTimezone('EST')">EST</button>
+                                        <button class="timezone-btn" onclick="changeTimezone('PST')">PST</button>
+                                        <button class="timezone-btn" onclick="changeTimezone('JST')">JST</button>
+                                        <button class="timezone-btn" onclick="changeTimezone('GMT')">GMT</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Death Categories -->

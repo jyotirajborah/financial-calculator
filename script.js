@@ -8555,6 +8555,9 @@ const initDeathClock = () => {
     
     renderDeathClockUI();
     loadDeathClockInsights();
+    
+    // Initialize analog clock
+    initAnalogClock();
 };
 
 // Render Death Clock UI
@@ -8627,6 +8630,7 @@ const startDeathClock = () => {
 // Stop Death Clock
 const stopDeathClock = () => {
     deathClockState.isRunning = false;
+    stopAnalogClock();
 };
 
 // Reset Death Clock
@@ -8724,4 +8728,82 @@ const loadDeathClockInsights = () => {
             </ul>
         </div>
     `;
+};
+
+// ============================================
+// ANALOG CLOCK - Real-time timezone clock
+// ============================================
+
+let currentTimezone = 'IST';
+let analogClockInterval;
+
+const timezones = {
+    'IST': { offset: 5.5, name: 'IST (India)' },
+    'UTC': { offset: 0, name: 'UTC (Universal)' },
+    'EST': { offset: -5, name: 'EST (New York)' },
+    'PST': { offset: -8, name: 'PST (Los Angeles)' },
+    'JST': { offset: 9, name: 'JST (Tokyo)' },
+    'GMT': { offset: 0, name: 'GMT (London)' }
+};
+
+// Initialize analog clock
+const initAnalogClock = () => {
+    updateAnalogClock();
+    analogClockInterval = setInterval(updateAnalogClock, 1000);
+};
+
+// Update analog clock hands
+const updateAnalogClock = () => {
+    const now = new Date();
+    const timezone = timezones[currentTimezone];
+    
+    // Calculate time in selected timezone
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const localTime = new Date(utc + (timezone.offset * 3600000));
+    
+    const hours = localTime.getHours() % 12;
+    const minutes = localTime.getMinutes();
+    const seconds = localTime.getSeconds();
+    
+    // Calculate angles (360 degrees / 60 = 6 degrees per unit)
+    const hourAngle = (hours * 30) + (minutes * 0.5); // 30 degrees per hour + minute adjustment
+    const minuteAngle = minutes * 6; // 6 degrees per minute
+    const secondAngle = seconds * 6; // 6 degrees per second
+    
+    // Apply rotations
+    const hourHand = document.getElementById('hour-hand');
+    const minuteHand = document.getElementById('minute-hand');
+    const secondHand = document.getElementById('second-hand');
+    
+    if (hourHand) hourHand.style.transform = `rotate(${hourAngle}deg)`;
+    if (minuteHand) minuteHand.style.transform = `rotate(${minuteAngle}deg)`;
+    if (secondHand) secondHand.style.transform = `rotate(${secondAngle}deg)`;
+};
+
+// Change timezone
+const changeTimezone = (newTimezone) => {
+    currentTimezone = newTimezone;
+    
+    // Update timezone display
+    const timezoneDisplay = document.getElementById('current-timezone');
+    if (timezoneDisplay) {
+        timezoneDisplay.textContent = timezones[newTimezone].name;
+    }
+    
+    // Update active button
+    document.querySelectorAll('.timezone-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    // Update clock immediately
+    updateAnalogClock();
+};
+
+// Stop analog clock
+const stopAnalogClock = () => {
+    if (analogClockInterval) {
+        clearInterval(analogClockInterval);
+        analogClockInterval = null;
+    }
 };
