@@ -7109,16 +7109,17 @@ const initWealthTransferData = () => {
     fetchWealthTransferData();
 };
 
-// --- Monopoly Game Functions ---
+// --- Monopoly Game Functions (Single Player - Real World Simulation) ---
+// NO COMPUTER PLAYER - This is a pure financial simulation showing real-world consequences
 let gameState = {
     playerCash: 2000,
     playerDebt: 0,
     playerProperties: {},
-    computerCash: 2000,
-    computerDebt: 0,
-    computerProperties: {},
     turn: 0,
-    gameLog: []
+    gameLog: [],
+    totalIncome: 0,
+    totalExpenses: 0,
+    netWorth: 2000
 };
 
 const properties = [
@@ -7149,16 +7150,20 @@ const initMonopolyGame = () => {
         playerCash: 2000,
         playerDebt: 0,
         playerProperties: {},
-        computerCash: 2000,
-        computerDebt: 0,
-        computerProperties: {},
         turn: 0,
-        gameLog: ['Game started! You have $2,000. Buy properties and build houses/hotels.']
+        gameLog: [
+            '🎮 Game started! You have $2,000.',
+            '📊 Buy properties and upgrade them (green houses → red hotels).',
+            '💰 Each turn: collect rental income, pay debt interest & maintenance.',
+            '⚠️ Watch out for debt spirals and market crashes!'
+        ],
+        totalIncome: 0,
+        totalExpenses: 0,
+        netWorth: 2000
     };
     
     properties.forEach(prop => {
         gameState.playerProperties[prop.id] = { level: 0, owner: null };
-        gameState.computerProperties[prop.id] = { level: 0, owner: null };
     });
     
     renderGameBoard();
@@ -7195,24 +7200,21 @@ const renderProperties = () => {
     grid.innerHTML = properties.map(prop => {
         const propState = gameState.playerProperties[prop.id];
         const isOwned = propState.owner !== null;
-        const owner = propState.owner === 'player' ? 'You' : (propState.owner === 'computer' ? 'Computer' : null);
         
         return `
             <div class="property-card ${isOwned ? 'owned' : ''}" onclick="buyProperty(${prop.id})">
                 <div class="property-name">${prop.name}</div>
                 <div class="property-price">Price: $${prop.price}</div>
-                <div class="property-income">Income: $${prop.baseIncome}</div>
+                <div class="property-income">Income: $${prop.baseIncome}/turn</div>
                 ${isOwned ? `
                     <div class="property-level">
-                        Owner: ${owner} | Level: ${propState.level}
+                        Level: ${propState.level} ${propState.level >= 5 ? '🏨' : '🏠'.repeat(propState.level)}
                     </div>
-                    ${propState.owner === 'player' ? `
-                        <div class="property-actions">
-                            <button class="btn-small" onclick="upgradeProperty(${prop.id})" ${gameState.playerCash < 50 ? 'disabled' : ''}>Upgrade ($50)</button>
-                        </div>
-                    ` : ''}
+                    <div class="property-actions">
+                        <button class="btn-small" onclick="upgradeProperty(${prop.id}); event.stopPropagation();" ${gameState.playerCash < 50 ? 'disabled' : ''}>Upgrade ($50)</button>
+                    </div>
                 ` : `
-                    <button class="btn-small" onclick="buyProperty(${prop.id})" ${gameState.playerCash < prop.price ? 'disabled' : ''}>Buy</button>
+                    <button class="btn-small" onclick="buyProperty(${prop.id}); event.stopPropagation();" ${gameState.playerCash < prop.price && gameState.playerDebt > 500 ? 'disabled' : ''}>Buy</button>
                 `}
             </div>
         `;
@@ -7231,18 +7233,19 @@ const renderYourProperties = () => {
     container.innerHTML = yourProps.map(prop => {
         const level = gameState.playerProperties[prop.id].level;
         const income = prop.baseIncome * (1 + level * 0.5);
+        const maintenance = (prop.price + level * 50) * 0.01;
         
         return `
             <div class="property-card owned">
                 <div class="property-name">${prop.name}</div>
                 <div class="property-price">Paid: $${prop.price}</div>
                 <div class="property-income">Income: $${income.toFixed(0)}/turn</div>
+                <div class="property-maintenance">Maintenance: $${maintenance.toFixed(0)}/turn</div>
                 <div class="property-level">
-                    ${Array(level).fill(0).map(() => '<span class="house-icon"></span>').join('')}
-                    ${level >= 5 ? '<span class="hotel-icon"></span>' : ''}
+                    Level: ${level} ${level >= 5 ? '🏨' : '🏠'.repeat(level)}
                 </div>
                 <div class="property-actions">
-                    <button class="btn-small" onclick="upgradeProperty(${prop.id})" ${gameState.playerCash < 50 ? 'disabled' : ''}>Upgrade</button>
+                    <button class="btn-small" onclick="upgradeProperty(${prop.id})" ${gameState.playerCash < 50 ? 'disabled' : ''}>Upgrade ($50)</button>
                 </div>
             </div>
         `;
@@ -7254,19 +7257,21 @@ const buyProperty = (propId) => {
     const propState = gameState.playerProperties[propId];
     
     if (propState.owner !== null) {
-        addGameLog(`${prop.name} is already owned!`);
+        addGameLog(`❌ ${prop.name} is already owned!`);
         return;
     }
     
-    if (gameState.playerCash < prop.price) {
-        // Use debt to buy
+    if (gameState.playerCash >= prop.price) {
+        gameState.playerCash -= prop.price;
+        addGameLog(`✅ Bought ${prop.name} for $${prop.price}`);
+    } else if (gameState.playerDebt < 500) {
         const needed = prop.price - gameState.playerCash;
         gameState.playerDebt += needed;
         gameState.playerCash = 0;
-        addGameLog(`Bought ${prop.name} for $${prop.price} (took $${needed} debt)`);
+        addGameLog(`💳 Bought ${prop.name} for $${prop.price} (took $${needed} debt)`);
     } else {
-        gameState.playerCash -= prop.price;
-        addGameLog(`Bought ${prop.name} for $${prop.price}`);
+        addGameLog(`❌ Can't afford ${prop.name} - debt too high!`);
+        return;
     }
     
     propState.owner = 'player';
@@ -7278,35 +7283,38 @@ const upgradeProperty = (propId) => {
     const propState = gameState.playerProperties[propId];
     
     if (propState.owner !== 'player') {
-        addGameLog('You don\'t own this property!');
+        addGameLog('❌ You don\'t own this property!');
         return;
     }
     
     if (propState.level >= 5) {
-        addGameLog(`${prop.name} is already a hotel!`);
+        addGameLog(`🏨 ${prop.name} is already a hotel!`);
         return;
     }
     
     const upgradeCost = 50;
-    if (gameState.playerCash < upgradeCost) {
+    if (gameState.playerCash >= upgradeCost) {
+        gameState.playerCash -= upgradeCost;
+        propState.level++;
+        addGameLog(`🏗️ Upgraded ${prop.name} to level ${propState.level}`);
+    } else if (gameState.playerDebt < 500) {
         gameState.playerDebt += upgradeCost - gameState.playerCash;
         gameState.playerCash = 0;
-        addGameLog(`Upgraded ${prop.name} to level ${propState.level + 1} (took debt)`);
+        propState.level++;
+        addGameLog(`🏗️ Upgraded ${prop.name} to level ${propState.level} (took debt)`);
     } else {
-        gameState.playerCash -= upgradeCost;
-        addGameLog(`Upgraded ${prop.name} to level ${propState.level + 1}`);
+        addGameLog(`❌ Can't upgrade - not enough cash and debt too high!`);
+        return;
     }
     
-    propState.level++;
     renderGameBoard();
 };
 
 const nextTurn = () => {
     gameState.turn++;
+    let turnSummary = [];
 
-    // REAL WORLD MECHANICS
-
-    // 1. Player collects income
+    // 1. Collect rental income
     let playerIncome = 0;
     properties.forEach(prop => {
         if (gameState.playerProperties[prop.id].owner === 'player') {
@@ -7315,13 +7323,15 @@ const nextTurn = () => {
         }
     });
     gameState.playerCash += playerIncome;
-    addGameLog(`💰 Rental income: +$${playerIncome.toFixed(0)}`);
+    gameState.totalIncome += playerIncome;
+    if (playerIncome > 0) turnSummary.push(`💰 Income: +$${playerIncome.toFixed(0)}`);
 
     // 2. Pay debt interest (5% per turn = 60% annually)
-    const debtInterest = gameState.playerDebt * 0.05;
-    gameState.playerCash -= debtInterest;
-    if (debtInterest > 0) {
-        addGameLog(`💳 Debt interest: -$${debtInterest.toFixed(0)}`);
+    if (gameState.playerDebt > 0) {
+        const debtInterest = gameState.playerDebt * 0.05;
+        gameState.playerCash -= debtInterest;
+        gameState.totalExpenses += debtInterest;
+        turnSummary.push(`💳 Debt interest: -$${debtInterest.toFixed(0)}`);
     }
 
     // 3. Property maintenance costs (1% of property value per turn)
@@ -7333,9 +7343,10 @@ const nextTurn = () => {
             maintenanceCost += propValue * 0.01;
         }
     });
-    gameState.playerCash -= maintenanceCost;
     if (maintenanceCost > 0) {
-        addGameLog(`🔧 Maintenance: -$${maintenanceCost.toFixed(0)}`);
+        gameState.playerCash -= maintenanceCost;
+        gameState.totalExpenses += maintenanceCost;
+        turnSummary.push(`🔧 Maintenance: -$${maintenanceCost.toFixed(0)}`);
     }
 
     // 4. Market volatility - property values fluctuate
@@ -7350,9 +7361,9 @@ const nextTurn = () => {
         }
     });
     if (volatilityImpact > 0) {
-        addGameLog(`📈 Market boom: +$${volatilityImpact.toFixed(0)}`);
+        turnSummary.push(`📈 Market boom: +$${volatilityImpact.toFixed(0)}`);
     } else if (volatilityImpact < 0) {
-        addGameLog(`📉 Market crash: -$${Math.abs(volatilityImpact).toFixed(0)}`);
+        turnSummary.push(`📉 Market crash: -$${Math.abs(volatilityImpact).toFixed(0)}`);
     }
 
     // 5. Bankruptcy check
@@ -7360,67 +7371,48 @@ const nextTurn = () => {
         const deficit = Math.abs(gameState.playerCash);
         gameState.playerDebt += deficit;
         gameState.playerCash = 0;
-        addGameLog(`⚠️ BANKRUPTCY! Debt increased to $${gameState.playerDebt.toFixed(0)}`);
+        turnSummary.push(`⚠️ BANKRUPTCY! Debt increased to $${gameState.playerDebt.toFixed(0)}`);
     }
 
     // 6. Debt spiral warning
     if (gameState.playerDebt > gameState.playerCash * 2 && gameState.playerDebt > 0) {
-        addGameLog(`🚨 DANGER: Debt is ${(gameState.playerDebt / (gameState.playerCash || 1)).toFixed(1)}x your cash!`);
+        const ratio = (gameState.playerDebt / (gameState.playerCash || 1)).toFixed(1);
+        turnSummary.push(`🚨 DANGER: Debt is ${ratio}x your cash!`);
     }
 
-    // 7. Computer plays
-    computerTurn();
+    // 7. Win conditions
+    if (gameState.turn === 10) {
+        turnSummary.push(`🏆 Milestone: 10 turns completed!`);
+    }
+    if (gameState.turn === 25) {
+        turnSummary.push(`🏆 Milestone: 25 turns! You're building an empire!`);
+    }
+    if (gameState.netWorth > 10000 && gameState.turn > 1) {
+        turnSummary.push(`🌟 ACHIEVEMENT: Net worth exceeded $10,000!`);
+    }
+    if (gameState.netWorth > 50000) {
+        turnSummary.push(`👑 ACHIEVEMENT: Net worth exceeded $50,000! You're a real estate mogul!`);
+    }
 
-    // 8. Check win/lose conditions
-    checkGameStatus();
+    // Add turn summary to log
+    addGameLog(`--- Turn ${gameState.turn} ---`);
+    turnSummary.forEach(msg => addGameLog(msg));
 
     renderGameBoard();
 };
 
-const computerTurn = () => {
-    // Computer collects income
-    let computerIncome = 0;
-    properties.forEach(prop => {
-        if (gameState.computerProperties[prop.id].owner === 'computer') {
-            const level = gameState.computerProperties[prop.id].level;
-            computerIncome += prop.baseIncome * (1 + level * 0.5);
-        }
-    });
-    gameState.computerCash += computerIncome;
-    
-    // Computer tries to buy properties
-    const availableProps = properties.filter(p => gameState.playerProperties[p.id].owner === null);
-    if (availableProps.length > 0 && gameState.computerCash > 100) {
-        const prop = availableProps[Math.floor(Math.random() * availableProps.length)];
-        if (gameState.computerCash >= prop.price) {
-            gameState.computerCash -= prop.price;
-            gameState.computerProperties[prop.id].owner = 'computer';
-            addGameLog(`Computer bought ${prop.name}`);
-        }
-    }
-    
-    // Computer upgrades properties
-    const computerProps = properties.filter(p => gameState.computerProperties[p.id].owner === 'computer');
-    computerProps.forEach(prop => {
-        if (gameState.computerProperties[prop.id].level < 5 && gameState.computerCash > 100) {
-            if (Math.random() > 0.7) {
-                gameState.computerCash -= 50;
-                gameState.computerProperties[prop.id].level++;
-                addGameLog(`Computer upgraded ${prop.name}`);
-            }
-        }
-    });
-};
+;
 
 const addGameLog = (message) => {
     gameState.gameLog.push(message);
-    if (gameState.gameLog.length > 20) {
+    if (gameState.gameLog.length > 25) {
         gameState.gameLog.shift();
     }
 };
 
 const updateGameLog = () => {
     const logContainer = document.getElementById('game-log');
+    if (!logContainer) return;
     logContainer.innerHTML = gameState.gameLog.map(entry => `<p class="log-entry">${entry}</p>`).join('');
     logContainer.scrollTop = logContainer.scrollHeight;
 };
@@ -8516,33 +8508,4 @@ window.saveCalculation = async (type, e) => {
     return result;
 };
 
-const checkGameStatus = () => {
-    const playerNetWorth = gameState.playerCash - gameState.playerDebt + calculatePropertyValue('player');
-    const computerNetWorth = gameState.computerCash - gameState.computerDebt + calculatePropertyValue('computer');
-    
-    // Player bankruptcy
-    if (playerNetWorth < -1000) {
-        addGameLog(`💀 GAME OVER! You're bankrupt with -$${Math.abs(playerNetWorth).toFixed(0)} net worth`);
-        document.getElementById('next-turn-btn').disabled = true;
-    }
-    
-    // Computer bankruptcy
-    if (computerNetWorth < -1000) {
-        addGameLog(`🎉 YOU WIN! Computer is bankrupt with -$${Math.abs(computerNetWorth).toFixed(0)} net worth`);
-        document.getElementById('next-turn-btn').disabled = true;
-    }
-    
-    // Milestone achievements
-    if (gameState.turn === 10) {
-        addGameLog(`🏆 Milestone: 10 turns completed!`);
-    }
-    if (gameState.turn === 25) {
-        addGameLog(`🏆 Milestone: 25 turns completed! You're building an empire!`);
-    }
-    if (playerNetWorth > 10000) {
-        addGameLog(`🌟 ACHIEVEMENT: Net worth exceeded $10,000!`);
-    }
-    if (playerNetWorth > 50000) {
-        addGameLog(`👑 ACHIEVEMENT: Net worth exceeded $50,000! You're a real estate mogul!`);
-    }
-};
+;

@@ -408,6 +408,10 @@
                     <ion-icon name="game-controller"></ion-icon>
                     <span>Monopoly Game</span>
                 </button>
+                <button class="nav-item" data-target="death-clock">
+                    <ion-icon name="time"></ion-icon>
+                    <span>Death Clock</span>
+                </button>
                 <button class="nav-item" data-target="help-shortcuts">
                     <ion-icon name="help-circle"></ion-icon>
                     <span>Help & Shortcuts</span>
@@ -1950,6 +1954,58 @@
                                 <button class="btn-primary" id="next-turn-btn" onclick="nextTurn()">Next Turn (Computer Plays)</button>
                                 <button class="btn-secondary" id="reset-game-btn" onclick="resetGame()">Reset Game</button>
                             </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Death Clock View -->
+                <section class="calculator-view" id="death-clock">
+                    <div class="death-clock-container">
+                        <div class="clock-header">
+                            <div class="clock-title">
+                                <ion-icon name="time"></ion-icon>
+                                <h2>Global Death Clock</h2>
+                            </div>
+                            <p class="clock-subtitle">Real-time global mortality statistics - Every second counts</p>
+                        </div>
+
+                        <!-- Main Clock Display -->
+                        <div class="clock-display">
+                            <div class="clock-face">
+                                <div class="clock-number" id="death-counter">0</div>
+                                <div class="clock-label">Deaths This Minute</div>
+                            </div>
+                        </div>
+
+                        <!-- Death Categories -->
+                        <div class="death-categories">
+                            <h3>Deaths by Category (Per Minute)</h3>
+                            <div class="categories-grid" id="death-categories">
+                                <!-- Categories will be generated here -->
+                            </div>
+                        </div>
+
+                        <!-- Death Statistics -->
+                        <div class="death-stats">
+                            <h3>Global Mortality Statistics</h3>
+                            <div class="stats-grid" id="death-stats">
+                                <!-- Stats will be generated here -->
+                            </div>
+                        </div>
+
+                        <!-- Insights -->
+                        <div class="death-insights">
+                            <h3>What This Means</h3>
+                            <div class="insights-content" id="death-insights">
+                                <!-- Insights will be generated here -->
+                            </div>
+                        </div>
+
+                        <!-- Controls -->
+                        <div class="clock-controls">
+                            <button class="btn-primary" id="start-clock-btn" onclick="startDeathClock()">Start Clock</button>
+                            <button class="btn-secondary" id="stop-clock-btn" onclick="stopDeathClock()" disabled>Stop Clock</button>
+                            <button class="btn-secondary" onclick="resetDeathClock()">Reset</button>
                         </div>
                     </div>
                 </section>
