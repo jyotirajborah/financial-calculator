@@ -342,6 +342,11 @@ document.querySelectorAll('.nav-item').forEach(btn => {
             initGameTab();
         }
         
+        // Initialize death clock if target is death-clock
+        if (targetId === 'death-clock') {
+            initDeathClock();
+        }
+        
         // Initialize notes if target is my notes
         if (targetId === 'my-notes') {
             initNotesSection();
@@ -8509,3 +8514,220 @@ window.saveCalculation = async (type, e) => {
 };
 
 ;
+
+// ============================================
+// DEATH CLOCK - Global Mortality Statistics
+// ============================================
+
+// Global death clock state
+let deathClockState = {
+    isRunning: false,
+    totalDeathsThisMinute: 0,
+    deathsByCategory: {},
+    lastUpdateTime: Date.now(),
+    deathsPerSecond: 1.8, // Global average: ~108 deaths per minute
+    categoryData: {
+        'Heart Disease': { perMinute: 32, color: '#ef4444', icon: 'heart' },
+        'Cancer': { perMinute: 28, color: '#f97316', icon: 'alert-circle' },
+        'Respiratory': { perMinute: 18, color: '#06b6d4', icon: 'wind' },
+        'Stroke': { perMinute: 16, color: '#8b5cf6', icon: 'flash' },
+        'Accidents': { perMinute: 12, color: '#eab308', icon: 'warning' },
+        'Suicide': { perMinute: 8, color: '#6366f1', icon: 'sad' },
+        'Homicide': { perMinute: 6, color: '#dc2626', icon: 'alert' },
+        'Infectious Disease': { perMinute: 8, color: '#10b981', icon: 'bug' },
+        'Maternal/Child': { perMinute: 5, color: '#ec4899', icon: 'heart' },
+        'Other': { perMinute: 15, color: '#64748b', icon: 'help-circle' }
+    }
+};
+
+// Initialize Death Clock
+const initDeathClock = () => {
+    deathClockState.isRunning = false;
+    deathClockState.totalDeathsThisMinute = 0;
+    deathClockState.deathsByCategory = {};
+    
+    // Initialize category counters
+    Object.keys(deathClockState.categoryData).forEach(category => {
+        deathClockState.deathsByCategory[category] = 0;
+    });
+    
+    renderDeathClockUI();
+    loadDeathClockInsights();
+};
+
+// Render Death Clock UI
+const renderDeathClockUI = () => {
+    // Render death categories
+    const categoriesGrid = document.getElementById('death-categories');
+    if (categoriesGrid) {
+        categoriesGrid.innerHTML = Object.entries(deathClockState.categoryData).map(([category, data]) => `
+            <div class="category-card" style="border-left: 4px solid ${data.color}">
+                <div class="category-header">
+                    <ion-icon name="${data.icon}"></ion-icon>
+                    <h4>${category}</h4>
+                </div>
+                <div class="category-count" id="count-${category.replace(/\s+/g, '-')}">0</div>
+                <div class="category-rate">${data.perMinute} per minute</div>
+            </div>
+        `).join('');
+    }
+    
+    // Render death statistics
+    const statsGrid = document.getElementById('death-stats');
+    if (statsGrid) {
+        const totalPerMinute = Object.values(deathClockState.categoryData).reduce((sum, d) => sum + d.perMinute, 0);
+        const totalPerHour = totalPerMinute * 60;
+        const totalPerDay = totalPerHour * 24;
+        const totalPerYear = totalPerDay * 365;
+        
+        statsGrid.innerHTML = `
+            <div class="stat-card">
+                <div class="stat-value">${totalPerMinute}</div>
+                <div class="stat-label">Deaths per Minute</div>
+                <div class="stat-source">Global average (WHO, UN data)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${totalPerHour.toLocaleString()}</div>
+                <div class="stat-label">Deaths per Hour</div>
+                <div class="stat-source">~${(totalPerHour / 60).toFixed(0)} per second</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${totalPerDay.toLocaleString()}</div>
+                <div class="stat-label">Deaths per Day</div>
+                <div class="stat-source">Global daily mortality</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${(totalPerYear / 1000000).toFixed(1)}M</div>
+                <div class="stat-label">Deaths per Year</div>
+                <div class="stat-source">~${(totalPerYear / 1000000).toFixed(1)} million annually</div>
+            </div>
+        `;
+    }
+};
+
+// Start Death Clock
+const startDeathClock = () => {
+    if (deathClockState.isRunning) return;
+    
+    deathClockState.isRunning = true;
+    deathClockState.totalDeathsThisMinute = 0;
+    deathClockState.lastUpdateTime = Date.now();
+    
+    // Reset category counters
+    Object.keys(deathClockState.categoryData).forEach(category => {
+        deathClockState.deathsByCategory[category] = 0;
+    });
+    
+    // Update UI buttons
+    document.getElementById('start-clock-btn').disabled = true;
+    document.getElementById('stop-clock-btn').disabled = false;
+    
+    // Start the clock ticker
+    updateDeathCounter();
+};
+
+// Stop Death Clock
+const stopDeathClock = () => {
+    deathClockState.isRunning = false;
+    
+    // Update UI buttons
+    document.getElementById('start-clock-btn').disabled = false;
+    document.getElementById('stop-clock-btn').disabled = true;
+};
+
+// Reset Death Clock
+const resetDeathClock = () => {
+    stopDeathClock();
+    deathClockState.totalDeathsThisMinute = 0;
+    deathClockState.lastUpdateTime = Date.now();
+    
+    // Reset category counters
+    Object.keys(deathClockState.categoryData).forEach(category => {
+        deathClockState.deathsByCategory[category] = 0;
+    });
+    
+    // Update display
+    document.getElementById('death-counter').textContent = '0';
+    Object.keys(deathClockState.categoryData).forEach(category => {
+        const countEl = document.getElementById(`count-${category.replace(/\s+/g, '-')}`);
+        if (countEl) countEl.textContent = '0';
+    });
+};
+
+// Update Death Counter
+const updateDeathCounter = () => {
+    if (!deathClockState.isRunning) return;
+    
+    const now = Date.now();
+    const elapsedSeconds = (now - deathClockState.lastUpdateTime) / 1000;
+    
+    // Calculate deaths in elapsed time
+    const deathsInElapsed = elapsedSeconds * (deathClockState.deathsPerSecond);
+    deathClockState.totalDeathsThisMinute += deathsInElapsed;
+    deathClockState.lastUpdateTime = now;
+    
+    // Update total counter
+    document.getElementById('death-counter').textContent = Math.floor(deathClockState.totalDeathsThisMinute);
+    
+    // Update category counters proportionally
+    Object.entries(deathClockState.categoryData).forEach(([category, data]) => {
+        const categoryDeathsInElapsed = deathsInElapsed * (data.perMinute / 108); // 108 = total per minute
+        deathClockState.deathsByCategory[category] += categoryDeathsInElapsed;
+        
+        const countEl = document.getElementById(`count-${category.replace(/\s+/g, '-')}`);
+        if (countEl) {
+            countEl.textContent = Math.floor(deathClockState.deathsByCategory[category]);
+        }
+    });
+    
+    // Continue animation
+    requestAnimationFrame(updateDeathCounter);
+};
+
+// Load Death Clock Insights
+const loadDeathClockInsights = () => {
+    const insightsEl = document.getElementById('death-insights');
+    if (!insightsEl) return;
+    
+    insightsEl.innerHTML = `
+        <div class="insight-card">
+            <h4>Understanding Global Mortality</h4>
+            <p>Every minute, approximately 108 people die globally. This clock visualizes the scale of human mortality and the leading causes of death worldwide.</p>
+        </div>
+        
+        <div class="insight-card">
+            <h4>Leading Causes of Death</h4>
+            <ul>
+                <li><strong>Non-Communicable Diseases (71%):</strong> Heart disease, cancer, respiratory diseases, and stroke account for the majority of deaths globally.</li>
+                <li><strong>Communicable Diseases (17%):</strong> Infectious diseases, maternal and child health issues.</li>
+                <li><strong>Injuries (12%):</strong> Accidents, suicide, and homicide.</li>
+            </ul>
+        </div>
+        
+        <div class="insight-card">
+            <h4>Global Disparities</h4>
+            <p>Mortality rates vary dramatically by region and income level. Low-income countries have higher rates of infectious disease and maternal mortality, while high-income countries see more deaths from chronic diseases.</p>
+        </div>
+        
+        <div class="insight-card">
+            <h4>Data Sources</h4>
+            <ul>
+                <li>World Health Organization (WHO) - Global Health Observatory</li>
+                <li>United Nations - World Population Prospects</li>
+                <li>CDC - Global Health Statistics</li>
+                <li>UNODC - Global Study on Homicide</li>
+            </ul>
+        </div>
+        
+        <div class="insight-card">
+            <h4>What Can We Do?</h4>
+            <ul>
+                <li>Support public health initiatives and disease prevention programs</li>
+                <li>Advocate for healthcare access in underserved regions</li>
+                <li>Promote healthy lifestyles and disease awareness</li>
+                <li>Support mental health and suicide prevention efforts</li>
+                <li>Work toward reducing violence and accidents</li>
+            </ul>
+        </div>
+    `;
+};
