@@ -392,6 +392,10 @@
                     <ion-icon name="heart-dislike"></ion-icon>
                     <span>Global Poverty</span>
                 </button>
+                <button class="nav-item" data-target="global-crime">
+                    <ion-icon name="alert-circle"></ion-icon>
+                    <span>Global Crime</span>
+                </button>
                 <button class="nav-item" data-target="help-shortcuts">
                     <ion-icon name="help-circle"></ion-icon>
                     <span>Help & Shortcuts</span>
@@ -1802,6 +1806,28 @@
                             </div>
                         </div>
                         <div class="poverty-insights" id="poverty-insights" style="margin-top: 1.5rem;">
+                            <!-- Insights will be loaded here -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Global Crime View -->
+                <section class="calculator-view" id="global-crime">
+                    <div class="crime-container">
+                        <div class="crime-header">
+                            <div class="crime-title">
+                                <ion-icon name="alert-circle"></ion-icon>
+                                <h2>Global Crime Statistics</h2>
+                            </div>
+                            <p class="crime-subtitle">Understanding global violence and crime patterns - Real data from UNODC & World Bank</p>
+                        </div>
+                        <div class="crime-stats" id="crime-stats">
+                            <div class="stat-card loading">
+                                <div class="spinner"></div>
+                                <p>Loading real-time crime data...</p>
+                            </div>
+                        </div>
+                        <div class="crime-insights" id="crime-insights" style="margin-top: 1.5rem;">
                             <!-- Insights will be loaded here -->
                         </div>
                     </div>
