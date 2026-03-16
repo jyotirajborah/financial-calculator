@@ -6926,7 +6926,7 @@ const fetchWealthTransferData = async () => {
                 <div class="stat-label">Wealth Concentration</div>
                 <div class="stat-value">70%</div>
                 <div class="stat-description">Of wealth is inherited, not earned</div>
-                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 Source: World Inequality Database & IMF Studies
                 </div>
             </div>
@@ -6942,7 +6942,7 @@ const fetchWealthTransferData = async () => {
                 <div class="stat-label">Trust Funds</div>
                 <div class="stat-value">$7T+</div>
                 <div class="stat-description">Held in trusts to avoid taxes</div>
-                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-wrap: break-word; overflow-wrap: break-word;">
                     📊 Source: Federal Reserve & Trust Industry Reports
                 </div>
             </div>
