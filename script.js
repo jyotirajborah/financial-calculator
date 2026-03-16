@@ -1,4 +1,4 @@
-// VERSION: 2.0.0 - Monopoly Game Redesign - Realistic Survival Mode
+// VERSION: 2.0.1 - Fixed addGameLog function order
 // Last Updated: 2024-03-16
 
 // [DEPRECATED] PDF export functions removed - use Excel export only
@@ -341,6 +341,7 @@ document.querySelectorAll('.nav-item').forEach(btn => {
         
         // Initialize monopoly game if target is monopoly-game
         if (targetId === 'monopoly-game') {
+            console.log('🎲 Monopoly game tab clicked!');
             initGameTab();
         }
         
@@ -7144,8 +7145,27 @@ const properties = [
     { id: 8, name: 'Large House', price: 1800, rent: 250, maintenance: 100, riskLevel: 'high', condition: 100 }
 ];
 
+const addGameLog = (message) => {
+    if (!gameState.gameLog) gameState.gameLog = [];
+    gameState.gameLog.push(message);
+    if (gameState.gameLog.length > 30) {
+        gameState.gameLog.shift();
+    }
+};
+
+const updateGameLog = () => {
+    const logContainer = document.getElementById('game-log');
+    if (!logContainer) return;
+    if (!gameState.gameLog) gameState.gameLog = [];
+    logContainer.innerHTML = gameState.gameLog.map(entry => `<div class="log-entry">${entry}</div>`).join('');
+    logContainer.scrollTop = logContainer.scrollHeight;
+};
+
 
 const initMonopolyGame = () => {
+    console.log('🎮 Initializing Monopoly Game...');
+    console.log('Properties array:', properties);
+    
     gameState = {
         playerCash: 1000,
         playerDebt: 0,
@@ -7171,6 +7191,10 @@ const initMonopolyGame = () => {
     
     addGameLog('🎮 Welcome to Real Estate Empire: Survival Mode!');
     addGameLog('💡 Buy properties, collect rent, but watch out for market crashes!');
+    
+    console.log('Game initialized. State:', gameState);
+    console.log('Calling renderGameBoard...');
+    
     renderGameBoard();
     updateGameLog();
 };
@@ -8959,9 +8983,14 @@ const resetGame = () => {
 };
 
 const initGameTab = () => {
+    console.log('🎯 initGameTab called');
+    console.log('Current gameState.month:', gameState.month);
+    
     if (!gameState.month) {
+        console.log('No game state, initializing new game...');
         initMonopolyGame();
     } else {
+        console.log('Game already initialized, just rendering...');
         renderGameBoard();
         updateGameLog();
     }
