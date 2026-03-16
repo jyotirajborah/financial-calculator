@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Function Test</title>
+</head>
+<body>
+    <h1>Testing Death Clock and Monopoly Functions</h1>
+    <div id="test-results"></div>
+    
+    <script src="script.js"></script>
+    <script>
+        // Test if Death Clock functions exist
+        const testResults = [];
+        
+        if (typeof initDeathClock === 'function') {
+            testResults.push('✅ initDeathClock function exists');
+        } else {
+            testResults.push('❌ initDeathClock function missing');
+        }
+        
+        if (typeof startDeathClock === 'function') {
+            testResults.push('✅ startDeathClock function exists');
+        } else {
+            testResults.push('❌ startDeathClock function missing');
+        }
+        
+        if (typeof deathClockState === 'object') {
+            testResults.push('✅ deathClockState object exists');
+        } else {
+            testResults.push('❌ deathClockState object missing');
+        }
+        
+        // Test if Monopoly improvements exist
+        if (typeof buyProperty === 'function') {
+            testResults.push('✅ buyProperty function exists');
+        } else {
+            testResults.push('❌ buyProperty function missing');
+        }
+        
+        if (typeof gameState === 'object' && gameState.totalIncome !== undefined) {
+            testResults.push('✅ Monopoly gameState has totalIncome (improved)');
+        } else {
+            testResults.push('❌ Monopoly gameState missing totalIncome');
+        }
+        
+        // Display results
+        document.getElementById('test-results').innerHTML = testResults.join('<br>');
+    </script>
+</body>
+</html>
