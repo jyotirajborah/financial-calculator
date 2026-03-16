@@ -1,4 +1,4 @@
-// VERSION: 2.0.1 - Fixed addGameLog function order
+// VERSION: 2.0.2 - Fixed buyProperty function
 // Last Updated: 2024-03-16
 
 // [DEPRECATED] PDF export functions removed - use Excel export only
@@ -7326,28 +7326,35 @@ const renderYourProperties = () => {
 const buyProperty = (propId) => {
     const prop = properties.find(p => p.id === propId);
     const propState = gameState.playerProperties[propId];
-    
-    if (propState.owner !== null) {
-        addGameLog(`❌ ${prop.name} is already owned!`);
+
+    if (propState.owned) {
+        addGameLog(`❌ You already own ${prop.name}!`);
+        updateGameLog();
         return;
     }
-    
-    if (gameState.playerCash >= prop.price) {
-        gameState.playerCash -= prop.price;
-        addGameLog(`✅ Bought ${prop.name} for $${prop.price}`);
-    } else if (gameState.playerDebt < 500) {
-        const needed = prop.price - gameState.playerCash;
+
+    const marketMultiplier = getMarketMultiplier();
+    const currentPrice = Math.round(prop.price * marketMultiplier);
+
+    if (gameState.playerCash >= currentPrice) {
+        gameState.playerCash -= currentPrice;
+        propState.owned = true;
+        addGameLog(`✅ Bought ${prop.name} for $${currentPrice}`);
+    } else if (gameState.playerDebt < 2000) {
+        const needed = currentPrice - gameState.playerCash;
         gameState.playerDebt += needed;
         gameState.playerCash = 0;
-        addGameLog(`💳 Bought ${prop.name} for $${prop.price} (took $${needed} debt)`);
+        propState.owned = true;
+        addGameLog(`💳 Bought ${prop.name} for $${currentPrice} (took $${needed} loan)`);
     } else {
-        addGameLog(`❌ Can't afford ${prop.name} - debt too high!`);
+        addGameLog(`❌ Can't afford ${prop.name} - debt limit reached!`);
+        updateGameLog();
         return;
     }
-    
-    propState.owner = 'player';
+
     renderGameBoard();
-};
+    updateGameLog();
+}
 
 const repairProperty = (propId) => {
     const prop = properties.find(p => p.id === propId);
