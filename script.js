@@ -315,6 +315,10 @@ document.querySelectorAll('.nav-item').forEach(btn => {
         // Initialize richest people if target is richest-people
         if (targetId === 'richest-people') {
             initRichestPeople();
+        }
+        
+        // Initialize global poverty if target is global-poverty
+        if (targetId === 'global-poverty') {
             initPovertyData();
         }
         

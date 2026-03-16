@@ -388,6 +388,10 @@
                     <ion-icon name="trophy"></ion-icon>
                     <span>Richest People</span>
                 </button>
+                <button class="nav-item" data-target="global-poverty">
+                    <ion-icon name="heart-dislike"></ion-icon>
+                    <span>Global Poverty</span>
+                </button>
                 <button class="nav-item" data-target="help-shortcuts">
                     <ion-icon name="help-circle"></ion-icon>
                     <span>Help & Shortcuts</span>
@@ -1778,25 +1782,27 @@
                         <div class="richest-grid" id="richest-grid">
                             <!-- Richest people will be dynamically loaded here -->
                         </div>
+                    </div>
+                </section>
 
-                        <!-- Global Poverty & Suffering Section -->
-                        <div class="poverty-section" style="margin-top: 3rem; padding-top: 2rem; border-top: 2px solid rgba(255,255,255,0.1);">
-                            <div class="poverty-header">
-                                <div class="poverty-title">
-                                    <ion-icon name="heart-dislike"></ion-icon>
-                                    <h3>Global Poverty & Suffering</h3>
-                                </div>
-                                <p class="poverty-subtitle">The human cost of wealth inequality - Real data from World Bank</p>
+                <!-- Global Poverty View -->
+                <section class="calculator-view" id="global-poverty">
+                    <div class="poverty-container">
+                        <div class="poverty-header">
+                            <div class="poverty-title">
+                                <ion-icon name="heart-dislike"></ion-icon>
+                                <h2>Global Poverty & Suffering</h2>
                             </div>
-                            <div class="poverty-stats" id="poverty-stats">
-                                <div class="stat-card loading">
-                                    <div class="spinner"></div>
-                                    <p>Loading real-time poverty data...</p>
-                                </div>
+                            <p class="poverty-subtitle">The human cost of wealth inequality - Real data from World Bank</p>
+                        </div>
+                        <div class="poverty-stats" id="poverty-stats">
+                            <div class="stat-card loading">
+                                <div class="spinner"></div>
+                                <p>Loading real-time poverty data...</p>
                             </div>
-                            <div class="poverty-insights" id="poverty-insights" style="margin-top: 1.5rem;">
-                                <!-- Insights will be loaded here -->
-                            </div>
+                        </div>
+                        <div class="poverty-insights" id="poverty-insights" style="margin-top: 1.5rem;">
+                            <!-- Insights will be loaded here -->
                         </div>
                     </div>
                 </section>
