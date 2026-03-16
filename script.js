@@ -332,6 +332,11 @@ document.querySelectorAll('.nav-item').forEach(btn => {
             initMediaData();
         }
         
+        // Initialize wealth transfer if target is wealth-transfer
+        if (targetId === 'wealth-transfer') {
+            initWealthTransferData();
+        }
+        
         // Initialize notes if target is my notes
         if (targetId === 'my-notes') {
             initNotesSection();
@@ -6893,6 +6898,210 @@ const fetchMediaData = async () => {
 // Initialize media data when media-narrative view is opened
 const initMediaData = () => {
     fetchMediaData();
+};
+
+// --- Wealth Transfer & Generational Wealth Functions ---
+const fetchWealthTransferData = async () => {
+    try {
+        const wealthStatsContainer = document.getElementById('wealth-stats');
+        const wealthInsightsContainer = document.getElementById('wealth-insights');
+        
+        if (!wealthStatsContainer) return;
+        
+        // Render wealth transfer statistics
+        wealthStatsContainer.innerHTML = `
+            <div class="stat-card">
+                <div class="stat-label">Wealth Concentration</div>
+                <div class="stat-value">70%</div>
+                <div class="stat-description">Of wealth is inherited, not earned</div>
+                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                    📊 Source: World Inequality Database & IMF Studies
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Estate Tax Avoidance</div>
+                <div class="stat-value">$32T</div>
+                <div class="stat-description">Hidden in offshore accounts globally</div>
+                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                    📊 Source: OECD & Tax Justice Network
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Trust Funds</div>
+                <div class="stat-value">$7T+</div>
+                <div class="stat-description">Held in trusts to avoid taxes</div>
+                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                    📊 Source: Federal Reserve & Trust Industry Reports
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Tax Rate Difference</div>
+                <div class="stat-value">15%</div>
+                <div class="stat-description">Billionaires pay less tax than workers</div>
+                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                    📊 Source: ProPublica Investigation & IRS Data
+                </div>
+            </div>
+        `;
+        
+        // Render insights
+        wealthInsightsContainer.innerHTML = `
+            <div class="insight-item">
+                <div class="insight-title">
+                    <ion-icon name="warning"></ion-icon>
+                    Legal Tax Avoidance Strategies
+                </div>
+                <div class="insight-text">
+                    <strong>How the Rich Avoid Taxes Legally:</strong>
+                    <ul style="margin: 0.5rem 0; padding-left: 1.5rem; color: var(--text-muted);">
+                        <li><strong>Trusts & Foundations:</strong> Irrevocable trusts, charitable trusts, dynasty trusts - transfer wealth while avoiding estate taxes</li>
+                        <li><strong>Stepped-Up Basis:</strong> When someone dies, heirs get a "stepped-up basis" - they inherit assets at current market value, avoiding capital gains taxes on appreciation</li>
+                        <li><strong>Gifting Strategies:</strong> Annual gift exclusions ($18,000/year in US) allow tax-free transfers; lifetime exemptions ($13.61M in US) defer taxes indefinitely</li>
+                        <li><strong>Holding Companies:</strong> Create corporate structures to defer taxes and hide ownership</li>
+                        <li><strong>Debt Financing:</strong> Borrow against assets instead of selling them - no capital gains tax, interest is tax-deductible</li>
+                        <li><strong>Opportunity Zones:</strong> Invest in designated areas to defer/reduce capital gains taxes</li>
+                        <li><strong>Charitable Donations:</strong> Donate appreciated assets to charity, get tax deduction, then donate to family foundation</li>
+                    </ul>
+                </div>
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                    📊 These strategies are legal but available only to the wealthy who can afford sophisticated tax lawyers
+                </div>
+            </div>
+            <div class="insight-item">
+                <div class="insight-title">
+                    <ion-icon name="warning"></ion-icon>
+                    Offshore & Hidden Wealth
+                </div>
+                <div class="insight-text">
+                    <strong>Hiding Money from Taxes & Authorities:</strong>
+                    <ul style="margin: 0.5rem 0; padding-left: 1.5rem; color: var(--text-muted);">
+                        <li><strong>Offshore Accounts:</strong> $32 trillion hidden in offshore accounts (Cayman Islands, Switzerland, Panama, etc.)</li>
+                        <li><strong>Shell Companies:</strong> Create companies in tax havens to hide ownership and avoid taxes</li>
+                        <li><strong>Transfer Pricing:</strong> Multinational corporations shift profits to low-tax countries through internal pricing</li>
+                        <li><strong>Cryptocurrency & NFTs:</strong> Emerging way to hide wealth and avoid tracking</li>
+                        <li><strong>Art & Collectibles:</strong> Buy expensive art, use it as collateral for loans, avoid capital gains</li>
+                        <li><strong>Private Banking:</strong> Wealthy use private banks that help structure complex tax schemes</li>
+                        <li><strong>Dual Citizenship:</strong> Hold citizenship in multiple countries to exploit tax loopholes</li>
+                    </ul>
+                </div>
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                    📊 Panama Papers, Paradise Papers, Pandora Papers exposed these schemes - but enforcement is weak
+                </div>
+            </div>
+            <div class="insight-item">
+                <div class="insight-title">
+                    <ion-icon name="warning"></ion-icon>
+                    Corporate Control & Voting Structures
+                </div>
+                <div class="insight-text">
+                    <strong>Maintaining Control While Minimizing Ownership:</strong>
+                    <ul style="margin: 0.5rem 0; padding-left: 1.5rem; color: var(--text-muted);">
+                        <li><strong>Dual-Class Shares:</strong> Create shares with different voting rights - family keeps voting control with minimal ownership (e.g., Berkshire Hathaway, Facebook)</li>
+                        <li><strong>Pyramidal Structures:</strong> Layer companies to control vast empires with small ownership stake</li>
+                        <li><strong>Board Seats:</strong> Family members sit on boards, control decisions without owning majority</li>
+                        <li><strong>Voting Agreements:</strong> Shareholders agree to vote as a bloc, giving family control</li>
+                        <li><strong>Founder Shares:</strong> Founders retain special shares with extra voting power</li>
+                    </ul>
+                </div>
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                    📊 Examples: Walton family (Walmart), Mars family (Mars Inc.), Thomson family (Thomson Reuters)
+                </div>
+            </div>
+            <div class="insight-item">
+                <div class="insight-title">
+                    <ion-icon name="warning"></ion-icon>
+                    Political & Regulatory Capture
+                </div>
+                <div class="insight-text">
+                    <strong>Using Power to Change Rules in Their Favor:</strong>
+                    <ul style="margin: 0.5rem 0; padding-left: 1.5rem; color: var(--text-muted);">
+                        <li><strong>Lobbying:</strong> Spend billions lobbying to weaken tax laws, environmental regulations, labor laws</li>
+                        <li><strong>Campaign Donations:</strong> Fund politicians who support their interests</li>
+                        <li><strong>Revolving Door:</strong> Hire former regulators who know how to work the system</li>
+                        <li><strong>Think Tanks:</strong> Fund research institutions that promote policies benefiting the wealthy</li>
+                        <li><strong>Media Ownership:</strong> Control narratives through owned media outlets</li>
+                        <li><strong>Regulatory Capture:</strong> Industry insiders become regulators, then return to industry</li>
+                        <li><strong>Tax Code Loopholes:</strong> Lobby for specific tax breaks written into law for their industries</li>
+                    </ul>
+                </div>
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                    📊 US billionaires spend $5+ billion annually on lobbying and political donations
+                </div>
+            </div>
+            <div class="insight-item">
+                <div class="insight-title">
+                    <ion-icon name="warning"></ion-icon>
+                    Controversial & Questionable Methods
+                </div>
+                <div class="insight-text">
+                    <strong>Gray Area & Unethical Practices:</strong>
+                    <ul style="margin: 0.5rem 0; padding-left: 1.5rem; color: var(--text-muted);">
+                        <li><strong>Insider Trading:</strong> Use non-public information to trade stocks (illegal but hard to prove)</li>
+                        <li><strong>Market Manipulation:</strong> Use wealth to influence markets in their favor</li>
+                        <li><strong>Predatory Lending:</strong> Exploit poor people through high-interest loans and debt traps</li>
+                        <li><strong>Union Busting:</strong> Prevent workers from organizing to keep wages low</li>
+                        <li><strong>Environmental Destruction:</strong> Externalize costs by polluting (costs paid by society, profits kept by company)</li>
+                        <li><strong>Wage Suppression:</strong> Keep wages artificially low while extracting maximum profit</li>
+                        <li><strong>Monopolistic Practices:</strong> Use market dominance to crush competitors and raise prices</li>
+                        <li><strong>Corruption & Bribery:</strong> Pay officials to look the other way or change regulations</li>
+                    </ul>
+                </div>
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                    📊 Often prosecuted but penalties are small compared to profits - cost of doing business
+                </div>
+            </div>
+            <div class="insight-item">
+                <div class="insight-title">
+                    <ion-icon name="warning"></ion-icon>
+                    The Stepped-Up Basis Loophole
+                </div>
+                <div class="insight-text">
+                    <strong>The Most Powerful Wealth Transfer Tool:</strong> When someone dies, their heirs inherit assets at the current market value ("stepped-up basis"), not the original purchase price. This means:
+                    <ul style="margin: 0.5rem 0; padding-left: 1.5rem; color: var(--text-muted);">
+                        <li>Billionaire buys stock for $1M in 1980</li>
+                        <li>Stock worth $1B in 2024</li>
+                        <li>Billionaire dies, heir inherits at $1B value</li>
+                        <li>Heir sells immediately - NO capital gains tax on $999M profit</li>
+                        <li>This costs US government $40+ billion annually in lost tax revenue</li>
+                    </ul>
+                </div>
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                    📊 This single loophole allows trillions in wealth to pass tax-free across generations
+                </div>
+            </div>
+            <div class="insight-item">
+                <div class="insight-title">
+                    <ion-icon name="lightbulb"></ion-icon>
+                    How to Fight Back - Policy Solutions
+                </div>
+                <div class="insight-text">
+                    <strong>Proposed Reforms to Reduce Wealth Inequality:</strong>
+                    <ul style="margin: 0.5rem 0; padding-left: 1.5rem; color: var(--text-muted);">
+                        <li><strong>Eliminate Stepped-Up Basis:</strong> Tax capital gains at death like any other sale</li>
+                        <li><strong>Wealth Tax:</strong> Annual tax on net worth above certain threshold (tried in Europe)</li>
+                        <li><strong>Estate Tax Reform:</strong> Lower exemptions, increase rates, close loopholes</li>
+                        <li><strong>Offshore Enforcement:</strong> Crack down on tax havens, enforce reporting requirements</li>
+                        <li><strong>Financial Transparency:</strong> Require disclosure of beneficial ownership of companies</li>
+                        <li><strong>Capital Gains Tax:</strong> Tax investment income same as wages</li>
+                        <li><strong>Minimum Tax Rate:</strong> Ensure wealthy pay at least minimum percentage in taxes</li>
+                        <li><strong>Strengthen IRS:</strong> Fund IRS to audit wealthy individuals and corporations</li>
+                        <li><strong>Limit Lobbying:</strong> Reduce corporate influence on tax policy</li>
+                    </ul>
+                </div>
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                    📊 These reforms face fierce opposition from the wealthy who benefit from current system
+                </div>
+            </div>
+        `;
+        
+    } catch (error) {
+        console.error('Error loading wealth transfer data:', error);
+    }
+};
+
+// Initialize wealth transfer data when wealth-transfer view is opened
+const initWealthTransferData = () => {
+    fetchWealthTransferData();
 };
 
 // --- Finance News Functions ---

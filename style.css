@@ -6779,3 +6779,55 @@ body, html {
     padding: 1.5rem;
     border-left: 4px solid #8b5cf6;
 }
+
+
+/* Wealth Transfer Container */
+.wealth-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.wealth-container .wealth-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.wealth-container .wealth-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.wealth-container .wealth-title ion-icon {
+    font-size: 2rem;
+    color: #fbbf24;
+}
+
+.wealth-container .wealth-title h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0;
+}
+
+.wealth-container .wealth-subtitle {
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin: 0.5rem 0 0 0;
+}
+
+.wealth-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.wealth-insights {
+    background: rgba(30, 41, 59, 0.3);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border-left: 4px solid #fbbf24;
+}
