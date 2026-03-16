@@ -327,6 +327,11 @@ document.querySelectorAll('.nav-item').forEach(btn => {
             initCrimeData();
         }
         
+        // Initialize media narrative if target is media-narrative
+        if (targetId === 'media-narrative') {
+            initMediaData();
+        }
+        
         // Initialize notes if target is my notes
         if (targetId === 'my-notes') {
             initNotesSection();
@@ -6738,6 +6743,156 @@ const initCrimeData = () => {
     fetchCrimeData();
     // Refresh every 30 minutes
     setInterval(fetchCrimeData, 1800000);
+};
+
+// --- Media & Narrative Control Functions ---
+const fetchMediaData = async () => {
+    try {
+        const mediaStatsContainer = document.getElementById('media-stats');
+        const mediaInsightsContainer = document.getElementById('media-insights');
+        
+        if (!mediaStatsContainer) return;
+        
+        // Render media statistics
+        mediaStatsContainer.innerHTML = `
+            <div class="stat-card">
+                <div class="stat-label">Global Media Ownership</div>
+                <div class="stat-value">6</div>
+                <div class="stat-description">Corporations control 90% of US media</div>
+                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                    📊 Source: FCC Media Ownership Reports & Pew Research
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Misinformation Spread</div>
+                <div class="stat-value">4x</div>
+                <div class="stat-description">False news spreads 4x faster than truth</div>
+                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                    📊 Source: MIT Media Lab Study on Misinformation
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Social Media Users</div>
+                <div class="stat-value">5.3B</div>
+                <div class="stat-description">Exposed to algorithmic content curation</div>
+                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                    📊 Source: Statista Global Social Media Users 2024
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Fact-Check Needed</div>
+                <div class="stat-value">62%</div>
+                <div class="stat-description">Of news requires fact-checking verification</div>
+                <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                    📊 Source: Reuters Institute Digital News Report 2024
+                </div>
+            </div>
+        `;
+        
+        // Render insights
+        mediaInsightsContainer.innerHTML = `
+            <div class="insight-item">
+                <div class="insight-title">
+                    <ion-icon name="warning"></ion-icon>
+                    Media Ownership Concentration
+                </div>
+                <div class="insight-text">
+                    <strong>The Reality:</strong> Just 6 corporations control 90% of US media. This concentration of power means a handful of billionaires decide what billions of people see, hear, and believe. When media is owned by the wealthy, stories about inequality, corporate crimes, and systemic injustice are often buried or downplayed. The narrative is shaped to protect elite interests.
+                </div>
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                    📊 Major Media Corporations: Comcast, Disney, Warner Bros Discovery, Paramount, Fox, Sony
+                </div>
+            </div>
+            <div class="insight-item">
+                <div class="insight-title">
+                    <ion-icon name="warning"></ion-icon>
+                    Propaganda & Narrative Control
+                </div>
+                <div class="insight-text">
+                    <strong>How It Works:</strong> Governments and corporations use media to shape public opinion. Repeated narratives become "truth" even without evidence. Wars are justified through media propaganda. Corporate crimes are reframed as "business decisions." Poverty is blamed on individuals rather than systems. The wealthy control the narrative, and those without media access cannot counter it.
+                </div>
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                    📊 Techniques: Agenda-setting, Framing, Omission, Sensationalism, False Balance
+                </div>
+            </div>
+            <div class="insight-item">
+                <div class="insight-title">
+                    <ion-icon name="warning"></ion-icon>
+                    Misinformation & Disinformation
+                </div>
+                <div class="insight-text">
+                    <strong>The Problem:</strong> False information spreads 4x faster than truth on social media. Misinformation (unintentional falsehoods) and disinformation (deliberate lies) are weaponized to manipulate public opinion. Algorithms amplify sensational content, not accurate content. Bots and coordinated campaigns spread false narratives. The average person cannot distinguish truth from lies in the information overload.
+                </div>
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                    📊 MIT Study: False news reaches 1,500 people 6x faster than truth
+                </div>
+            </div>
+            <div class="insight-item">
+                <div class="insight-title">
+                    <ion-icon name="warning"></ion-icon>
+                    Algorithmic Manipulation
+                </div>
+                <div class="insight-text">
+                    <strong>The Trap:</strong> Social media algorithms don't show you diverse viewpoints - they show you what keeps you engaged. This creates "filter bubbles" where you only see content that confirms your beliefs. Algorithms are designed to maximize engagement, not truth. They amplify divisive, emotional content. 5.3 billion people are trapped in algorithmic echo chambers, unaware they're being manipulated.
+                </div>
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                    📊 Facebook, TikTok, YouTube, Instagram - all use engagement-maximizing algorithms
+                </div>
+            </div>
+            <div class="insight-item">
+                <div class="insight-title">
+                    <ion-icon name="lightbulb"></ion-icon>
+                    How to Fight Back - Media Literacy
+                </div>
+                <div class="insight-text">
+                    <strong>Awareness & Action:</strong>
+                    <ul style="margin: 0.5rem 0; padding-left: 1.5rem; color: var(--text-muted);">
+                        <li><strong>Question Everything:</strong> Ask who owns the media? Who profits from this narrative? What's not being said?</li>
+                        <li><strong>Diversify Sources:</strong> Read from multiple outlets, including independent media and international sources</li>
+                        <li><strong>Check Facts:</strong> Use fact-checking sites (Snopes, FactCheck.org, PolitiFact) before sharing</li>
+                        <li><strong>Understand Bias:</strong> Every source has bias. Recognize it and account for it</li>
+                        <li><strong>Follow the Money:</strong> Who funds this media outlet? What are their financial interests?</li>
+                        <li><strong>Slow Down:</strong> Don't share immediately. Take time to verify before spreading information</li>
+                        <li><strong>Support Independent Media:</strong> Subscribe to independent journalists and outlets</li>
+                        <li><strong>Teach Others:</strong> Share media literacy skills with family and friends</li>
+                    </ul>
+                </div>
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                    📊 Resources: NewsGuard, Media Bias Chart, First Draft News, Poynter Institute
+                </div>
+            </div>
+            <div class="insight-item">
+                <div class="insight-title">
+                    <ion-icon name="lightbulb"></ion-icon>
+                    Collective Action - Building Resistance
+                </div>
+                <div class="insight-text">
+                    <strong>How People Are Fighting Back:</strong>
+                    <ul style="margin: 0.5rem 0; padding-left: 1.5rem; color: var(--text-muted);">
+                        <li><strong>Independent Media:</strong> Substack, Medium, YouTube channels, podcasts by independent journalists</li>
+                        <li><strong>Community Journalism:</strong> Local news organizations covering stories mainstream media ignores</li>
+                        <li><strong>Fact-Checking Networks:</strong> Global fact-checkers exposing misinformation in real-time</li>
+                        <li><strong>Media Literacy Programs:</strong> Schools and organizations teaching critical thinking about media</li>
+                        <li><strong>Open-Source Platforms:</strong> Mastodon, Bluesky, Lemmy - decentralized alternatives to corporate social media</li>
+                        <li><strong>Investigative Journalism:</strong> ProPublica, The Intercept, Bellingcat exposing hidden truths</li>
+                        <li><strong>Citizen Journalism:</strong> People documenting and sharing truth from the ground</li>
+                        <li><strong>Media Regulation Advocacy:</strong> Pushing for antitrust action against media monopolies</li>
+                    </ul>
+                </div>
+                <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
+                    📊 The Power of Awareness: When people understand manipulation, they become immune to it
+                </div>
+            </div>
+        `;
+        
+    } catch (error) {
+        console.error('Error loading media data:', error);
+    }
+};
+
+// Initialize media data when media-narrative view is opened
+const initMediaData = () => {
+    fetchMediaData();
 };
 
 // --- Finance News Functions ---
