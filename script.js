@@ -1,3 +1,5 @@
+// VERSION: 2.0.0 - Monopoly Game Redesign - Realistic Survival Mode
+// Last Updated: 2024-03-16
 
 // [DEPRECATED] PDF export functions removed - use Excel export only
 // The following functions are kept for backwards compatibility but are no longer used in the UI:
@@ -7224,6 +7226,14 @@ const getMarketMultiplier = () => {
 
 const renderProperties = () => {
     const grid = document.getElementById('properties-grid');
+    if (!grid) {
+        console.error('properties-grid element not found!');
+        return;
+    }
+    
+    console.log('Rendering properties:', properties.length);
+    console.log('Game state:', gameState);
+    
     grid.innerHTML = properties.map(prop => {
         const propState = gameState.playerProperties[prop.id];
         const isOwned = propState.owned;
