@@ -7226,22 +7226,24 @@ const renderProperties = () => {
     const grid = document.getElementById('properties-grid');
     grid.innerHTML = properties.map(prop => {
         const propState = gameState.playerProperties[prop.id];
-        const isOwned = propState.owner !== null;
+        const isOwned = propState.owned;
         
         return `
             <div class="property-card ${isOwned ? 'owned' : ''}" onclick="buyProperty(${prop.id})">
                 <div class="property-name">${prop.name}</div>
                 <div class="property-price">Price: $${prop.price}</div>
-                <div class="property-income">Income: $${prop.baseIncome}/turn</div>
+                <div class="property-income">📈 Rent: $${prop.rent}/mo</div>
+                <div class="property-maintenance">🔧 Maint: $${prop.maintenance}/mo</div>
+                <div class="property-risk">⚠️ Risk: ${prop.riskLevel}</div>
                 ${isOwned ? `
-                    <div class="property-level">
-                        Level: ${propState.level} ${propState.level >= 5 ? '🏨' : '🏠'.repeat(propState.level)}
+                    <div class="property-condition" style="color: ${propState.condition > 70 ? '#10b981' : propState.condition > 40 ? '#f59e0b' : '#ef4444'};">
+                        🏠 Condition: ${propState.condition}%
                     </div>
-                    <div class="property-actions">
-                        <button class="btn-small" onclick="upgradeProperty(${prop.id}); event.stopPropagation();" ${gameState.playerCash < 50 ? 'disabled' : ''}>Upgrade ($50)</button>
-                    </div>
+                    ${propState.hasVacancy ? '<div style="color: #ef4444;">🚫 VACANT</div>' : ''}
                 ` : `
-                    <button class="btn-small" onclick="buyProperty(${prop.id}); event.stopPropagation();" ${gameState.playerCash < prop.price && gameState.playerDebt > 500 ? 'disabled' : ''}>Buy</button>
+                    <button class="btn-small" onclick="buyProperty(${prop.id})" ${gameState.playerCash < prop.price && gameState.playerDebt > 1000 ? 'disabled' : ''}>
+                        ${gameState.playerCash >= prop.price ? 'Buy' : 'Buy (Loan)'}
+                    </button>
                 `}
             </div>
         `;
@@ -7250,7 +7252,7 @@ const renderProperties = () => {
 
 const renderYourProperties = () => {
     const container = document.getElementById('your-properties');
-    const yourProps = properties.filter(p => gameState.playerProperties[p.id].owner === 'player');
+    const yourProps = properties.filter(p => gameState.playerProperties[p.id].owned);
     
     if (yourProps.length === 0) {
         container.innerHTML = '<p class="empty-state">No properties yet. Buy some to get started!</p>';
@@ -7258,21 +7260,29 @@ const renderYourProperties = () => {
     }
     
     container.innerHTML = yourProps.map(prop => {
-        const level = gameState.playerProperties[prop.id].level;
-        const income = prop.baseIncome * (1 + level * 0.5);
-        const maintenance = (prop.price + level * 50) * 0.01;
+        const propState = gameState.playerProperties[prop.id];
+        const netIncome = propState.hasVacancy ? -prop.maintenance : (prop.rent - prop.maintenance);
+        const marketMultiplier = getMarketMultiplier();
+        const currentValue = Math.round(prop.price * marketMultiplier * (propState.condition / 100));
         
         return `
             <div class="property-card owned">
                 <div class="property-name">${prop.name}</div>
-                <div class="property-price">Paid: $${prop.price}</div>
-                <div class="property-income">Income: $${income.toFixed(0)}/turn</div>
-                <div class="property-maintenance">Maintenance: $${maintenance.toFixed(0)}/turn</div>
-                <div class="property-level">
-                    Level: ${level} ${level >= 5 ? '🏨' : '🏠'.repeat(level)}
+                <div class="property-price">💵 Value: $${currentValue}</div>
+                <div class="property-income" style="color: ${netIncome > 0 ? '#10b981' : '#ef4444'};">
+                    ${netIncome > 0 ? '📈' : '📉'} Net: $${netIncome}/mo
                 </div>
+                <div class="property-condition" style="color: ${propState.condition > 70 ? '#10b981' : propState.condition > 40 ? '#f59e0b' : '#ef4444'};">
+                    🏠 Condition: ${propState.condition}%
+                </div>
+                ${propState.hasVacancy ? '<div style="color: #ef4444; font-weight: bold;">🚫 VACANT</div>' : ''}
                 <div class="property-actions">
-                    <button class="btn-small" onclick="upgradeProperty(${prop.id})" ${gameState.playerCash < 50 ? 'disabled' : ''}>Upgrade ($50)</button>
+                    <button class="btn-small" onclick="repairProperty(${prop.id})" ${gameState.playerCash < 100 || propState.condition >= 100 ? 'disabled' : ''}>
+                        Repair ($100)
+                    </button>
+                    <button class="btn-small" onclick="sellProperty(${prop.id})">
+                        Sell ($${Math.round(currentValue * 0.8)})
+                    </button>
                 </div>
             </div>
         `;
