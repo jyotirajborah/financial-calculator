@@ -6382,35 +6382,35 @@ const fetchPovertyData = async () => {
         // Render poverty statistics with real API data
         povertyStatsContainer.innerHTML = `
             <div class="stat-card">
-                <div class="stat-label">Avg Poverty Rate (Real Data)</div>
-                <div class="stat-value">${avgPoverty || '15.2'}%</div>
+                <div class="stat-label">Avg Poverty Rate</div>
+                <div class="stat-value">${avgPoverty}%</div>
                 <div class="stat-description">Living on less than $3.00/day (World Bank 2024)</div>
                 <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
-                    API: https://api.worldbank.org/v2/country/all/indicator/SI.POV.DDAY
+                    🔗 SI.POV.DDAY - Poverty headcount ratio at $3.00/day
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Highest Poverty Rate</div>
-                <div class="stat-value">${maxPoverty || '82.5'}%</div>
+                <div class="stat-value">${maxPoverty}%</div>
                 <div class="stat-description">In most affected countries</div>
                 <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
-                    Indicator: SI.POV.DDAY (Poverty headcount ratio at $3.00 a day)
+                    🔗 SI.POV.DDAY - World Bank API
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Avg Child Mortality</div>
-                <div class="stat-value">${avgMortality || '38.2'}</div>
+                <div class="stat-value">${avgMortality}</div>
                 <div class="stat-description">Deaths per 1,000 live births (preventable)</div>
                 <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
-                    API: https://api.worldbank.org/v2/country/all/indicator/SP.DYN.CDRT.IN
+                    🔗 SP.DYN.CDRT.IN - Child mortality rate per 1,000 live births
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Global Literacy Rate</div>
-                <div class="stat-value">${avgLiteracy || '86.3'}%</div>
+                <div class="stat-value">${avgLiteracy}%</div>
                 <div class="stat-description">Adult literacy - education access gap</div>
                 <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
-                    API: https://api.worldbank.org/v2/country/all/indicator/SE.ADT.LITR.ZS
+                    🔗 SE.ADT.LITR.ZS - Adult literacy rate
                 </div>
             </div>
         `;
@@ -6423,10 +6423,10 @@ const fetchPovertyData = async () => {
                     Extreme Poverty Reality
                 </div>
                 <div class="insight-text">
-                    <strong>Real Data:</strong> ${avgPoverty || '15.2'}% of global population lives on less than $3/day. That's approximately 1.2 billion people struggling daily. The World Bank data shows poverty remains stubbornly high in Sub-Saharan Africa and South Asia, where ${maxPoverty || '82.5'}% of populations in some countries live below poverty lines.
+                    <strong>Real Data:</strong> ${avgPoverty}% of global population lives on less than $3/day. That's approximately 1.2 billion people struggling daily. The World Bank data shows poverty remains stubbornly high in Sub-Saharan Africa and South Asia, where ${maxPoverty}% of populations in some countries live below poverty lines.
                 </div>
                 <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
-                    📊 Data Source: World Bank API - Indicator: SI.POV.DDAY
+                    📊 SI.POV.DDAY - Poverty headcount ratio at $3.00/day (World Bank)
                 </div>
             </div>
             <div class="insight-item">
@@ -6435,10 +6435,10 @@ const fetchPovertyData = async () => {
                     Child Mortality Crisis
                 </div>
                 <div class="insight-text">
-                    <strong>Real Data:</strong> Average child mortality rate is ${avgMortality || '38.2'} deaths per 1,000 live births. That means millions of children die from preventable diseases like malaria, diarrhea, and pneumonia. Meanwhile, billionaires spend millions on life extension treatments and luxury healthcare.
+                    <strong>Real Data:</strong> Average child mortality rate is ${avgMortality} deaths per 1,000 live births. That means millions of children die from preventable diseases like malaria, diarrhea, and pneumonia. Meanwhile, billionaires spend millions on life extension treatments and luxury healthcare.
                 </div>
                 <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
-                    📊 Data Source: World Bank API - Indicator: SP.DYN.CDRT.IN
+                    📊 SP.DYN.CDRT.IN - Child mortality rate per 1,000 live births (World Bank)
                 </div>
             </div>
             <div class="insight-item">
@@ -6447,10 +6447,10 @@ const fetchPovertyData = async () => {
                     Education Inequality
                 </div>
                 <div class="insight-text">
-                    <strong>Real Data:</strong> Global adult literacy is ${avgLiteracy || '86.3'}%, but this masks huge disparities. In poorest regions, literacy rates drop below 50%. Poverty forces 258 million children out of school into child labor. Without education, they remain trapped in poverty cycles.
+                    <strong>Real Data:</strong> Global adult literacy is ${avgLiteracy}%, but this masks huge disparities. In poorest regions, literacy rates drop below 50%. Poverty forces 258 million children out of school into child labor. Without education, they remain trapped in poverty cycles.
                 </div>
                 <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
-                    📊 Data Source: World Bank API - Indicator: SE.ADT.LITR.ZS
+                    📊 SE.ADT.LITR.ZS - Adult literacy rate (World Bank)
                 </div>
             </div>
             <div class="insight-item">
@@ -6462,7 +6462,7 @@ const fetchPovertyData = async () => {
                     <strong>Real Impact:</strong> 2 billion people lack safe drinking water. 3.6 billion lack adequate sanitation. Waterborne diseases kill 1.4 million annually - mostly children in poverty-stricken areas. A billionaire's yacht costs more than building water systems for entire villages.
                 </div>
                 <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
-                    📊 Data Source: UN World Water Development Report + World Bank Indicators
+                    📊 UN World Water Development Report + World Bank Indicators
                 </div>
             </div>
             <div class="insight-item">
@@ -6481,10 +6481,10 @@ const fetchPovertyData = async () => {
                     </div>
                 </div>
                 <div class="insight-text" style="margin-top: 1rem;">
-                    <strong>The Contrast:</strong> The richest 1% owns more wealth than the entire bottom 50% combined. While ${avgPoverty || '15.2'}% of humanity struggles on $3/day, billionaires accumulate trillions. This inequality perpetuates suffering - it's not just about money, it's about access to life itself.
+                    <strong>The Contrast:</strong> The richest 1% owns more wealth than the entire bottom 50% combined. While ${avgPoverty}% of humanity struggles on $3/day, billionaires accumulate trillions. This inequality perpetuates suffering - it's not just about money, it's about access to life itself.
                 </div>
                 <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
-                    📊 Data Source: World Inequality Database + IMF Global Wealth Report
+                    📊 World Inequality Database + IMF Global Wealth Report
                 </div>
             </div>
         `;
@@ -6495,24 +6495,32 @@ const fetchPovertyData = async () => {
         if (povertyStatsContainer) {
             povertyStatsContainer.innerHTML = `
                 <div class="stat-card">
-                    <div class="stat-label">Global Poverty (World Bank)</div>
-                    <div class="stat-value">15.2%</div>
-                    <div class="stat-description">Living on less than $3.00/day (2024 data)</div>
+                    <div class="stat-label">Poverty Rate</div>
+                    <div class="stat-description">Loading from World Bank API...</div>
+                    <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                        🔗 SI.POV.DDAY - Poverty headcount ratio at $3.00/day
+                    </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Child Mortality</div>
-                    <div class="stat-value">38.2</div>
-                    <div class="stat-description">Deaths per 1,000 live births</div>
+                    <div class="stat-description">Loading from World Bank API...</div>
+                    <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                        🔗 SP.DYN.CDRT.IN - Child mortality rate per 1,000 live births
+                    </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Out of School</div>
-                    <div class="stat-value">258M</div>
-                    <div class="stat-description">Children unable to access education</div>
+                    <div class="stat-label">Literacy Rate</div>
+                    <div class="stat-description">Loading from World Bank API...</div>
+                    <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
+                        🔗 SE.ADT.LITR.ZS - Adult literacy rate
+                    </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">No Safe Water</div>
-                    <div class="stat-value">2B+</div>
-                    <div class="stat-description">People without access to clean water</div>
+                    <div class="stat-label">Data Status</div>
+                    <div class="stat-description">Retrying API connection...</div>
+                    <div style="font-size: 0.75rem; color: #ef4444; margin-top: 0.5rem;">
+                        ⚠️ Check console for details
+                    </div>
                 </div>
             `;
         }
