@@ -6913,6 +6913,18 @@ body, html {
     padding: 1rem;
     margin-bottom: 2rem;
     border: 1px solid var(--border-color);
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.game-log-section {
+    margin-top: 2rem;
+}
+
+.game-log-section h3 {
+    color: var(--text-main);
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
 }
 
 .game-log h3 {
@@ -6989,6 +7001,24 @@ body, html {
     color: #10b981;
     font-size: 0.9rem;
     margin-bottom: 0.5rem;
+}
+
+.property-maintenance {
+    color: #f59e0b;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+.property-risk {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+.property-condition {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
 }
 
 .property-level {

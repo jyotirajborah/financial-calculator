@@ -7116,90 +7116,110 @@ const initWealthTransferData = () => {
     fetchWealthTransferData();
 };
 
-// --- Monopoly Game Functions (Single Player - Real World Simulation) ---
-// NO COMPUTER PLAYER - This is a pure financial simulation showing real-world consequences
+// --- Real Estate Empire: Survival Mode ---
+// Single player realistic real estate simulation with market crashes, debt traps, and economic challenges
 let gameState = {
-    playerCash: 2000,
+    playerCash: 1000,
     playerDebt: 0,
     playerProperties: {},
-    turn: 0,
-    gameLog: [],
+    month: 0,
+    marketCondition: 'normal', // boom, normal, recession, crash
+    unemploymentRate: 5.0,
+    interestRate: 4.0,
     totalIncome: 0,
     totalExpenses: 0,
-    netWorth: 2000
+    gameOver: false
 };
 
 const properties = [
-    { id: 1, name: 'Mediterranean Ave', price: 60, baseIncome: 2, color: 'brown' },
-    { id: 2, name: 'Baltic Ave', price: 60, baseIncome: 2, color: 'brown' },
-    { id: 3, name: 'Oriental Ave', price: 100, baseIncome: 6, color: 'light-blue' },
-    { id: 4, name: 'Vermont Ave', price: 100, baseIncome: 6, color: 'light-blue' },
-    { id: 5, name: 'Connecticut Ave', price: 120, baseIncome: 8, color: 'light-blue' },
-    { id: 6, name: 'St. Charles Place', price: 140, baseIncome: 10, color: 'pink' },
-    { id: 7, name: 'States Ave', price: 140, baseIncome: 10, color: 'pink' },
-    { id: 8, name: 'Virginia Ave', price: 160, baseIncome: 12, color: 'pink' },
-    { id: 9, name: 'St. James Place', price: 180, baseIncome: 14, color: 'orange' },
-    { id: 10, name: 'Tennessee Ave', price: 180, baseIncome: 14, color: 'orange' },
-    { id: 11, name: 'New York Ave', price: 200, baseIncome: 16, color: 'orange' },
-    { id: 12, name: 'Kentucky Ave', price: 220, baseIncome: 18, color: 'red' },
-    { id: 13, name: 'Indiana Ave', price: 220, baseIncome: 18, color: 'red' },
-    { id: 14, name: 'Illinois Ave', price: 240, baseIncome: 20, color: 'red' },
-    { id: 15, name: 'Atlantic Ave', price: 260, baseIncome: 22, color: 'yellow' },
-    { id: 16, name: 'Ventnor Ave', price: 260, baseIncome: 22, color: 'yellow' },
-    { id: 17, name: 'Marvin Gardens', price: 280, baseIncome: 24, color: 'yellow' },
-    { id: 18, name: 'Pacific Ave', price: 300, baseIncome: 26, color: 'green' },
-    { id: 19, name: 'North Carolina Ave', price: 300, baseIncome: 26, color: 'green' },
-    { id: 20, name: 'Pennsylvania Ave', price: 320, baseIncome: 28, color: 'green' }
+    { id: 1, name: 'Small Apartment', price: 150, rent: 25, maintenance: 8, riskLevel: 'low', condition: 100 },
+    { id: 2, name: 'Studio Unit', price: 200, rent: 35, maintenance: 12, riskLevel: 'low', condition: 100 },
+    { id: 3, name: '1BR Apartment', price: 300, rent: 50, maintenance: 18, riskLevel: 'medium', condition: 100 },
+    { id: 4, name: '2BR Apartment', price: 450, rent: 75, maintenance: 25, riskLevel: 'medium', condition: 100 },
+    { id: 5, name: 'Duplex', price: 600, rent: 100, maintenance: 35, riskLevel: 'medium', condition: 100 },
+    { id: 6, name: 'Small House', price: 800, rent: 130, maintenance: 50, riskLevel: 'high', condition: 100 },
+    { id: 7, name: 'Family Home', price: 1200, rent: 180, maintenance: 70, riskLevel: 'high', condition: 100 },
+    { id: 8, name: 'Large House', price: 1800, rent: 250, maintenance: 100, riskLevel: 'high', condition: 100 }
 ];
+
 
 const initMonopolyGame = () => {
     gameState = {
-        playerCash: 2000,
+        playerCash: 1000,
         playerDebt: 0,
         playerProperties: {},
-        turn: 0,
-        gameLog: [
-            '🎮 Game started! You have $2,000.',
-            '📊 Buy properties and upgrade them (green houses → red hotels).',
-            '💰 Each turn: collect rental income, pay debt interest & maintenance.',
-            '⚠️ Watch out for debt spirals and market crashes!'
-        ],
+        month: 0,
+        marketCondition: 'normal',
+        unemploymentRate: 5.0,
+        interestRate: 4.0,
         totalIncome: 0,
         totalExpenses: 0,
-        netWorth: 2000
+        gameOver: false,
+        gameLog: []
     };
     
     properties.forEach(prop => {
-        gameState.playerProperties[prop.id] = { level: 0, owner: null };
+        gameState.playerProperties[prop.id] = { 
+            owned: false, 
+            condition: 100, 
+            hasVacancy: false,
+            monthsVacant: 0
+        };
     });
     
+    addGameLog('🎮 Welcome to Real Estate Empire: Survival Mode!');
+    addGameLog('💡 Buy properties, collect rent, but watch out for market crashes!');
     renderGameBoard();
-};
-
-const renderGameBoard = () => {
-    updateGameStats();
-    renderProperties();
-    renderYourProperties();
     updateGameLog();
 };
 
-const updateGameStats = () => {
-    const playerNetWorth = gameState.playerCash - gameState.playerDebt + calculatePropertyValue('player');
-    document.getElementById('player-cash').textContent = '$' + gameState.playerCash.toLocaleString();
-    document.getElementById('player-debt').textContent = '$' + gameState.playerDebt.toLocaleString();
-    document.getElementById('player-networth').textContent = '$' + playerNetWorth.toLocaleString();
-    document.getElementById('player-properties').textContent = Object.values(gameState.playerProperties).filter(p => p.owner === 'player').length;
+const renderGameBoard = () => {
+    if (gameState.gameOver) {
+        showGameOver();
+        return;
+    }
+    updateGameStats();
+    renderProperties();
+    renderYourProperties();
 };
 
-const calculatePropertyValue = (owner) => {
-    let value = 0;
+const updateGameStats = () => {
+    const netWorth = calculateGameNetWorth();
+    document.getElementById('player-cash').textContent = '$' + gameState.playerCash.toFixed(0);
+    document.getElementById('player-debt').textContent = '$' + gameState.playerDebt.toFixed(0);
+    document.getElementById('player-networth').textContent = '$' + netWorth.toFixed(0);
+    document.getElementById('player-properties').textContent = Object.values(gameState.playerProperties).filter(p => p.owned).length;
+    document.getElementById('game-turn').textContent = gameState.month;
+    
+    const marketEmoji = {
+        'boom': '📈 Boom',
+        'normal': '➡️ Normal',
+        'recession': '📉 Recession',
+        'crash': '💥 Crash'
+    };
+    document.getElementById('market-status').textContent = marketEmoji[gameState.marketCondition] || 'Normal';
+};
+
+const calculateGameNetWorth = () => {
+    let propertyValue = 0;
     properties.forEach(prop => {
-        if (gameState.playerProperties[prop.id].owner === owner) {
-            const level = gameState.playerProperties[prop.id].level;
-            value += prop.price + (level * 50);
+        if (gameState.playerProperties[prop.id].owned) {
+            const condition = gameState.playerProperties[prop.id].condition;
+            const marketMultiplier = getMarketMultiplier();
+            propertyValue += prop.price * (condition / 100) * marketMultiplier;
         }
     });
-    return value;
+    return gameState.playerCash + propertyValue - gameState.playerDebt;
+};
+
+const getMarketMultiplier = () => {
+    const multipliers = {
+        'boom': 1.3,
+        'normal': 1.0,
+        'recession': 0.8,
+        'crash': 0.5
+    };
+    return multipliers[gameState.marketCondition] || 1.0;
 };
 
 const renderProperties = () => {
@@ -7285,155 +7305,53 @@ const buyProperty = (propId) => {
     renderGameBoard();
 };
 
-const upgradeProperty = (propId) => {
+const repairProperty = (propId) => {
     const prop = properties.find(p => p.id === propId);
     const propState = gameState.playerProperties[propId];
     
-    if (propState.owner !== 'player') {
+    if (!propState.owned) {
         addGameLog('❌ You don\'t own this property!');
         return;
     }
     
-    if (propState.level >= 5) {
-        addGameLog(`🏨 ${prop.name} is already a hotel!`);
+    if (propState.condition >= 100) {
+        addGameLog(`✅ ${prop.name} is already in perfect condition!`);
         return;
     }
     
-    const upgradeCost = 50;
-    if (gameState.playerCash >= upgradeCost) {
-        gameState.playerCash -= upgradeCost;
-        propState.level++;
-        addGameLog(`🏗️ Upgraded ${prop.name} to level ${propState.level}`);
-    } else if (gameState.playerDebt < 500) {
-        gameState.playerDebt += upgradeCost - gameState.playerCash;
-        gameState.playerCash = 0;
-        propState.level++;
-        addGameLog(`🏗️ Upgraded ${prop.name} to level ${propState.level} (took debt)`);
+    const repairCost = 100;
+    if (gameState.playerCash >= repairCost) {
+        gameState.playerCash -= repairCost;
+        propState.condition = Math.min(100, propState.condition + 30);
+        addGameLog(`🔧 Repaired ${prop.name} to ${propState.condition}% condition`);
     } else {
-        addGameLog(`❌ Can't upgrade - not enough cash and debt too high!`);
+        addGameLog(`❌ Need $${repairCost} to repair ${prop.name}`);
         return;
     }
     
     renderGameBoard();
 };
 
-const nextTurn = () => {
-    gameState.turn++;
-    let turnSummary = [];
-
-    // 1. Collect rental income
-    let playerIncome = 0;
-    properties.forEach(prop => {
-        if (gameState.playerProperties[prop.id].owner === 'player') {
-            const level = gameState.playerProperties[prop.id].level;
-            playerIncome += prop.baseIncome * (1 + level * 0.5);
-        }
-    });
-    gameState.playerCash += playerIncome;
-    gameState.totalIncome += playerIncome;
-    if (playerIncome > 0) turnSummary.push(`💰 Income: +$${playerIncome.toFixed(0)}`);
-
-    // 2. Pay debt interest (5% per turn = 60% annually)
-    if (gameState.playerDebt > 0) {
-        const debtInterest = gameState.playerDebt * 0.05;
-        gameState.playerCash -= debtInterest;
-        gameState.totalExpenses += debtInterest;
-        turnSummary.push(`💳 Debt interest: -$${debtInterest.toFixed(0)}`);
+const sellProperty = (propId) => {
+    const prop = properties.find(p => p.id === propId);
+    const propState = gameState.playerProperties[propId];
+    
+    if (!propState.owned) {
+        addGameLog('❌ You don\'t own this property!');
+        return;
     }
-
-    // 3. Property maintenance costs (1% of property value per turn)
-    let maintenanceCost = 0;
-    properties.forEach(prop => {
-        if (gameState.playerProperties[prop.id].owner === 'player') {
-            const level = gameState.playerProperties[prop.id].level;
-            const propValue = prop.price + (level * 50);
-            maintenanceCost += propValue * 0.01;
-        }
-    });
-    if (maintenanceCost > 0) {
-        gameState.playerCash -= maintenanceCost;
-        gameState.totalExpenses += maintenanceCost;
-        turnSummary.push(`🔧 Maintenance: -$${maintenanceCost.toFixed(0)}`);
-    }
-
-    // 4. Market volatility - property values fluctuate
-    const volatility = (Math.random() - 0.5) * 0.1;
-    let volatilityImpact = 0;
-    properties.forEach(prop => {
-        if (gameState.playerProperties[prop.id].owner === 'player') {
-            const level = gameState.playerProperties[prop.id].level;
-            const propValue = prop.price + (level * 50);
-            const change = propValue * volatility;
-            volatilityImpact += change;
-        }
-    });
-    if (volatilityImpact > 0) {
-        turnSummary.push(`📈 Market boom: +$${volatilityImpact.toFixed(0)}`);
-    } else if (volatilityImpact < 0) {
-        turnSummary.push(`📉 Market crash: -$${Math.abs(volatilityImpact).toFixed(0)}`);
-    }
-
-    // 5. Bankruptcy check
-    if (gameState.playerCash < 0) {
-        const deficit = Math.abs(gameState.playerCash);
-        gameState.playerDebt += deficit;
-        gameState.playerCash = 0;
-        turnSummary.push(`⚠️ BANKRUPTCY! Debt increased to $${gameState.playerDebt.toFixed(0)}`);
-    }
-
-    // 6. Debt spiral warning
-    if (gameState.playerDebt > gameState.playerCash * 2 && gameState.playerDebt > 0) {
-        const ratio = (gameState.playerDebt / (gameState.playerCash || 1)).toFixed(1);
-        turnSummary.push(`🚨 DANGER: Debt is ${ratio}x your cash!`);
-    }
-
-    // 7. Win conditions
-    if (gameState.turn === 10) {
-        turnSummary.push(`🏆 Milestone: 10 turns completed!`);
-    }
-    if (gameState.turn === 25) {
-        turnSummary.push(`🏆 Milestone: 25 turns! You're building an empire!`);
-    }
-    if (gameState.netWorth > 10000 && gameState.turn > 1) {
-        turnSummary.push(`🌟 ACHIEVEMENT: Net worth exceeded $10,000!`);
-    }
-    if (gameState.netWorth > 50000) {
-        turnSummary.push(`👑 ACHIEVEMENT: Net worth exceeded $50,000! You're a real estate mogul!`);
-    }
-
-    // Add turn summary to log
-    addGameLog(`--- Turn ${gameState.turn} ---`);
-    turnSummary.forEach(msg => addGameLog(msg));
-
-    renderGameBoard();
-};
-
-;
-
-const addGameLog = (message) => {
-    gameState.gameLog.push(message);
-    if (gameState.gameLog.length > 25) {
-        gameState.gameLog.shift();
-    }
-};
-
-const updateGameLog = () => {
-    const logContainer = document.getElementById('game-log');
-    if (!logContainer) return;
-    logContainer.innerHTML = gameState.gameLog.map(entry => `<p class="log-entry">${entry}</p>`).join('');
-    logContainer.scrollTop = logContainer.scrollHeight;
-};
-
-const resetGame = () => {
-    initMonopolyGame();
-    renderGameBoard();
-};
-
-// Initialize game when tab is opened
-const initGameTab = () => {
-    if (!gameState.turn) {
-        initMonopolyGame();
-    }
+    
+    const marketMultiplier = getMarketMultiplier();
+    const currentValue = Math.round(prop.price * marketMultiplier * (propState.condition / 100));
+    const salePrice = Math.round(currentValue * 0.8); // 20% loss on sale
+    
+    gameState.playerCash += salePrice;
+    propState.owned = false;
+    propState.condition = 100;
+    propState.hasVacancy = false;
+    propState.monthsVacant = 0;
+    
+    addGameLog(`💰 Sold ${prop.name} for $${salePrice}`);
     renderGameBoard();
 };
 
@@ -8823,5 +8741,208 @@ const stopAnalogClock = () => {
     if (analogClockInterval) {
         clearInterval(analogClockInterval);
         analogClockInterval = null;
+    }
+};
+
+
+const nextTurn = () => {
+    if (gameState.gameOver) return;
+    
+    gameState.month++;
+    let monthIncome = 0;
+    let monthExpenses = 0;
+    let events = [];
+
+    // 1. Update market conditions
+    updateMarketConditions();
+    
+    // 2. Collect rent and handle vacancies
+    properties.forEach(prop => {
+        const propState = gameState.playerProperties[prop.id];
+        if (!propState.owned) return;
+        
+        // Check for vacancy (higher chance in recession/crash)
+        if (!propState.hasVacancy && Math.random() < getVacancyRate()) {
+            propState.hasVacancy = true;
+            propState.monthsVacant = 0;
+            events.push(`🚫 ${prop.name} became VACANT!`);
+        } else if (propState.hasVacancy) {
+            propState.monthsVacant++;
+            if (Math.random() < 0.3) { // 30% chance to fill vacancy
+                propState.hasVacancy = false;
+                events.push(`✅ ${prop.name} rented out!`);
+            }
+        }
+        
+        // Collect rent if not vacant
+        if (!propState.hasVacancy) {
+            monthIncome += prop.rent;
+        }
+        
+        // Pay maintenance
+        monthExpenses += prop.maintenance;
+        
+        // Property degradation
+        const degradation = prop.riskLevel === 'high' ? 3 : prop.riskLevel === 'medium' ? 2 : 1;
+        propState.condition = Math.max(0, propState.condition - degradation);
+        
+        if (propState.condition < 30) {
+            events.push(`⚠️ ${prop.name} in poor condition (${propState.condition}%)!`);
+        }
+    });
+
+    // 3. Pay debt interest (8% annual = 0.67% monthly)
+    if (gameState.playerDebt > 0) {
+        const interest = Math.round(gameState.playerDebt * 0.0067);
+        monthExpenses += interest;
+        gameState.playerDebt += interest;
+        events.push(`💳 Debt interest: $${interest}`);
+    }
+
+    // 4. Random events
+    handleRandomEvents(events);
+
+    // 5. Update finances
+    const netCashFlow = monthIncome - monthExpenses;
+    gameState.playerCash += netCashFlow;
+    gameState.totalIncome += monthIncome;
+    gameState.totalExpenses += monthExpenses;
+
+    // 6. Check for bankruptcy
+    if (gameState.playerCash < 0) {
+        const deficit = Math.abs(gameState.playerCash);
+        gameState.playerDebt += deficit;
+        gameState.playerCash = 0;
+        events.push(`🚨 OVERDRAFT! Added $${deficit} to debt`);
+    }
+
+    // 7. Game over conditions
+    if (gameState.playerDebt > 5000) {
+        gameState.gameOver = true;
+        events.push(`💀 GAME OVER: Debt exceeded $5000!`);
+    }
+    
+    if (gameState.playerCash < 0 && Object.values(gameState.playerProperties).filter(p => p.owned).length === 0) {
+        gameState.gameOver = true;
+        events.push(`💀 GAME OVER: Bankrupt with no assets!`);
+    }
+
+    // Add to log
+    addGameLog(`\n📅 Month ${gameState.month} - ${gameState.marketCondition.toUpperCase()}`);
+    addGameLog(`💰 Income: $${monthIncome} | 💸 Expenses: $${monthExpenses}`);
+    addGameLog(`📊 Net: ${netCashFlow >= 0 ? '+' : ''}$${netCashFlow}`);
+    events.forEach(e => addGameLog(e));
+
+    renderGameBoard();
+    updateGameLog();
+};
+
+const updateMarketConditions = () => {
+    const rand = Math.random();
+    const currentCondition = gameState.marketCondition;
+    
+    // Market transitions
+    if (currentCondition === 'normal') {
+        if (rand < 0.1) gameState.marketCondition = 'boom';
+        else if (rand < 0.25) gameState.marketCondition = 'recession';
+    } else if (currentCondition === 'boom') {
+        if (rand < 0.15) gameState.marketCondition = 'normal';
+        else if (rand < 0.2) gameState.marketCondition = 'crash';
+    } else if (currentCondition === 'recession') {
+        if (rand < 0.2) gameState.marketCondition = 'normal';
+        else if (rand < 0.3) gameState.marketCondition = 'crash';
+    } else if (currentCondition === 'crash') {
+        if (rand < 0.4) gameState.marketCondition = 'recession';
+    }
+    
+    // Update rates
+    gameState.unemploymentRate = {
+        'boom': 3.5,
+        'normal': 5.0,
+        'recession': 8.0,
+        'crash': 12.0
+    }[gameState.marketCondition];
+    
+    gameState.interestRate = {
+        'boom': 6.0,
+        'normal': 4.0,
+        'recession': 2.0,
+        'crash': 1.0
+    }[gameState.marketCondition];
+};
+
+const getVacancyRate = () => {
+    return {
+        'boom': 0.05,
+        'normal': 0.10,
+        'recession': 0.20,
+        'crash': 0.35
+    }[gameState.marketCondition] || 0.10;
+};
+
+const handleRandomEvents = (events) => {
+    const rand = Math.random();
+    
+    if (rand < 0.05) {
+        // Major repair needed
+        const ownedProps = properties.filter(p => gameState.playerProperties[p.id].owned);
+        if (ownedProps.length > 0) {
+            const prop = ownedProps[Math.floor(Math.random() * ownedProps.length)];
+            const cost = 200;
+            gameState.playerCash -= cost;
+            events.push(`🔨 Emergency repair on ${prop.name}: -$${cost}`);
+        }
+    } else if (rand < 0.08) {
+        // Property damage
+        const ownedProps = properties.filter(p => gameState.playerProperties[p.id].owned);
+        if (ownedProps.length > 0) {
+            const prop = ownedProps[Math.floor(Math.random() * ownedProps.length)];
+            const propState = gameState.playerProperties[prop.id];
+            propState.condition = Math.max(0, propState.condition - 20);
+            events.push(`💥 ${prop.name} damaged! Condition: ${propState.condition}%`);
+        }
+    } else if (rand < 0.10) {
+        // Bonus rent
+        const ownedProps = properties.filter(p => gameState.playerProperties[p.id].owned && !gameState.playerProperties[p.id].hasVacancy);
+        if (ownedProps.length > 0) {
+            const bonus = 50;
+            gameState.playerCash += bonus;
+            events.push(`🎁 Bonus rent payment: +$${bonus}`);
+        }
+    }
+};
+
+const showGameOver = () => {
+    const container = document.getElementById('properties-grid');
+    if (!container) return;
+    
+    const netWorth = calculateGameNetWorth();
+    const survived = gameState.month;
+    
+    container.innerHTML = `
+        <div style="grid-column: 1/-1; text-align: center; padding: 2rem; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 12px; border: 2px solid #ef4444;">
+            <h2 style="color: #ef4444; font-size: 2rem; margin-bottom: 1rem;">💀 GAME OVER</h2>
+            <div style="font-size: 1.2rem; color: #e2e8f0; margin-bottom: 1.5rem;">
+                <p>You survived ${survived} months</p>
+                <p>Final Net Worth: $${netWorth.toFixed(0)}</p>
+                <p>Total Debt: $${gameState.playerDebt.toFixed(0)}</p>
+            </div>
+            <button onclick="resetGame()" style="padding: 1rem 2rem; font-size: 1.1rem; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                Try Again
+            </button>
+        </div>
+    `;
+};
+
+const resetGame = () => {
+    initMonopolyGame();
+};
+
+const initGameTab = () => {
+    if (!gameState.month) {
+        initMonopolyGame();
+    } else {
+        renderGameBoard();
+        updateGameLog();
     }
 };
