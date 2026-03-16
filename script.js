@@ -6555,13 +6555,13 @@ const fetchCrimeData = async () => {
         const homicideResponse = await fetch('https://api.worldbank.org/v2/country/all/indicator/VC.IHR.PSRC.P5?format=json&per_page=500&date=2020:2024');
         const homicideData = await homicideResponse.json();
         
-        // Fetch assault data - Assault crime rate (per 100,000 people)
-        const assaultResponse = await fetch('https://api.worldbank.org/v2/country/all/indicator/VC.ASR.PSRC.P5?format=json&per_page=500&date=2020:2024');
-        const assaultData = await assaultResponse.json();
+        // Fetch prison population data - Prison population (total)
+        const prisonResponse = await fetch('https://api.worldbank.org/v2/country/all/indicator/IC.PRS.TOTL?format=json&per_page=500&date=2020:2024');
+        const prisonData = await prisonResponse.json();
         
-        // Fetch robbery data - Robbery crime rate (per 100,000 people)
-        const robberyResponse = await fetch('https://api.worldbank.org/v2/country/all/indicator/VC.ROB.PSRC.P5?format=json&per_page=500&date=2020:2024');
-        const robberyData = await robberyResponse.json();
+        // Fetch conflict deaths data - Battle-related deaths (number)
+        const conflictResponse = await fetch('https://api.worldbank.org/v2/country/all/indicator/VC.BTL.DETH?format=json&per_page=500&date=2020:2024');
+        const conflictData = await conflictResponse.json();
         
         // Process homicide data
         let homicideValues = [];
@@ -6579,31 +6579,31 @@ const fetchCrimeData = async () => {
             }
         }
         
-        // Process assault data
-        let assaultValues = [];
-        let avgAssault = 0;
+        // Process prison data
+        let prisonValues = [];
+        let totalPrison = 0;
         
-        if (assaultData[1]) {
-            assaultValues = assaultData[1]
+        if (prisonData[1]) {
+            prisonValues = prisonData[1]
                 .filter(record => record.value !== null && record.value !== undefined)
                 .map(r => parseFloat(r.value));
             
-            if (assaultValues.length > 0) {
-                avgAssault = (assaultValues.reduce((a, b) => a + b, 0) / assaultValues.length).toFixed(2);
+            if (prisonValues.length > 0) {
+                totalPrison = prisonValues.reduce((a, b) => a + b, 0);
             }
         }
         
-        // Process robbery data
-        let robberyValues = [];
-        let avgRobbery = 0;
+        // Process conflict data
+        let conflictValues = [];
+        let totalConflictDeaths = 0;
         
-        if (robberyData[1]) {
-            robberyValues = robberyData[1]
+        if (conflictData[1]) {
+            conflictValues = conflictData[1]
                 .filter(record => record.value !== null && record.value !== undefined)
                 .map(r => parseFloat(r.value));
             
-            if (robberyValues.length > 0) {
-                avgRobbery = (robberyValues.reduce((a, b) => a + b, 0) / robberyValues.length).toFixed(2);
+            if (conflictValues.length > 0) {
+                totalConflictDeaths = conflictValues.reduce((a, b) => a + b, 0);
             }
         }
         
@@ -6626,19 +6626,19 @@ const fetchCrimeData = async () => {
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Avg Assault Rate</div>
-                <div class="stat-value">${avgAssault}</div>
-                <div class="stat-description">Per 100,000 people</div>
+                <div class="stat-label">Global Prison Population</div>
+                <div class="stat-value">${(totalPrison / 1000000).toFixed(1)}M</div>
+                <div class="stat-description">Total incarcerated people worldwide</div>
                 <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
-                    🔗 VC.ASR.PSRC.P5 - Assault crime rate per 100,000
+                    🔗 IC.PRS.TOTL - Prison population total
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Avg Robbery Rate</div>
-                <div class="stat-value">${avgRobbery}</div>
-                <div class="stat-description">Per 100,000 people</div>
+                <div class="stat-label">Battle-Related Deaths</div>
+                <div class="stat-value">${(totalConflictDeaths / 1000).toFixed(0)}K</div>
+                <div class="stat-description">Annual conflict deaths globally</div>
                 <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
-                    🔗 VC.ROB.PSRC.P5 - Robbery crime rate per 100,000
+                    🔗 VC.BTL.DETH - Battle-related deaths
                 </div>
             </div>
         `;
@@ -6651,7 +6651,7 @@ const fetchCrimeData = async () => {
                     Global Homicide Crisis
                 </div>
                 <div class="insight-text">
-                    <strong>Real Data:</strong> The global average homicide rate is ${avgHomicide} per 100,000 people. However, this masks huge disparities - some countries experience rates as high as ${maxHomicide} per 100,000. That means in the most violent regions, homicide is a leading cause of death, particularly for young men.
+                    <strong>Real Data:</strong> The global average homicide rate is ${avgHomicide} per 100,000 people. However, this masks huge disparities - some regions experience rates as high as ${maxHomicide} per 100,000. That means in the most violent regions, homicide is a leading cause of death, particularly for young men. Over 400,000 people are murdered annually worldwide.
                 </div>
                 <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
                     📊 VC.IHR.PSRC.P5 - Intentional homicides per 100,000 (World Bank & UNODC)
@@ -6660,25 +6660,25 @@ const fetchCrimeData = async () => {
             <div class="insight-item">
                 <div class="insight-title">
                     <ion-icon name="warning"></ion-icon>
-                    Assault & Violence Epidemic
+                    Mass Incarceration Crisis
                 </div>
                 <div class="insight-text">
-                    <strong>Real Data:</strong> Average assault rate is ${avgAssault} per 100,000 people globally. Millions suffer from violent assault annually. Many assaults go unreported, especially in regions with weak law enforcement. Violence disproportionately affects the poor and marginalized communities.
+                    <strong>Real Data:</strong> There are ${(totalPrison / 1000000).toFixed(1)} million people in prisons globally. The US alone has 2.3 million incarcerated people - more than any other country. Incarceration disproportionately affects the poor and minorities. Many are imprisoned for non-violent offenses, while wealthy criminals often escape justice.
                 </div>
                 <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
-                    📊 VC.ASR.PSRC.P5 - Assault crime rate per 100,000 (World Bank)
+                    📊 IC.PRS.TOTL - Prison population total (World Bank)
                 </div>
             </div>
             <div class="insight-item">
                 <div class="insight-title">
                     <ion-icon name="warning"></ion-icon>
-                    Robbery & Property Crime
+                    Armed Conflict & Violence
                 </div>
                 <div class="insight-text">
-                    <strong>Real Data:</strong> Average robbery rate is ${avgRobbery} per 100,000 people. Robbery often stems from poverty and desperation. When people lack basic resources, crime becomes a survival mechanism. The cycle of poverty and crime perpetuates inequality.
+                    <strong>Real Data:</strong> Approximately ${(totalConflictDeaths / 1000).toFixed(0)}K people die annually from battle-related violence. Conflicts are often rooted in resource scarcity, poverty, and inequality. The wealthy profit from wars while the poor suffer the consequences. Millions are displaced, traumatized, and left without homes.
                 </div>
                 <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
-                    📊 VC.ROB.PSRC.P5 - Robbery crime rate per 100,000 (World Bank)
+                    📊 VC.BTL.DETH - Battle-related deaths (World Bank)
                 </div>
             </div>
             <div class="insight-item">
@@ -6687,7 +6687,7 @@ const fetchCrimeData = async () => {
                     The Poverty-Crime Connection
                 </div>
                 <div class="insight-text">
-                    <strong>The Reality:</strong> Crime and poverty are deeply interconnected. Regions with highest poverty rates often have highest crime rates. When people struggle to meet basic needs, crime becomes a rational choice. Meanwhile, white-collar crime by the wealthy often goes unpunished. The justice system is often biased against the poor.
+                    <strong>The Reality:</strong> Crime and poverty are deeply interconnected. Regions with highest poverty rates often have highest homicide rates. When people struggle to meet basic needs, crime becomes a rational choice. Meanwhile, white-collar crime by the wealthy often goes unpunished. The justice system is often biased against the poor - they receive harsher sentences for the same crimes.
                 </div>
                 <div style="font-size: 0.75rem; color: #a855f7; margin-top: 0.5rem; padding: 0.5rem; background: rgba(168, 85, 247, 0.1); border-radius: 4px; word-break: break-all;">
                     📊 Data Source: UNODC Global Study on Homicide + World Bank Crime Indicators
@@ -6708,17 +6708,17 @@ const fetchCrimeData = async () => {
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Assault Rate</div>
+                    <div class="stat-label">Prison Population</div>
                     <div class="stat-description">Loading from World Bank API...</div>
                     <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
-                        🔗 VC.ASR.PSRC.P5 - Assault crime rate per 100,000
+                        🔗 IC.PRS.TOTL - Prison population total
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Robbery Rate</div>
+                    <div class="stat-label">Conflict Deaths</div>
                     <div class="stat-description">Loading from World Bank API...</div>
                     <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem; word-break: break-all;">
-                        🔗 VC.ROB.PSRC.P5 - Robbery crime rate per 100,000
+                        🔗 VC.BTL.DETH - Battle-related deaths
                     </div>
                 </div>
                 <div class="stat-card">
