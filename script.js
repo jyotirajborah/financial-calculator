@@ -345,6 +345,8 @@ document.querySelectorAll('.nav-item').forEach(btn => {
         // Initialize death clock if target is death-clock
         if (targetId === 'death-clock') {
             initDeathClock();
+            // Auto-start the clock when tab is opened
+            setTimeout(() => startDeathClock(), 500);
         }
         
         // Initialize notes if target is my notes
@@ -8618,10 +8620,6 @@ const startDeathClock = () => {
         deathClockState.deathsByCategory[category] = 0;
     });
     
-    // Update UI buttons
-    document.getElementById('start-clock-btn').disabled = true;
-    document.getElementById('stop-clock-btn').disabled = false;
-    
     // Start the clock ticker
     updateDeathCounter();
 };
@@ -8629,10 +8627,6 @@ const startDeathClock = () => {
 // Stop Death Clock
 const stopDeathClock = () => {
     deathClockState.isRunning = false;
-    
-    // Update UI buttons
-    document.getElementById('start-clock-btn').disabled = false;
-    document.getElementById('stop-clock-btn').disabled = true;
 };
 
 // Reset Death Clock
