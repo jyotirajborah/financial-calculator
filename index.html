@@ -1913,15 +1913,19 @@
                                 </div>
                                 <div class="player-stat">
                                     <span class="stat-label">Your Debt:</span>
-                                    <span class="stat-value" id="player-debt">$0</span>
+                                    <span class="stat-value text-danger" id="player-debt">$0</span>
                                 </div>
                                 <div class="player-stat">
                                     <span class="stat-label">Net Worth:</span>
-                                    <span class="stat-value" id="player-networth">$2,000</span>
+                                    <span class="stat-value text-success" id="player-networth">$2,000</span>
                                 </div>
                                 <div class="player-stat">
                                     <span class="stat-label">Properties:</span>
                                     <span class="stat-value" id="player-properties">0</span>
+                                </div>
+                                <div class="player-stat">
+                                    <span class="stat-label">Turn:</span>
+                                    <span class="stat-value" id="game-turn">0</span>
                                 </div>
                             </div>
 
@@ -1951,13 +1955,12 @@
 
                             <!-- Game Controls -->
                             <div class="game-controls">
-                                <button class="btn-primary" id="next-turn-btn" onclick="nextTurn()">Next Turn (Computer Plays)</button>
+                                <button class="btn-primary" id="next-turn-btn" onclick="nextTurn()">Next Turn</button>
                                 <button class="btn-secondary" id="reset-game-btn" onclick="resetGame()">Reset Game</button>
                             </div>
                         </div>
                     </div>
                 </section>
-
                 <!-- Death Clock View -->
                 <section class="calculator-view" id="death-clock">
                     <div class="death-clock-container">
