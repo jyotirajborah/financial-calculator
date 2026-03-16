@@ -337,6 +337,11 @@ document.querySelectorAll('.nav-item').forEach(btn => {
             initWealthTransferData();
         }
         
+        // Initialize monopoly game if target is monopoly-game
+        if (targetId === 'monopoly-game') {
+            initGameTab();
+        }
+        
         // Initialize notes if target is my notes
         if (targetId === 'my-notes') {
             initNotesSection();
@@ -7102,6 +7107,284 @@ const fetchWealthTransferData = async () => {
 // Initialize wealth transfer data when wealth-transfer view is opened
 const initWealthTransferData = () => {
     fetchWealthTransferData();
+};
+
+// --- Monopoly Game Functions ---
+let gameState = {
+    playerCash: 2000,
+    playerDebt: 0,
+    playerProperties: {},
+    computerCash: 2000,
+    computerDebt: 0,
+    computerProperties: {},
+    turn: 0,
+    gameLog: []
+};
+
+const properties = [
+    { id: 1, name: 'Mediterranean Ave', price: 60, baseIncome: 2, color: 'brown' },
+    { id: 2, name: 'Baltic Ave', price: 60, baseIncome: 2, color: 'brown' },
+    { id: 3, name: 'Oriental Ave', price: 100, baseIncome: 6, color: 'light-blue' },
+    { id: 4, name: 'Vermont Ave', price: 100, baseIncome: 6, color: 'light-blue' },
+    { id: 5, name: 'Connecticut Ave', price: 120, baseIncome: 8, color: 'light-blue' },
+    { id: 6, name: 'St. Charles Place', price: 140, baseIncome: 10, color: 'pink' },
+    { id: 7, name: 'States Ave', price: 140, baseIncome: 10, color: 'pink' },
+    { id: 8, name: 'Virginia Ave', price: 160, baseIncome: 12, color: 'pink' },
+    { id: 9, name: 'St. James Place', price: 180, baseIncome: 14, color: 'orange' },
+    { id: 10, name: 'Tennessee Ave', price: 180, baseIncome: 14, color: 'orange' },
+    { id: 11, name: 'New York Ave', price: 200, baseIncome: 16, color: 'orange' },
+    { id: 12, name: 'Kentucky Ave', price: 220, baseIncome: 18, color: 'red' },
+    { id: 13, name: 'Indiana Ave', price: 220, baseIncome: 18, color: 'red' },
+    { id: 14, name: 'Illinois Ave', price: 240, baseIncome: 20, color: 'red' },
+    { id: 15, name: 'Atlantic Ave', price: 260, baseIncome: 22, color: 'yellow' },
+    { id: 16, name: 'Ventnor Ave', price: 260, baseIncome: 22, color: 'yellow' },
+    { id: 17, name: 'Marvin Gardens', price: 280, baseIncome: 24, color: 'yellow' },
+    { id: 18, name: 'Pacific Ave', price: 300, baseIncome: 26, color: 'green' },
+    { id: 19, name: 'North Carolina Ave', price: 300, baseIncome: 26, color: 'green' },
+    { id: 20, name: 'Pennsylvania Ave', price: 320, baseIncome: 28, color: 'green' }
+];
+
+const initMonopolyGame = () => {
+    gameState = {
+        playerCash: 2000,
+        playerDebt: 0,
+        playerProperties: {},
+        computerCash: 2000,
+        computerDebt: 0,
+        computerProperties: {},
+        turn: 0,
+        gameLog: ['Game started! You have $2,000. Buy properties and build houses/hotels.']
+    };
+    
+    properties.forEach(prop => {
+        gameState.playerProperties[prop.id] = { level: 0, owner: null };
+        gameState.computerProperties[prop.id] = { level: 0, owner: null };
+    });
+    
+    renderGameBoard();
+};
+
+const renderGameBoard = () => {
+    updateGameStats();
+    renderProperties();
+    renderYourProperties();
+    updateGameLog();
+};
+
+const updateGameStats = () => {
+    const playerNetWorth = gameState.playerCash - gameState.playerDebt + calculatePropertyValue('player');
+    document.getElementById('player-cash').textContent = '$' + gameState.playerCash.toLocaleString();
+    document.getElementById('player-debt').textContent = '$' + gameState.playerDebt.toLocaleString();
+    document.getElementById('player-networth').textContent = '$' + playerNetWorth.toLocaleString();
+    document.getElementById('player-properties').textContent = Object.values(gameState.playerProperties).filter(p => p.owner === 'player').length;
+};
+
+const calculatePropertyValue = (owner) => {
+    let value = 0;
+    properties.forEach(prop => {
+        if (gameState.playerProperties[prop.id].owner === owner) {
+            const level = gameState.playerProperties[prop.id].level;
+            value += prop.price + (level * 50);
+        }
+    });
+    return value;
+};
+
+const renderProperties = () => {
+    const grid = document.getElementById('properties-grid');
+    grid.innerHTML = properties.map(prop => {
+        const propState = gameState.playerProperties[prop.id];
+        const isOwned = propState.owner !== null;
+        const owner = propState.owner === 'player' ? 'You' : (propState.owner === 'computer' ? 'Computer' : null);
+        
+        return `
+            <div class="property-card ${isOwned ? 'owned' : ''}" onclick="buyProperty(${prop.id})">
+                <div class="property-name">${prop.name}</div>
+                <div class="property-price">Price: $${prop.price}</div>
+                <div class="property-income">Income: $${prop.baseIncome}</div>
+                ${isOwned ? `
+                    <div class="property-level">
+                        Owner: ${owner} | Level: ${propState.level}
+                    </div>
+                    ${propState.owner === 'player' ? `
+                        <div class="property-actions">
+                            <button class="btn-small" onclick="upgradeProperty(${prop.id})" ${gameState.playerCash < 50 ? 'disabled' : ''}>Upgrade ($50)</button>
+                        </div>
+                    ` : ''}
+                ` : `
+                    <button class="btn-small" onclick="buyProperty(${prop.id})" ${gameState.playerCash < prop.price ? 'disabled' : ''}>Buy</button>
+                `}
+            </div>
+        `;
+    }).join('');
+};
+
+const renderYourProperties = () => {
+    const container = document.getElementById('your-properties');
+    const yourProps = properties.filter(p => gameState.playerProperties[p.id].owner === 'player');
+    
+    if (yourProps.length === 0) {
+        container.innerHTML = '<p class="empty-state">No properties yet. Buy some to get started!</p>';
+        return;
+    }
+    
+    container.innerHTML = yourProps.map(prop => {
+        const level = gameState.playerProperties[prop.id].level;
+        const income = prop.baseIncome * (1 + level * 0.5);
+        
+        return `
+            <div class="property-card owned">
+                <div class="property-name">${prop.name}</div>
+                <div class="property-price">Paid: $${prop.price}</div>
+                <div class="property-income">Income: $${income.toFixed(0)}/turn</div>
+                <div class="property-level">
+                    ${Array(level).fill(0).map(() => '<span class="house-icon"></span>').join('')}
+                    ${level >= 5 ? '<span class="hotel-icon"></span>' : ''}
+                </div>
+                <div class="property-actions">
+                    <button class="btn-small" onclick="upgradeProperty(${prop.id})" ${gameState.playerCash < 50 ? 'disabled' : ''}>Upgrade</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+};
+
+const buyProperty = (propId) => {
+    const prop = properties.find(p => p.id === propId);
+    const propState = gameState.playerProperties[propId];
+    
+    if (propState.owner !== null) {
+        addGameLog(`${prop.name} is already owned!`);
+        return;
+    }
+    
+    if (gameState.playerCash < prop.price) {
+        // Use debt to buy
+        const needed = prop.price - gameState.playerCash;
+        gameState.playerDebt += needed;
+        gameState.playerCash = 0;
+        addGameLog(`Bought ${prop.name} for $${prop.price} (took $${needed} debt)`);
+    } else {
+        gameState.playerCash -= prop.price;
+        addGameLog(`Bought ${prop.name} for $${prop.price}`);
+    }
+    
+    propState.owner = 'player';
+    renderGameBoard();
+};
+
+const upgradeProperty = (propId) => {
+    const prop = properties.find(p => p.id === propId);
+    const propState = gameState.playerProperties[propId];
+    
+    if (propState.owner !== 'player') {
+        addGameLog('You don\'t own this property!');
+        return;
+    }
+    
+    if (propState.level >= 5) {
+        addGameLog(`${prop.name} is already a hotel!`);
+        return;
+    }
+    
+    const upgradeCost = 50;
+    if (gameState.playerCash < upgradeCost) {
+        gameState.playerDebt += upgradeCost - gameState.playerCash;
+        gameState.playerCash = 0;
+        addGameLog(`Upgraded ${prop.name} to level ${propState.level + 1} (took debt)`);
+    } else {
+        gameState.playerCash -= upgradeCost;
+        addGameLog(`Upgraded ${prop.name} to level ${propState.level + 1}`);
+    }
+    
+    propState.level++;
+    renderGameBoard();
+};
+
+const nextTurn = () => {
+    gameState.turn++;
+    
+    // Player collects income
+    let playerIncome = 0;
+    properties.forEach(prop => {
+        if (gameState.playerProperties[prop.id].owner === 'player') {
+            const level = gameState.playerProperties[prop.id].level;
+            playerIncome += prop.baseIncome * (1 + level * 0.5);
+        }
+    });
+    gameState.playerCash += playerIncome;
+    addGameLog(`You collected $${playerIncome.toFixed(0)} in income`);
+    
+    // Pay debt interest
+    const debtInterest = gameState.playerDebt * 0.05;
+    gameState.playerCash -= debtInterest;
+    addGameLog(`Paid $${debtInterest.toFixed(0)} in debt interest`);
+    
+    // Computer plays
+    computerTurn();
+    
+    renderGameBoard();
+};
+
+const computerTurn = () => {
+    // Computer collects income
+    let computerIncome = 0;
+    properties.forEach(prop => {
+        if (gameState.computerProperties[prop.id].owner === 'computer') {
+            const level = gameState.computerProperties[prop.id].level;
+            computerIncome += prop.baseIncome * (1 + level * 0.5);
+        }
+    });
+    gameState.computerCash += computerIncome;
+    
+    // Computer tries to buy properties
+    const availableProps = properties.filter(p => gameState.playerProperties[p.id].owner === null);
+    if (availableProps.length > 0 && gameState.computerCash > 100) {
+        const prop = availableProps[Math.floor(Math.random() * availableProps.length)];
+        if (gameState.computerCash >= prop.price) {
+            gameState.computerCash -= prop.price;
+            gameState.computerProperties[prop.id].owner = 'computer';
+            addGameLog(`Computer bought ${prop.name}`);
+        }
+    }
+    
+    // Computer upgrades properties
+    const computerProps = properties.filter(p => gameState.computerProperties[p.id].owner === 'computer');
+    computerProps.forEach(prop => {
+        if (gameState.computerProperties[prop.id].level < 5 && gameState.computerCash > 100) {
+            if (Math.random() > 0.7) {
+                gameState.computerCash -= 50;
+                gameState.computerProperties[prop.id].level++;
+                addGameLog(`Computer upgraded ${prop.name}`);
+            }
+        }
+    });
+};
+
+const addGameLog = (message) => {
+    gameState.gameLog.push(message);
+    if (gameState.gameLog.length > 20) {
+        gameState.gameLog.shift();
+    }
+};
+
+const updateGameLog = () => {
+    const logContainer = document.getElementById('game-log');
+    logContainer.innerHTML = gameState.gameLog.map(entry => `<p class="log-entry">${entry}</p>`).join('');
+    logContainer.scrollTop = logContainer.scrollHeight;
+};
+
+const resetGame = () => {
+    initMonopolyGame();
+    renderGameBoard();
+};
+
+// Initialize game when tab is opened
+const initGameTab = () => {
+    if (!gameState.turn) {
+        initMonopolyGame();
+    }
+    renderGameBoard();
 };
 
 // --- Finance News Functions ---

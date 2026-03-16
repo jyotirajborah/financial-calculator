@@ -404,6 +404,10 @@
                     <ion-icon name="cash"></ion-icon>
                     <span>Wealth Transfer</span>
                 </button>
+                <button class="nav-item" data-target="monopoly-game">
+                    <ion-icon name="game-controller"></ion-icon>
+                    <span>Monopoly Game</span>
+                </button>
                 <button class="nav-item" data-target="help-shortcuts">
                     <ion-icon name="help-circle"></ion-icon>
                     <span>Help & Shortcuts</span>
@@ -1881,6 +1885,71 @@
                         </div>
                         <div class="wealth-insights" id="wealth-insights" style="margin-top: 1.5rem;">
                             <!-- Insights will be loaded here -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Monopoly Game View -->
+                <section class="calculator-view" id="monopoly-game">
+                    <div class="game-container">
+                        <div class="game-header">
+                            <div class="game-title">
+                                <ion-icon name="game-controller"></ion-icon>
+                                <h2>Monopoly: Trade Up to Red Hotels</h2>
+                            </div>
+                            <p class="game-subtitle">Buy properties, use debt strategically, and build your empire from green houses to red hotels</p>
+                        </div>
+                        
+                        <div class="game-board">
+                            <!-- Game Stats -->
+                            <div class="game-stats">
+                                <div class="player-stat">
+                                    <span class="stat-label">Your Cash:</span>
+                                    <span class="stat-value" id="player-cash">$2,000</span>
+                                </div>
+                                <div class="player-stat">
+                                    <span class="stat-label">Your Debt:</span>
+                                    <span class="stat-value" id="player-debt">$0</span>
+                                </div>
+                                <div class="player-stat">
+                                    <span class="stat-label">Net Worth:</span>
+                                    <span class="stat-value" id="player-networth">$2,000</span>
+                                </div>
+                                <div class="player-stat">
+                                    <span class="stat-label">Properties:</span>
+                                    <span class="stat-value" id="player-properties">0</span>
+                                </div>
+                            </div>
+
+                            <!-- Game Log -->
+                            <div class="game-log">
+                                <h3>Game Log</h3>
+                                <div class="log-content" id="game-log">
+                                    <p class="log-entry">Welcome to Monopoly! You start with $2,000. Buy properties and build houses/hotels to generate income.</p>
+                                </div>
+                            </div>
+
+                            <!-- Properties Grid -->
+                            <div class="properties-section">
+                                <h3>Available Properties</h3>
+                                <div class="properties-grid" id="properties-grid">
+                                    <!-- Properties will be generated here -->
+                                </div>
+                            </div>
+
+                            <!-- Your Properties -->
+                            <div class="your-properties-section">
+                                <h3>Your Properties</h3>
+                                <div class="your-properties" id="your-properties">
+                                    <p class="empty-state">No properties yet. Buy some to get started!</p>
+                                </div>
+                            </div>
+
+                            <!-- Game Controls -->
+                            <div class="game-controls">
+                                <button class="btn-primary" id="next-turn-btn" onclick="nextTurn()">Next Turn (Computer Plays)</button>
+                                <button class="btn-secondary" id="reset-game-btn" onclick="resetGame()">Reset Game</button>
+                            </div>
                         </div>
                     </div>
                 </section>
