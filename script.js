@@ -315,6 +315,7 @@ document.querySelectorAll('.nav-item').forEach(btn => {
         // Initialize richest people if target is richest-people
         if (targetId === 'richest-people') {
             initRichestPeople();
+            initPovertyData();
         }
         
         // Initialize notes if target is my notes
@@ -6312,6 +6313,156 @@ const renderRichestPeople = () => {
             </div>
         `;
     }).join('');
+};
+
+// --- Poverty Data Functions ---
+const fetchPovertyData = async () => {
+    try {
+        const povertyStatsContainer = document.getElementById('poverty-stats');
+        const povertyInsightsContainer = document.getElementById('poverty-insights');
+        
+        if (!povertyStatsContainer) return;
+        
+        // Fetch World Bank poverty data
+        // Using World Bank API for poverty statistics
+        const response = await fetch('https://api.worldbank.org/v2/country/all/indicator/SI.POV.DDAY?format=json&per_page=500&date=2020:2024');
+        const data = await response.json();
+        
+        if (!data[1] || data[1].length === 0) {
+            throw new Error('No poverty data available');
+        }
+        
+        // Process poverty data
+        const povertyRecords = data[1].filter(record => record.value !== null);
+        const latestData = povertyRecords.slice(0, 10);
+        
+        // Calculate global statistics
+        const values = povertyRecords.map(r => r.value).filter(v => v !== null);
+        const avgPoverty = (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2);
+        const maxPoverty = Math.max(...values).toFixed(2);
+        
+        // Fetch additional health and education data
+        const healthResponse = await fetch('https://api.worldbank.org/v2/country/all/indicator/SP.URB.TOTL.IN.ZS?format=json&per_page=500&date=2020:2024');
+        const healthData = await healthResponse.json();
+        
+        // Render poverty statistics
+        povertyStatsContainer.innerHTML = `
+            <div class="stat-card">
+                <div class="stat-label">Global Population Living in Poverty</div>
+                <div class="stat-value">${avgPoverty}%</div>
+                <div class="stat-description">Average across countries (living on less than $1.90/day)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Highest Poverty Rate</div>
+                <div class="stat-value">${maxPoverty}%</div>
+                <div class="stat-description">In most affected countries</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">People in Extreme Poverty</div>
+                <div class="stat-value">700M+</div>
+                <div class="stat-description">Living on less than $1.90 per day globally</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Children Affected</div>
+                <div class="stat-value">258M</div>
+                <div class="stat-description">Children living in extreme poverty worldwide</div>
+            </div>
+        `;
+        
+        // Render insights
+        povertyInsightsContainer.innerHTML = `
+            <div class="insight-item">
+                <div class="insight-title">
+                    <ion-icon name="warning"></ion-icon>
+                    Hunger & Malnutrition
+                </div>
+                <div class="insight-text">
+                    Over 700 million people face hunger daily. Malnutrition affects 149 million children under 5, causing stunted growth and developmental delays. The wealth gap means some spend $100+ on meals while others struggle to find $1 for food.
+                </div>
+            </div>
+            <div class="insight-item">
+                <div class="insight-title">
+                    <ion-icon name="warning"></ion-icon>
+                    Healthcare Crisis
+                </div>
+                <div class="insight-text">
+                    5.2 million children die annually from preventable diseases. In poor regions, lack of access to basic medicines and vaccines costs lives. Meanwhile, billionaires spend millions on luxury healthcare and life extension.
+                </div>
+            </div>
+            <div class="insight-item">
+                <div class="insight-title">
+                    <ion-icon name="warning"></ion-icon>
+                    Education Deprivation
+                </div>
+                <div class="insight-text">
+                    258 million children are out of school. Poverty forces children into labor instead of classrooms. Without education, they remain trapped in poverty cycles for generations.
+                </div>
+            </div>
+            <div class="insight-item">
+                <div class="insight-title">
+                    <ion-icon name="warning"></ion-icon>
+                    Water & Sanitation
+                </div>
+                <div class="insight-text">
+                    2 billion people lack safe drinking water. 3.6 billion lack adequate sanitation. Waterborne diseases kill 1.4 million annually - mostly children in poverty-stricken areas.
+                </div>
+            </div>
+            <div class="insight-item">
+                <div class="insight-title">
+                    <ion-icon name="warning"></ion-icon>
+                    The Wealth Disparity
+                </div>
+                <div class="poverty-comparison">
+                    <div class="comparison-item">
+                        <div class="comparison-label">Richest 1%</div>
+                        <div class="comparison-value">$32.3T</div>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="comparison-label">Poorest 50%</div>
+                        <div class="comparison-value">$2.1T</div>
+                    </div>
+                </div>
+                <div class="insight-text" style="margin-top: 1rem;">
+                    The richest 1% owns more wealth than the entire bottom 50% combined. This inequality perpetuates suffering - while billionaires accumulate wealth, billions struggle for basic survival.
+                </div>
+            </div>
+        `;
+        
+    } catch (error) {
+        console.error('Error fetching poverty data:', error);
+        const povertyStatsContainer = document.getElementById('poverty-stats');
+        if (povertyStatsContainer) {
+            povertyStatsContainer.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-label">Global Poverty Statistics</div>
+                    <div class="stat-value">700M+</div>
+                    <div class="stat-description">People living in extreme poverty (less than $1.90/day)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Child Poverty</div>
+                    <div class="stat-value">258M</div>
+                    <div class="stat-description">Children living in extreme poverty</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Hunger Crisis</div>
+                    <div class="stat-value">700M+</div>
+                    <div class="stat-description">People facing hunger daily</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Preventable Deaths</div>
+                    <div class="stat-value">5.2M</div>
+                    <div class="stat-description">Children die annually from preventable diseases</div>
+                </div>
+            `;
+        }
+    }
+};
+
+// Initialize poverty data when richest people view is opened
+const initPovertyData = () => {
+    fetchPovertyData();
+    // Refresh every 30 minutes
+    setInterval(fetchPovertyData, 1800000);
 };
 
 // --- Finance News Functions ---

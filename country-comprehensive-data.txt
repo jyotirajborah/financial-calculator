@@ -1,0 +1,25 @@
+// Add these fields to major countries in countryFinancialData:
+
+United States:
+resources: 'Oil, Natural Gas, Coal, Timber, Agricultural Land'
+knownFor: 'Technology, Finance, Entertainment, Military Power'
+exports: 'Machinery, Electronics, Vehicles, Aircraft, Pharmaceuticals'
+imports: 'Electronics, Vehicles, Machinery, Oil, Pharmaceuticals'
+military: 'Rank #1 - Budget: $877B, Active: 1.4M'
+government: 'Federal Presidential Republic'
+
+China:
+resources: 'Rare Earth Elements, Coal, Iron Ore, Oil, Natural Gas'
+knownFor: 'Manufacturing, Technology, Infrastructure, Trade'
+exports: 'Electronics, Machinery, Textiles, Furniture, Toys'
+imports: 'Oil, Semiconductors, Iron Ore, Soybeans, Vehicles'
+military: 'Rank #3 - Budget: $292B, Active: 2.0M'
+government: 'Socialist Republic (One-Party State)'
+
+India:
+resources: 'Coal, Iron Ore, Manganese, Mica, Bauxite'
+knownFor: 'IT Services, Pharmaceuticals, Textiles, Agriculture'
+exports: 'Petroleum Products, Gems, Machinery, Pharmaceuticals, Textiles'
+imports: 'Crude Oil, Gold, Electronics, Machinery, Chemicals'
+military: 'Rank #4 - Budget: $81B, Active: 1.5M'
+government: 'Federal Parliamentary Republic'
