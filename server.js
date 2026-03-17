@@ -676,32 +676,117 @@ async function fetchResourcesData(countries) {
     
     const resourcesData = [];
     
-    console.log('🔗 Fetching daily commodity prices for resources...');
+    console.log('🔗 Fetching resource rent data from World Bank API...');
     
     // Fetch commodity prices with daily caching
     const commodityPrices = await fetchCommodityPrices();
     const istTimestamp = getISTTimestamp();
     
-    for (const country of countries) {
-        const countryData = {
-            name: country.name.common,
-            code: country.cca2,
-            region: country.region,
-            subregion: country.subregion,
-            population: country.population,
-            area: country.area,
-            flag: country.flags?.svg || country.flags?.png || `https://flagcdn.com/w320/${country.cca2.toLowerCase()}.png`,
-            resources: getCountryResourcesWithPrices(country, commodityPrices),
-            lastUpdated: istTimestamp,
-            dataSource: 'Real-time Commodity APIs'
-        };
+    // World Bank resource rent indicators (% of GDP)
+    const resourceIndicators = {
+        'NY.GDP.MINR.RT.ZS': 'minerals',  // Mineral rents
+        'NY.GDP.COAL.RT.ZS': 'coal',      // Coal rents
+        'NY.GDP.PETR.RT.ZS': 'oil',       // Oil rents
+        'NY.GDP.NGAS.RT.ZS': 'gas',       // Natural gas rents
+        'NY.GDP.FRST.RT.ZS': 'forest'     // Forest rents
+    };
+    
+    try {
+        // Fetch all resource rent indicators
+        const resourcePromises = Object.entries(resourceIndicators).map(async ([indicator, type]) => {
+            const url = `https://api.worldbank.org/v2/country/all/indicator/${indicator}?format=json&date=2022:2023&per_page=300`;
+            const response = await fetch(url);
+            if (!response.ok) return { type, data: [] };
+            const data = await response.json();
+            return { type, data: data[1] || [] };
+        });
         
-        // Calculate totalResources from all resource items
-        countryData.totalResources = countryData.resources.reduce((total, category) => {
-            return total + category.items.length;
-        }, 0);
+        const resourceResults = await Promise.all(resourcePromises);
         
-        resourcesData.push(countryData);
+        // Process each country
+        for (const country of countries) {
+            const countryCode = country.cca3;
+            const resources = [];
+            
+            // Check each resource type
+            for (const { type, data } of resourceResults) {
+                const countryData = data.find(item => 
+                    item.country.id === countryCode && 
+                    item.value !== null && 
+                    item.value > 0.5  // Only include if > 0.5% of GDP
+                );
+                
+                if (countryData) {
+                    const percentage = countryData.value.toFixed(1) + '%';
+                    
+                    if (type === 'oil' || type === 'gas' || type === 'coal') {
+                        const category = resources.find(r => r.category === 'Oil & Gas');
+                        const item = {
+                            name: type === 'oil' ? 'Crude Oil' : type === 'gas' ? 'Natural Gas' : 'Coal',
+                            percentage,
+                            rentOfGDP: percentage
+                        };
+                        
+                        if (category) {
+                            category.items.push(item);
+                        } else {
+                            resources.push({
+                                category: 'Oil & Gas',
+                                icon: 'flame',
+                                items: [item]
+                            });
+                        }
+                    } else if (type === 'minerals') {
+                        resources.push({
+                            category: 'Minerals & Metals',
+                            icon: 'diamond',
+                            items: [{
+                                name: 'Minerals',
+                                percentage,
+                                rentOfGDP: percentage,
+                                currentPrice: commodityPrices.gold?.price
+                            }]
+                        });
+                    } else if (type === 'forest') {
+                        resources.push({
+                            category: 'Forest Resources',
+                            icon: 'leaf',
+                            items: [{
+                                name: 'Forest Products',
+                                percentage,
+                                rentOfGDP: percentage
+                            }]
+                        });
+                    }
+                }
+            }
+            
+            const countryResourceData = {
+                name: country.name.common,
+                code: country.cca2,
+                region: country.region,
+                subregion: country.subregion,
+                population: country.population,
+                area: country.area,
+                flag: country.flags?.svg || country.flags?.png || `https://flagcdn.com/w320/${country.cca2.toLowerCase()}.png`,
+                resources,
+                lastUpdated: istTimestamp,
+                dataSource: 'World Bank Resource Rents API'
+            };
+            
+            // Calculate totalResources from all resource items
+            countryResourceData.totalResources = countryResourceData.resources.reduce((total, category) => {
+                return total + category.items.length;
+            }, 0);
+            
+            resourcesData.push(countryResourceData);
+        }
+        
+        console.log(`✅ Processed ${resourcesData.length} countries with resource rent data`);
+        
+    } catch (error) {
+        console.error('❌ Error fetching World Bank resource data:', error.message);
+        throw new Error(`Failed to fetch resource data: ${error.message}`);
     }
     
     // Cache the results for the entire day
@@ -926,43 +1011,6 @@ function getOilGasResourcesWithPrices(country, prices) {
     return oilProducers[country.name.common] || [];
 }
 
-function getMineralResourcesWithPrices(country, prices) {
-    const mineralProducers = {
-        'China': [{ name: 'Gold', percentage: '11.0%', currentPrice: prices.gold?.price }, { name: 'Copper', percentage: '8.4%' }, { name: 'Rare Earth', percentage: '60%' }],
-        'Australia': [{ name: 'Gold', percentage: '9.8%', currentPrice: prices.gold?.price }, { name: 'Iron Ore', percentage: '37%' }, { name: 'Copper', percentage: '4.6%' }],
-        'Russia': [{ name: 'Gold', percentage: '9.5%', currentPrice: prices.gold?.price }, { name: 'Platinum', percentage: '12%', currentPrice: prices.platinum?.price }, { name: 'Palladium', percentage: '40%' }],
-        'United States': [{ name: 'Gold', percentage: '5.9%', currentPrice: prices.gold?.price }, { name: 'Copper', percentage: '6.2%' }],
-        'Canada': [{ name: 'Gold', percentage: '5.1%', currentPrice: prices.gold?.price }, { name: 'Uranium', percentage: '13%' }],
-        'Peru': [{ name: 'Gold', percentage: '4.8%', currentPrice: prices.gold?.price }, { name: 'Copper', percentage: '12%' }, { name: 'Silver', percentage: '18%', currentPrice: prices.silver?.price }],
-        'South Africa': [{ name: 'Gold', percentage: '3.2%', currentPrice: prices.gold?.price }, { name: 'Platinum', percentage: '70%', currentPrice: prices.platinum?.price }],
-        'Mexico': [{ name: 'Silver', percentage: '23%', currentPrice: prices.silver?.price }, { name: 'Gold', percentage: '3.1%', currentPrice: prices.gold?.price }],
-        'Indonesia': [{ name: 'Gold', percentage: '3.0%', currentPrice: prices.gold?.price }, { name: 'Copper', percentage: '3.8%' }],
-        'Ghana': [{ name: 'Gold', percentage: '2.8%', currentPrice: prices.gold?.price }],
-        'Brazil': [{ name: 'Iron Ore', percentage: '20%' }, { name: 'Gold', percentage: '2.5%', currentPrice: prices.gold?.price }],
-        'Chile': [{ name: 'Copper', percentage: '28%' }, { name: 'Lithium', percentage: '26%' }],
-        'Argentina': [{ name: 'Lithium', percentage: '21%' }, { name: 'Silver', percentage: '3.5%', currentPrice: prices.silver?.price }],
-        'Bolivia': [{ name: 'Lithium', percentage: '23%' }, { name: 'Silver', percentage: '4.2%', currentPrice: prices.silver?.price }],
-        'India': [{ name: 'Iron Ore', percentage: '7%' }, { name: 'Coal', percentage: '9%' }],
-        'Kazakhstan': [{ name: 'Uranium', percentage: '43%' }, { name: 'Copper', percentage: '2.1%' }],
-        'Zambia': [{ name: 'Copper', percentage: '5.8%' }],
-        'Poland': [{ name: 'Copper', percentage: '4.2%' }, { name: 'Silver', percentage: '5.1%', currentPrice: prices.silver?.price }],
-        'Mongolia': [{ name: 'Copper', percentage: '3.5%' }, { name: 'Coal', percentage: '7%' }],
-        'Democratic Republic of the Congo': [{ name: 'Copper', percentage: '4.5%' }, { name: 'Cobalt', percentage: '70%' }],
-        'Zimbabwe': [{ name: 'Platinum', percentage: '8%', currentPrice: prices.platinum?.price }, { name: 'Gold', percentage: '1.2%', currentPrice: prices.gold?.price }],
-        'Uzbekistan': [{ name: 'Gold', percentage: '2.3%', currentPrice: prices.gold?.price }, { name: 'Uranium', percentage: '3.5%' }],
-        'Papua New Guinea': [{ name: 'Gold', percentage: '2.1%', currentPrice: prices.gold?.price }, { name: 'Copper', percentage: '2.8%' }],
-        'Turkey': [{ name: 'Gold', percentage: '1.8%', currentPrice: prices.gold?.price }],
-        'Mali': [{ name: 'Gold', percentage: '1.7%', currentPrice: prices.gold?.price }],
-        'Burkina Faso': [{ name: 'Gold', percentage: '1.5%', currentPrice: prices.gold?.price }],
-        'Tanzania': [{ name: 'Gold', percentage: '1.4%', currentPrice: prices.gold?.price }],
-        'Colombia': [{ name: 'Gold', percentage: '1.3%', currentPrice: prices.gold?.price }, { name: 'Coal', percentage: '1.2%' }],
-        'Philippines': [{ name: 'Gold', percentage: '1.2%', currentPrice: prices.gold?.price }, { name: 'Copper', percentage: '1.8%' }],
-        'Saudi Arabia': [{ name: 'Gold', percentage: '1.1%', currentPrice: prices.gold?.price }],
-        'Finland': [{ name: 'Gold', percentage: '1.0%', currentPrice: prices.gold?.price }]
-    };
-    
-    return mineralProducers[country.name.common] || [];
-}
 app.get('/api/verify', async (req, res) => {
     try {
         const authHeader = req.headers.authorization;
