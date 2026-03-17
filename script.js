@@ -5453,10 +5453,8 @@ const initCountryResources = async () => {
         
     } catch (error) {
         console.error('❌ Error fetching daily resources data:', error);
-        showToast('❌ Unable to fetch resource data. Using fallback data.', 'error');
-        // Fallback to static data
-        countryResourcesData = generateFallbackResourcesData();
-        renderCountryResources();
+        showToast('❌ Unable to fetch resource data from API. Please try again later.', 'error');
+        throw error;
     }
     
     // Add search functionality
@@ -6258,25 +6256,8 @@ const initCountryFinancial = async () => {
         
     } catch (error) {
         console.error('❌ Error fetching daily financial data:', error);
-        // Fallback to static data with enrichment
-        const enrichedFallback = countryFinancialData.map(country => ({
-            ...country,
-            resources: country.resources || getCountryResources({ region: 'Unknown', subregion: '' }),
-            knownFor: country.knownFor || getCountryKnownFor({ region: 'Unknown' }),
-            exports: country.exports || getCountryExports({ region: 'Unknown' }),
-            imports: country.imports || getCountryImports({ region: 'Unknown' }),
-            military: country.military || getMilitaryInfo({ population: 50000000 }),
-            government: country.government || 'Republic',
-            population: country.population || 0,
-            capital: country.capital || 'N/A',
-            region: country.region || 'Unknown',
-            subregion: country.subregion || 'Unknown',
-            lastUpdated: new Date().toISOString()
-        }));
-        
-        countriesData = enrichedFallback.sort((a, b) => a.name.localeCompare(b.name));
-        console.log('📊 Using fallback data:', countriesData.length, 'countries');
-        renderCountries();
+        showToast('❌ Unable to fetch financial data from API. Please try again later.', 'error');
+        throw error;
     }
     
     // Add search functionality
@@ -6326,7 +6307,7 @@ const fetchRealTimeEconomicData = async () => {
         
     } catch (error) {
         console.error('❌ Error fetching daily financial data:', error);
-        showToast('❌ Unable to fetch financial data. Using fallback data.', 'error');
+        showToast('❌ Unable to fetch financial data from API. Please try again later.', 'error');
         throw error;
     }
 };
