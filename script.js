@@ -6664,7 +6664,7 @@ const renderCountries = () => {
                         <div class="country-stats">
                             <div class="stat-item">
                                 <span class="stat-label">GDP</span>
-                                <span class="stat-value">$${country.gdp}T</span>
+                                <span class="stat-value">$${(country.gdp / 1000).toFixed(2)}T</span>
                             </div>
                             <div class="stat-item">
                                 <span class="stat-label">Growth</span>

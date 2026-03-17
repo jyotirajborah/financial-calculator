@@ -631,9 +631,9 @@ async function fetchWorldBankData(countries) {
                         break;
                 }
             } else {
-                // Set N/A for missing data
+                // Set 0 for missing numeric data
                 if (!countryData[fieldName]) {
-                    countryData[fieldName] = 'N/A';
+                    countryData[fieldName] = 0;
                     countryData[fieldName + 'Source'] = 'Not Available';
                 }
             }
@@ -695,6 +695,12 @@ async function fetchResourcesData(countries) {
             lastUpdated: istTimestamp,
             dataSource: 'Real-time Commodity APIs'
         };
+        
+        // Calculate totalResources from all resource items
+        countryData.totalResources = countryData.resources.reduce((total, category) => {
+            return total + category.items.length;
+        }, 0);
+        
         resourcesData.push(countryData);
     }
     
