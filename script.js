@@ -1,4 +1,4 @@
-// VERSION: 2.0.2 - Fixed buyProperty function
+// VERSION: 2.1.1 - Fixed authentication issues
 // Last Updated: 2024-03-16
 
 // [DEPRECATED] PDF export functions removed - use Excel export only
@@ -2250,9 +2250,13 @@ const login = (user, token) => {
     console.log('🔐 LOGIN FUNCTION CALLED:', { user, token: !!token });
     
     if (!token) {
-        console.error('❌ LOGIN FAILED: No token provided!');
-        showAlertModal('Login failed: No authentication token received', 'error');
-        return;
+        // Check if token exists in localStorage (for auto-login scenarios)
+        token = localStorage.getItem('auth_token');
+        if (!token) {
+            console.error('❌ LOGIN FAILED: No token provided or found!');
+            showAlertModal('Login failed: No authentication token received', 'error');
+            return;
+        }
     }
     
     if (!user) {
@@ -2261,6 +2265,7 @@ const login = (user, token) => {
         return;
     }
     
+    // Set auth state
     isGuestMode = false;
     currentUser = user;
     localStorage.setItem('auth_token', token);
@@ -2367,6 +2372,12 @@ const logout = () => {
     
     console.log('✅ Cleared auth state and token');
     
+    showAuthOverlay();
+    
+    console.log('🎉 Logout complete');
+};
+
+const showAuthOverlay = () => {
     const overlay = document.getElementById('auth-overlay');
     const appContainer = document.getElementById('app-container');
     
@@ -2385,7 +2396,7 @@ const logout = () => {
     overlay.classList.add('active');
     overlay.style.display = 'flex';
     
-    console.log('✅ Toggled overlay and app container');
+    console.log('✅ Showed auth overlay');
     
     // Reset profile to guest icon
     const guestIcon = document.getElementById('guest-icon');
@@ -2407,13 +2418,16 @@ const logout = () => {
         console.error('❌ Login tab/form not found');
     }
     
-    // Clear any form data
+    // Clear any form data and errors
     const loginEmailInput = document.getElementById('login-email');
     const loginPasswordInput = document.getElementById('login-password');
+    const loginError = document.getElementById('login-error');
+    const signupError = document.getElementById('signup-error');
+    
     if (loginEmailInput) loginEmailInput.value = '';
     if (loginPasswordInput) loginPasswordInput.value = '';
-    
-    console.log('🎉 Logout complete');
+    if (loginError) loginError.textContent = '';
+    if (signupError) signupError.textContent = '';
 };
 
 // Update save buttons for guest users
@@ -2842,7 +2856,12 @@ initAuth = () => {
                     console.log('Login successful, calling login function'); // Debug log
                     // Extract token from session
                     const token = data.session?.access_token;
-                    login(data.user, token);
+                    if (token && data.user) {
+                        login(data.user, token);
+                    } else {
+                        console.error('Login response missing token or user data:', data);
+                        if (loginError) loginError.textContent = "Login failed: Invalid response from server.";
+                    }
                 } else {
                     console.error('Login failed:', data.error); // Debug log
                     if (loginError) loginError.textContent = data.error || "Login failed.";
@@ -2946,24 +2965,31 @@ initAuth = () => {
         })
         .then(res => {
             console.log('Token verification response status:', res.status); // Debug log
+            if (!res.ok) {
+                throw new Error(`Token verification failed: ${res.status}`);
+            }
             return res.json();
         })
         .then(data => {
             console.log('Token verification data:', data); // Debug log
             if (data.user) {
                 console.log('Token valid, logging in user'); // Debug log
-                login(data.user, null); // Token is already stored
+                // Pass the existing token since it's valid
+                login(data.user, token);
             } else {
-                console.log('Token invalid, logging out'); // Debug log
-                logout();
+                console.log('Token invalid, clearing auth state'); // Debug log
+                localStorage.removeItem('auth_token');
+                showAuthOverlay();
             }
         })
         .catch((error) => {
             console.error('Token verification error:', error); // Debug log
-            logout();
+            localStorage.removeItem('auth_token');
+            showAuthOverlay();
         });
     } else {
-        console.log('No existing token found'); // Debug log
+        console.log('No existing token found, showing auth overlay'); // Debug log
+        showAuthOverlay();
     }
     
     // Test server connectivity
@@ -3170,48 +3196,6 @@ function initProjection() {
 // Initialize all calculators on load
 window.addEventListener('DOMContentLoaded', () => {
     console.log('=== FinCalc App Starting ===');
-    
-    // Check URL parameters for login redirect
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.toString() === '' && window.location.pathname === '/') {
-        // This might be a redirect after login, check for auth token
-        const authToken = localStorage.getItem('auth_token');
-        if (authToken) {
-            console.log('🔄 Detected potential login redirect, checking token...');
-        }
-    }
-    
-    // Check if user is already logged in
-    const authToken = localStorage.getItem('auth_token');
-    if (authToken) {
-        console.log('🔑 Found existing auth token, attempting auto-login...');
-        // Try to verify the token and auto-login
-        fetch('/api/verify', {
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${authToken}` }
-        })
-        .then(response => {
-            if (!response.ok) {
-                console.log('❌ Token verification failed with status:', response.status);
-                localStorage.removeItem('auth_token');
-                return null;
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data && data.user) {
-                console.log('✅ Auto-login successful:', data.user);
-                login(data.user, authToken);
-            } else if (data) {
-                console.log('❌ Token invalid, clearing...');
-                localStorage.removeItem('auth_token');
-            }
-        })
-        .catch(err => {
-            console.log('❌ Auto-login failed:', err);
-            localStorage.removeItem('auth_token');
-        });
-    }
     
     // Initialize profile avatar for guest state (default)
     const guestIcon = document.getElementById('guest-icon');
