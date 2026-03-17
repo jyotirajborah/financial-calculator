@@ -1696,6 +1696,22 @@
                                 <h2>Country Financial Overview</h2>
                             </div>
                             <p class="country-subtitle">Global economic indicators and financial health</p>
+                            
+                            <!-- Country Financial Tabs -->
+                            <div class="country-tabs">
+                                <button class="country-tab active" data-tab="overview" onclick="switchCountryTab('overview')">
+                                    <ion-icon name="stats-chart"></ion-icon>
+                                    <span>Financial Overview</span>
+                                </button>
+                                <button class="country-tab" data-tab="resources" onclick="switchCountryTab('resources')">
+                                    <ion-icon name="diamond"></ion-icon>
+                                    <span>Country Resources</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Financial Overview Tab Content -->
+                        <div class="country-tab-content active" id="country-overview-content">
                             <div class="country-controls">
                                 <div class="search-box">
                                     <ion-icon name="search"></ion-icon>
@@ -1714,10 +1730,48 @@
                                     </select>
                                 </div>
                             </div>
+                            
+                            <div class="countries-grid" id="countries-grid">
+                                <!-- Countries will be dynamically loaded here -->
+                            </div>
                         </div>
                         
-                        <div class="countries-grid" id="countries-grid">
-                            <!-- Countries will be dynamically loaded here -->
+                        <!-- Country Resources Tab Content -->
+                        <div class="country-tab-content" id="country-resources-content">
+                            <div class="resources-controls">
+                                <div class="search-box">
+                                    <ion-icon name="search"></ion-icon>
+                                    <input type="text" id="resources-search" placeholder="Search countries or resources...">
+                                </div>
+                                <div class="sort-selector">
+                                    <label for="resources-sort">
+                                        <ion-icon name="funnel"></ion-icon>
+                                        <span>Sort by:</span>
+                                    </label>
+                                    <select id="resources-sort" onchange="sortCountryResources()">
+                                        <option value="name">Country Name</option>
+                                        <option value="resources">Resource Count</option>
+                                        <option value="region">Region</option>
+                                    </select>
+                                </div>
+                                <div class="resource-filter">
+                                    <label for="resource-type-filter">
+                                        <ion-icon name="filter"></ion-icon>
+                                        <span>Filter by Resource:</span>
+                                    </label>
+                                    <select id="resource-type-filter" onchange="filterByResource()">
+                                        <option value="">All Resources</option>
+                                        <option value="oil">Oil & Gas</option>
+                                        <option value="minerals">Minerals & Metals</option>
+                                        <option value="agriculture">Agriculture</option>
+                                        <option value="renewable">Renewable Energy</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="resources-grid" id="resources-grid">
+                                <!-- Country resources will be dynamically loaded here -->
+                            </div>
                         </div>
                     </div>
                 </section>

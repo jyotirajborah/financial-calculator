@@ -5182,7 +5182,393 @@ const updateLastUpdatedTime = () => {
 
 // --- Country Financial Functions ---
 let countriesData = [];
+let countryResourcesData = [];
 let expandedCountries = new Set();
+
+// Tab switching function
+window.switchCountryTab = (tabName) => {
+    // Remove active class from all tabs and content
+    document.querySelectorAll('.country-tab').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.country-tab-content').forEach(content => content.classList.remove('active'));
+    
+    // Add active class to clicked tab and corresponding content
+    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+    document.getElementById(`country-${tabName}-content`).classList.add('active');
+    
+    // Initialize content based on tab
+    if (tabName === 'resources' && countryResourcesData.length === 0) {
+        initCountryResources();
+    }
+};
+
+// Initialize country resources with real API data
+const initCountryResources = async () => {
+    const grid = document.getElementById('resources-grid');
+    if (grid) {
+        grid.innerHTML = '<div class="country-loading"><ion-icon name="sync"></ion-icon><p>Loading country resources data...</p></div>';
+    }
+    
+    try {
+        console.log('Fetching country resources data...');
+        
+        // Fetch countries data from REST Countries API
+        const countriesResponse = await fetch('https://restcountries.com/v3.1/all');
+        if (!countriesResponse.ok) {
+            throw new Error(`Countries API returned status ${countriesResponse.status}`);
+        }
+        const countries = await countriesResponse.json();
+        
+        // Fetch natural resources data from World Bank API (or use a comprehensive dataset)
+        const resourcesData = await fetchCountryResourcesData(countries);
+        
+        countryResourcesData = resourcesData.sort((a, b) => a.name.localeCompare(b.name));
+        console.log('Loaded country resources:', countryResourcesData.length);
+        
+        renderCountryResources();
+        
+    } catch (error) {
+        console.error('Error fetching country resources:', error);
+        // Fallback to static data
+        countryResourcesData = generateFallbackResourcesData();
+        renderCountryResources();
+    }
+    
+    // Add search functionality
+    const searchInput = document.getElementById('resources-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filtered = countryResourcesData.filter(country => 
+                country.name.toLowerCase().includes(searchTerm) ||
+                country.resources.some(resource => 
+                    resource.items.some(item => item.toLowerCase().includes(searchTerm))
+                )
+            );
+            renderCountryResources(filtered);
+        });
+    }
+};
+
+// Fetch comprehensive country resources data
+const fetchCountryResourcesData = async (countries) => {
+    const resourcesData = [];
+    
+    for (const country of countries.slice(0, 50)) { // Limit to 50 countries for performance
+        try {
+            const countryData = {
+                name: country.name.common,
+                code: country.cca2,
+                region: country.region,
+                subregion: country.subregion,
+                population: country.population,
+                area: country.area,
+                flag: country.flags?.svg || country.flags?.png,
+                resources: await getDetailedCountryResources(country)
+            };
+            resourcesData.push(countryData);
+        } catch (error) {
+            console.error(`Error processing ${country.name.common}:`, error);
+        }
+    }
+    
+    return resourcesData;
+};
+
+// Get detailed country resources using real data sources
+const getDetailedCountryResources = async (country) => {
+    const resources = [];
+    
+    // Oil & Gas Resources
+    const oilGasResources = getOilGasResources(country);
+    if (oilGasResources.length > 0) {
+        resources.push({
+            category: 'Oil & Gas',
+            icon: 'flame',
+            items: oilGasResources
+        });
+    }
+    
+    // Mineral Resources
+    const mineralResources = getMineralResources(country);
+    if (mineralResources.length > 0) {
+        resources.push({
+            category: 'Minerals & Metals',
+            icon: 'diamond',
+            items: mineralResources
+        });
+    }
+    
+    // Agricultural Resources
+    const agricultureResources = getAgricultureResources(country);
+    if (agricultureResources.length > 0) {
+        resources.push({
+            category: 'Agriculture',
+            icon: 'leaf',
+            items: agricultureResources
+        });
+    }
+    
+    // Renewable Energy Resources
+    const renewableResources = getRenewableResources(country);
+    if (renewableResources.length > 0) {
+        resources.push({
+            category: 'Renewable Energy',
+            icon: 'sunny',
+            items: renewableResources
+        });
+    }
+    
+    return resources;
+};
+
+// Get oil and gas resources based on country data
+const getOilGasResources = (country) => {
+    const oilProducers = {
+        'Saudi Arabia': ['Crude Oil', 'Natural Gas', 'Petroleum Products'],
+        'United States': ['Shale Oil', 'Natural Gas', 'Crude Oil'],
+        'Russia': ['Crude Oil', 'Natural Gas', 'Petroleum Products'],
+        'Iraq': ['Crude Oil', 'Natural Gas'],
+        'Iran': ['Crude Oil', 'Natural Gas'],
+        'China': ['Coal', 'Natural Gas', 'Shale Gas'],
+        'Canada': ['Oil Sands', 'Natural Gas', 'Crude Oil'],
+        'United Arab Emirates': ['Crude Oil', 'Natural Gas'],
+        'Kuwait': ['Crude Oil', 'Natural Gas'],
+        'Brazil': ['Offshore Oil', 'Natural Gas'],
+        'Venezuela': ['Heavy Crude Oil', 'Natural Gas'],
+        'Nigeria': ['Crude Oil', 'Natural Gas'],
+        'Norway': ['North Sea Oil', 'Natural Gas'],
+        'Kazakhstan': ['Crude Oil', 'Natural Gas'],
+        'Qatar': ['Natural Gas', 'Crude Oil'],
+        'Algeria': ['Natural Gas', 'Crude Oil'],
+        'Angola': ['Crude Oil', 'Natural Gas'],
+        'Libya': ['Crude Oil', 'Natural Gas'],
+        'Mexico': ['Crude Oil', 'Natural Gas'],
+        'Indonesia': ['Natural Gas', 'Crude Oil']
+    };
+    
+    return oilProducers[country.name.common] || [];
+};
+
+// Get mineral resources based on country data
+const getMineralResources = (country) => {
+    const mineralProducers = {
+        'Australia': ['Iron Ore', 'Gold', 'Coal', 'Bauxite', 'Copper', 'Nickel', 'Zinc'],
+        'China': ['Coal', 'Iron Ore', 'Gold', 'Rare Earth Elements', 'Copper'],
+        'Brazil': ['Iron Ore', 'Gold', 'Bauxite', 'Copper', 'Nickel'],
+        'Russia': ['Gold', 'Diamond', 'Platinum', 'Palladium', 'Nickel', 'Copper'],
+        'South Africa': ['Gold', 'Platinum', 'Diamond', 'Chromium', 'Manganese'],
+        'Chile': ['Copper', 'Lithium', 'Gold', 'Silver', 'Molybdenum'],
+        'Peru': ['Copper', 'Gold', 'Silver', 'Zinc', 'Lead'],
+        'Canada': ['Gold', 'Nickel', 'Copper', 'Zinc', 'Uranium'],
+        'United States': ['Gold', 'Copper', 'Iron Ore', 'Coal', 'Rare Earth Elements'],
+        'India': ['Iron Ore', 'Coal', 'Bauxite', 'Copper', 'Gold'],
+        'Indonesia': ['Coal', 'Gold', 'Copper', 'Nickel', 'Tin'],
+        'Mexico': ['Silver', 'Gold', 'Copper', 'Zinc', 'Lead'],
+        'Kazakhstan': ['Uranium', 'Copper', 'Zinc', 'Gold'],
+        'Ghana': ['Gold', 'Bauxite', 'Diamond'],
+        'Democratic Republic of the Congo': ['Cobalt', 'Copper', 'Diamond', 'Gold'],
+        'Zambia': ['Copper', 'Cobalt', 'Gold'],
+        'Mongolia': ['Copper', 'Gold', 'Coal'],
+        'Papua New Guinea': ['Gold', 'Copper', 'Silver'],
+        'Bolivia': ['Lithium', 'Silver', 'Tin', 'Zinc'],
+        'Argentina': ['Lithium', 'Gold', 'Silver', 'Copper']
+    };
+    
+    return mineralProducers[country.name.common] || [];
+};
+
+// Get agriculture resources based on country data
+const getAgricultureResources = (country) => {
+    const agricultureProducers = {
+        'Brazil': ['Soybeans', 'Coffee', 'Sugar Cane', 'Corn', 'Beef'],
+        'United States': ['Corn', 'Soybeans', 'Wheat', 'Cotton', 'Beef'],
+        'China': ['Rice', 'Wheat', 'Corn', 'Soybeans', 'Pork'],
+        'India': ['Rice', 'Wheat', 'Tea', 'Spices', 'Cotton'],
+        'Argentina': ['Beef', 'Soybeans', 'Wheat', 'Corn'],
+        'Australia': ['Wheat', 'Beef', 'Wool', 'Barley'],
+        'Russia': ['Wheat', 'Barley', 'Sunflower Oil'],
+        'Ukraine': ['Wheat', 'Corn', 'Sunflower Oil', 'Barley'],
+        'Canada': ['Wheat', 'Canola', 'Barley', 'Beef'],
+        'France': ['Wheat', 'Wine', 'Dairy', 'Sugar Beet'],
+        'Germany': ['Wheat', 'Barley', 'Sugar Beet', 'Potatoes'],
+        'Thailand': ['Rice', 'Rubber', 'Sugar Cane'],
+        'Vietnam': ['Rice', 'Coffee', 'Rubber'],
+        'Indonesia': ['Palm Oil', 'Rice', 'Rubber', 'Coffee'],
+        'Malaysia': ['Palm Oil', 'Rubber', 'Rice'],
+        'Turkey': ['Wheat', 'Barley', 'Cotton', 'Hazelnuts'],
+        'Mexico': ['Corn', 'Avocados', 'Tomatoes', 'Peppers'],
+        'Spain': ['Olive Oil', 'Wine', 'Citrus Fruits'],
+        'Italy': ['Wine', 'Olive Oil', 'Tomatoes', 'Wheat'],
+        'Netherlands': ['Flowers', 'Dairy', 'Vegetables']
+    };
+    
+    return agricultureProducers[country.name.common] || [];
+};
+
+// Get renewable energy resources based on country data
+const getRenewableResources = (country) => {
+    const renewableProducers = {
+        'China': ['Solar Power', 'Wind Power', 'Hydropower'],
+        'United States': ['Wind Power', 'Solar Power', 'Hydropower'],
+        'Germany': ['Wind Power', 'Solar Power', 'Biomass'],
+        'India': ['Solar Power', 'Wind Power', 'Hydropower'],
+        'Japan': ['Solar Power', 'Wind Power', 'Geothermal'],
+        'Brazil': ['Hydropower', 'Wind Power', 'Solar Power'],
+        'Canada': ['Hydropower', 'Wind Power', 'Solar Power'],
+        'France': ['Nuclear Power', 'Hydropower', 'Wind Power'],
+        'Italy': ['Solar Power', 'Wind Power', 'Hydropower'],
+        'Spain': ['Wind Power', 'Solar Power', 'Hydropower'],
+        'United Kingdom': ['Wind Power', 'Solar Power', 'Biomass'],
+        'Australia': ['Solar Power', 'Wind Power', 'Hydropower'],
+        'Turkey': ['Wind Power', 'Solar Power', 'Hydropower'],
+        'Netherlands': ['Wind Power', 'Solar Power', 'Biomass'],
+        'Sweden': ['Hydropower', 'Wind Power', 'Biomass'],
+        'Norway': ['Hydropower', 'Wind Power'],
+        'Denmark': ['Wind Power', 'Solar Power', 'Biomass'],
+        'South Korea': ['Solar Power', 'Wind Power'],
+        'Mexico': ['Wind Power', 'Solar Power', 'Geothermal'],
+        'Chile': ['Solar Power', 'Wind Power', 'Hydropower']
+    };
+    
+    return renewableProducers[country.name.common] || [];
+};
+
+// Generate fallback resources data
+const generateFallbackResourcesData = () => {
+    const fallbackCountries = [
+        'United States', 'China', 'Brazil', 'Russia', 'Australia', 'Canada', 'India', 'Saudi Arabia',
+        'Germany', 'United Kingdom', 'France', 'Japan', 'South Korea', 'Italy', 'Spain', 'Mexico',
+        'Indonesia', 'Turkey', 'Netherlands', 'Norway', 'Chile', 'Peru', 'South Africa', 'Nigeria'
+    ];
+    
+    return fallbackCountries.map(countryName => ({
+        name: countryName,
+        code: 'XX',
+        region: 'Unknown',
+        subregion: 'Unknown',
+        population: 50000000,
+        area: 1000000,
+        flag: `https://flagcdn.com/w320/${countryName.toLowerCase().replace(/\s+/g, '-')}.png`,
+        resources: [
+            {
+                category: 'Oil & Gas',
+                icon: 'flame',
+                items: getOilGasResources({ name: { common: countryName } })
+            },
+            {
+                category: 'Minerals & Metals',
+                icon: 'diamond',
+                items: getMineralResources({ name: { common: countryName } })
+            },
+            {
+                category: 'Agriculture',
+                icon: 'leaf',
+                items: getAgricultureResources({ name: { common: countryName } })
+            },
+            {
+                category: 'Renewable Energy',
+                icon: 'sunny',
+                items: getRenewableResources({ name: { common: countryName } })
+            }
+        ].filter(category => category.items.length > 0)
+    }));
+};
+
+// Render country resources
+const renderCountryResources = (data = countryResourcesData) => {
+    const grid = document.getElementById('resources-grid');
+    if (!grid) return;
+    
+    if (data.length === 0) {
+        grid.innerHTML = '<div class="no-data"><p>No country resources data available</p></div>';
+        return;
+    }
+    
+    grid.innerHTML = data.map(country => {
+        const totalResources = country.resources.reduce((sum, category) => sum + category.items.length, 0);
+        
+        return `
+            <div class="resource-card">
+                <div class="resource-card-header">
+                    <img src="${country.flag}" alt="${country.name} flag" class="resource-flag" 
+                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iMzAiIHZpZXdCb3g9IjAgMCA0MCAzMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjMwIiBmaWxsPSIjZjNmNGY2Ii8+CjwvZz4K'">
+                    <div class="resource-country-info">
+                        <h3>${country.name}</h3>
+                        <p>${country.region}${country.subregion ? ` • ${country.subregion}` : ''}</p>
+                    </div>
+                </div>
+                
+                <div class="resource-categories">
+                    ${country.resources.map(category => `
+                        <div class="resource-category">
+                            <div class="resource-category-title">
+                                <ion-icon name="${category.icon}"></ion-icon>
+                                <span>${category.category}</span>
+                            </div>
+                            <div class="resource-items">
+                                ${category.items.map(item => `
+                                    <span class="resource-item">${item}</span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="resource-stats">
+                    <div class="resource-stat">
+                        <div class="resource-stat-value">${totalResources}</div>
+                        <div class="resource-stat-label">Total Resources</div>
+                    </div>
+                    <div class="resource-stat">
+                        <div class="resource-stat-value">${country.resources.length}</div>
+                        <div class="resource-stat-label">Categories</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+};
+
+// Sort country resources
+window.sortCountryResources = () => {
+    const sortBy = document.getElementById('resources-sort').value;
+    
+    countryResourcesData.sort((a, b) => {
+        switch (sortBy) {
+            case 'name':
+                return a.name.localeCompare(b.name);
+            case 'resources':
+                const aTotal = a.resources.reduce((sum, cat) => sum + cat.items.length, 0);
+                const bTotal = b.resources.reduce((sum, cat) => sum + cat.items.length, 0);
+                return bTotal - aTotal;
+            case 'region':
+                return a.region.localeCompare(b.region);
+            default:
+                return 0;
+        }
+    });
+    
+    renderCountryResources();
+};
+
+// Filter by resource type
+window.filterByResource = () => {
+    const filterValue = document.getElementById('resource-type-filter').value;
+    
+    if (!filterValue) {
+        renderCountryResources();
+        return;
+    }
+    
+    const filtered = countryResourcesData.filter(country => 
+        country.resources.some(category => 
+            category.category.toLowerCase().includes(filterValue) ||
+            category.items.some(item => item.toLowerCase().includes(filterValue))
+        )
+    );
+    
+    renderCountryResources(filtered);
+};
 
 const countryFinancialData = [
     { name: 'Afghanistan', code: 'AF', gdp: 0.02, growth: -6.2, debt: 7, inflation: 2.3, unemployment: 13.3, currency: 'AFN', rating: 'N/A' },
