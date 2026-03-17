@@ -656,6 +656,11 @@ async function fetchWorldBankData(countries) {
     // Cache the results for the entire day
     setDailyCachedData(cacheKey, economicData);
     
+    // Log sample data for debugging
+    if (economicData.length > 0) {
+        console.log('📊 Sample country data:', JSON.stringify(economicData[0], null, 2));
+    }
+    
     return economicData;
 }
 
