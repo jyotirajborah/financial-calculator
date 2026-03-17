@@ -5360,7 +5360,7 @@ const fetchCountryResourcesData = async (countries) => {
                 subregion: country.subregion,
                 population: country.population,
                 area: country.area,
-                flag: country.flags?.svg || country.flags?.png,
+                flag: country.flags?.svg || country.flags?.png || `https://flagcdn.com/w320/${country.cca2.toLowerCase()}.png`,
                 resources: await getDetailedCountryResources(country)
             };
             resourcesData.push(countryData);
@@ -5534,39 +5534,60 @@ const getRenewableResources = (country) => {
 // Generate fallback resources data
 const generateFallbackResourcesData = () => {
     const fallbackCountries = [
-        'United States', 'China', 'Brazil', 'Russia', 'Australia', 'Canada', 'India', 'Saudi Arabia',
-        'Germany', 'United Kingdom', 'France', 'Japan', 'South Korea', 'Italy', 'Spain', 'Mexico',
-        'Indonesia', 'Turkey', 'Netherlands', 'Norway', 'Chile', 'Peru', 'South Africa', 'Nigeria'
+        { name: 'United States', code: 'US' },
+        { name: 'China', code: 'CN' },
+        { name: 'Brazil', code: 'BR' },
+        { name: 'Russia', code: 'RU' },
+        { name: 'Australia', code: 'AU' },
+        { name: 'Canada', code: 'CA' },
+        { name: 'India', code: 'IN' },
+        { name: 'Saudi Arabia', code: 'SA' },
+        { name: 'Germany', code: 'DE' },
+        { name: 'United Kingdom', code: 'GB' },
+        { name: 'France', code: 'FR' },
+        { name: 'Japan', code: 'JP' },
+        { name: 'South Korea', code: 'KR' },
+        { name: 'Italy', code: 'IT' },
+        { name: 'Spain', code: 'ES' },
+        { name: 'Mexico', code: 'MX' },
+        { name: 'Indonesia', code: 'ID' },
+        { name: 'Turkey', code: 'TR' },
+        { name: 'Netherlands', code: 'NL' },
+        { name: 'Norway', code: 'NO' },
+        { name: 'Chile', code: 'CL' },
+        { name: 'Peru', code: 'PE' },
+        { name: 'South Africa', code: 'ZA' },
+        { name: 'Nigeria', code: 'NG' }
     ];
     
-    return fallbackCountries.map(countryName => ({
-        name: countryName,
-        code: 'XX',
+    return fallbackCountries.map(country => ({
+        name: country.name,
+        code: country.code,
         region: 'Unknown',
         subregion: 'Unknown',
         population: 50000000,
         area: 1000000,
-        flag: `https://flagcdn.com/w320/${countryName.toLowerCase().replace(/\s+/g, '-')}.png`,
+        flag: `https://flagcdn.com/w320/${country.code.toLowerCase()}.png`,
         resources: [
             {
                 category: 'Oil & Gas',
                 icon: 'flame',
-                items: getOilGasResources({ name: { common: countryName } })
+                items: getOilGasResources({ name: { common: country.name } })
             },
             {
                 category: 'Minerals & Metals',
                 icon: 'diamond',
-                items: getMineralResources({ name: { common: countryName } })
+                items: getMineralResources({ name: { common: country.name } })
             },
             {
                 category: 'Agriculture',
                 icon: 'leaf',
-                items: getAgricultureResources({ name: { common: countryName } })
+                items: getAgricultureResources({ name: { common: country.name } })
             },
             {
                 category: 'Renewable Energy',
                 icon: 'sunny',
-                items: getRenewableResources({ name: { common: countryName } })
+                items: getRenewableResources({ name: { common: country.name } })
             }
         ].filter(category => category.items.length > 0)
     }));
@@ -5584,12 +5605,22 @@ const renderCountryResources = (data = countryResourcesData) => {
     
     grid.innerHTML = data.map(country => {
         const totalResources = country.resources.reduce((sum, category) => sum + category.items.length, 0);
+        const flagUrl = country.flag || `https://flagcdn.com/w320/${country.code.toLowerCase()}.png`;
+        const fallbackFlag = `data:image/svg+xml;base64,${btoa(`
+            <svg width="40" height="30" viewBox="0 0 40 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="40" height="30" fill="#f3f4f6" stroke="#d1d5db"/>
+                <text x="20" y="18" text-anchor="middle" font-family="Arial" font-size="8" fill="#6b7280">${country.code}</text>
+            </svg>
+        `)}`;
         
         return `
             <div class="resource-card">
                 <div class="resource-card-header">
-                    <img src="${country.flag}" alt="${country.name} flag" class="resource-flag" 
-                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iMzAiIHZpZXdCb3g9IjAgMCA0MCAzMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjMwIiBmaWxsPSIjZjNmNGY2Ii8+CjwvZz4K'">
+                    <img src="${flagUrl}" 
+                         alt="${country.name} flag" 
+                         class="resource-flag" 
+                         onerror="this.onerror=null; this.src='${fallbackFlag}';"
+                         loading="lazy">
                     <div class="resource-country-info">
                         <h3>${country.name}</h3>
                         <p>${country.region}${country.subregion ? ` • ${country.subregion}` : ''}</p>
