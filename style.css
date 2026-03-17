@@ -91,6 +91,22 @@ body {
     background: linear-gradient(135deg, #3b82f6, #2563eb);
 }
 
+/* Ion-icon error handling */
+ion-icon {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Fallback for missing icons */
+ion-icon:not([src]):not([name*="chevron"]):not([name*="sync"]):not([name*="diamond"]):not([name*="star"]):not([name*="arrow"]):not([name*="shield"]):not([name*="business"]):not([name*="flame"]):not([name*="leaf"]):not([name*="sunny"]) {
+    opacity: 0.5;
+}
+
+/* Hide broken icon elements */
+ion-icon[aria-hidden="true"] {
+    display: none;
+}
+
 .app-container.active {
     display: flex !important;
     visibility: visible !important;

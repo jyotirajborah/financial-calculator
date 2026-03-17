@@ -6239,26 +6239,18 @@ const initCountryFinancial = async () => {
     }
     
     try {
-        console.log('Fetching real-time country financial data...');
+        console.log('📊 Fetching daily country financial data from server...');
         
-        // Fetch countries from REST Countries API
-        const countriesResponse = await fetch('https://restcountries.com/v3.1/all');
-        if (!countriesResponse.ok) {
-            throw new Error(`Countries API returned status ${countriesResponse.status}`);
-        }
-        const countries = await countriesResponse.json();
-        console.log('Fetched countries from API:', countries.length);
-        
-        // Fetch real-time economic data from World Bank API
-        const economicData = await fetchRealTimeEconomicData(countries.slice(0, 50));
+        // Fetch real-time economic data from our server endpoint (which handles REST Countries API)
+        const economicData = await fetchRealTimeEconomicData();
         
         countriesData = economicData.sort((a, b) => a.name.localeCompare(b.name));
-        console.log('Loaded real-time financial data:', countriesData.length);
+        console.log('✅ Loaded daily financial data:', countriesData.length);
         
         renderCountries();
         
     } catch (error) {
-        console.error('Error fetching real-time financial data:', error);
+        console.error('❌ Error fetching daily financial data:', error);
         // Fallback to static data with enrichment
         const enrichedFallback = countryFinancialData.map(country => ({
             ...country,
@@ -6276,7 +6268,7 @@ const initCountryFinancial = async () => {
         }));
         
         countriesData = enrichedFallback.sort((a, b) => a.name.localeCompare(b.name));
-        console.log('Using fallback data:', countriesData.length, 'countries');
+        console.log('📊 Using fallback data:', countriesData.length, 'countries');
         renderCountries();
     }
     
@@ -6297,7 +6289,7 @@ const initCountryFinancial = async () => {
 };
 
 // Fetch real-time economic data from server endpoint
-const fetchRealTimeEconomicData = async (countries) => {
+const fetchRealTimeEconomicData = async () => {
     try {
         console.log('📊 Fetching daily financial data from server...');
         
@@ -6561,20 +6553,13 @@ const sortCountries = () => {
 };
 
 const toggleCountry = (countryName) => {
-    console.log('Toggling country:', countryName);
-    console.log('Currently expanded countries:', Array.from(expandedCountries));
-    
     if (expandedCountries.has(countryName)) {
         expandedCountries.delete(countryName);
-        console.log('Closed country:', countryName);
     } else {
         // Close all other countries (accordion behavior)
         expandedCountries.clear();
         expandedCountries.add(countryName);
-        console.log('Opened country:', countryName, 'Closed all others');
     }
-    
-    console.log('New expanded countries:', Array.from(expandedCountries));
     renderCountries();
 };
 
