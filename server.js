@@ -729,7 +729,8 @@ async function fetchCommodityPrices() {
                 const metalsData = await metalsResponse.json();
                 console.log('📊 Metals.dev response:', metalsData);
                 
-                if (metalsData.success && metalsData.metals) {
+                // Check for both "success" string and boolean
+                if ((metalsData.status === 'success' || metalsData.success) && metalsData.metals) {
                     prices.gold = {
                         price: metalsData.metals.gold || 2045.30,
                         change: '+0.5%',
@@ -791,9 +792,11 @@ async function fetchCommodityPrices() {
                                 source: 'Alpha Vantage'
                             };
                             dataFetched = true;
-                        } else if (data.Note) {
-                            errors.push(`Alpha Vantage ${commodity}: Rate limit - ${data.Note}`);
-                            console.warn(`⚠️ Alpha Vantage rate limit:`, data.Note);
+                        } else if (data.Note || data.Information) {
+                            const message = data.Note || data.Information;
+                            errors.push(`Alpha Vantage ${commodity}: Rate limit - ${message}`);
+                            console.warn(`⚠️ Alpha Vantage rate limit:`, message);
+                            // Don't break the loop, try other commodities
                         } else {
                             errors.push(`Alpha Vantage ${commodity}: Invalid response - ${JSON.stringify(data)}`);
                         }
