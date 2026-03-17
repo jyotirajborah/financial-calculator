@@ -2229,6 +2229,41 @@ const loginAsGuest = () => {
         appContainer.style.opacity = '1';
     }, 50);
     
+    // Initialize the app UI after guest login
+    console.log('🔧 INITIALIZING APP UI FOR GUEST');
+    
+    // Ensure dashboard is active by default
+    const dashboardNavItem = document.querySelector('.nav-item[data-target="dashboard"]');
+    const dashboardView = document.getElementById('dashboard');
+    
+    if (dashboardNavItem && dashboardView) {
+        // Clear all active states
+        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.calculator-view').forEach(v => v.classList.remove('active'));
+        
+        // Activate dashboard
+        dashboardNavItem.classList.add('active');
+        dashboardView.classList.add('active');
+        
+        // Update page title
+        const pageTitle = document.getElementById('page-title');
+        if (pageTitle) {
+            pageTitle.textContent = 'Dashboard';
+        }
+        
+        console.log('✅ Dashboard activated for guest');
+    } else {
+        console.error('❌ Dashboard elements not found');
+    }
+    
+    // Trigger dashboard update to populate data
+    try {
+        updateDashboard();
+        console.log('✅ Dashboard data updated for guest');
+    } catch (error) {
+        console.error('❌ Dashboard update failed for guest:', error);
+    }
+    
     // Lock history section for guests
     const historySection = document.getElementById('calc-history');
     if (historySection) {
@@ -2339,6 +2374,41 @@ const login = (user, token) => {
     appContainer.offsetHeight; // Trigger reflow
     
     console.log('🎉 UI TRANSITION COMPLETE');
+    
+    // Initialize the app UI after successful login
+    console.log('🔧 INITIALIZING APP UI');
+    
+    // Ensure dashboard is active by default
+    const dashboardNavItem = document.querySelector('.nav-item[data-target="dashboard"]');
+    const dashboardView = document.getElementById('dashboard');
+    
+    if (dashboardNavItem && dashboardView) {
+        // Clear all active states
+        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.calculator-view').forEach(v => v.classList.remove('active'));
+        
+        // Activate dashboard
+        dashboardNavItem.classList.add('active');
+        dashboardView.classList.add('active');
+        
+        // Update page title
+        const pageTitle = document.getElementById('page-title');
+        if (pageTitle) {
+            pageTitle.textContent = 'Dashboard';
+        }
+        
+        console.log('✅ Dashboard activated');
+    } else {
+        console.error('❌ Dashboard elements not found');
+    }
+    
+    // Trigger dashboard update to populate data
+    try {
+        updateDashboard();
+        console.log('✅ Dashboard data updated');
+    } catch (error) {
+        console.error('❌ Dashboard update failed:', error);
+    }
     
     // Unlock history section
     const historySection = document.getElementById('calc-history');
