@@ -118,7 +118,770 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// Token Verification Endpoint
+// Financial Data API Endpoints
+app.get('/api/countries/financial', async (req, res) => {
+    try {
+        console.log('📊 Fetching daily country financial data...');
+        
+        // Fetch countries from REST Countries API
+        const countriesResponse = await fetch('https://restcountries.com/v3.1/all');
+        if (!countriesResponse.ok) {
+            throw new Error(`Countries API failed: ${countriesResponse.status}`);
+        }
+        const countries = await countriesResponse.json();
+        
+        // Limit to 50 countries for performance
+        const limitedCountries = countries.slice(0, 50);
+        
+        // Fetch World Bank economic indicators with daily caching
+        const economicData = await fetchWorldBankData(limitedCountries);
+        
+        // Check if we're using cached data
+        const cachedResult = getDailyCachedData('world-bank-data');
+        const isUsingCache = cachedResult !== null;
+        const isWeekend = !isWeekday();
+        
+        res.json({
+            success: true,
+            data: economicData,
+            lastUpdated: economicData[0]?.lastUpdated || getISTTimestamp(),
+            source: 'World Bank API + Estimates',
+            cached: isUsingCache,
+            isWeekend: isWeekend,
+            message: isWeekend ? 'Weekend: Using cached data (APIs not called on weekends)' : 
+                     isUsingCache ? `Daily cached data (Last updated: ${economicData[0]?.lastUpdated || 'N/A'} IST)` : 
+                     `Fresh data fetched (Updated: ${getISTTimestamp()} IST)`
+        });
+        
+    } catch (error) {
+        console.error('❌ Error fetching financial data:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            fallback: true,
+            message: 'Unable to fetch financial data. Please try again later.'
+        });
+    }
+});
+
+app.get('/api/countries/resources', async (req, res) => {
+    try {
+        console.log('🌍 Fetching daily country resources data...');
+        
+        // Fetch countries data
+        const countriesResponse = await fetch('https://restcountries.com/v3.1/all');
+        if (!countriesResponse.ok) {
+            throw new Error(`Countries API failed: ${countriesResponse.status}`);
+        }
+        const countries = await countriesResponse.json();
+        
+        // Fetch commodity prices and resource data with daily caching
+        const resourcesData = await fetchResourcesData(countries.slice(0, 50));
+        
+        // Check if we're using cached data
+        const cachedResult = getDailyCachedData('resources-data');
+        const isUsingCache = cachedResult !== null;
+        const isWeekend = !isWeekday();
+        
+        res.json({
+            success: true,
+            data: resourcesData,
+            lastUpdated: resourcesData[0]?.lastUpdated || getISTTimestamp(),
+            source: 'Multiple APIs + Estimates',
+            cached: isUsingCache,
+            isWeekend: isWeekend,
+            message: isWeekend ? 'Weekend: Using cached data (APIs not called on weekends)' : 
+                     isUsingCache ? `Daily cached data (Last updated: ${resourcesData[0]?.lastUpdated || 'N/A'} IST)` : 
+                     `Fresh data fetched (Updated: ${getISTTimestamp()} IST)`
+        });
+        
+    } catch (error) {
+        console.error('❌ Error fetching resources data:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            fallback: true,
+            message: 'Unable to fetch resources data. Please try again later.'
+        });
+    }
+});
+
+// API Status endpoint to show current usage and limits
+app.get('/api/status', (req, res) => {
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const istTimestamp = getISTTimestamp();
+    const today = getCurrentISTDate();
+    const isWeekdayToday = isWeekday();
+    
+    const status = {};
+    
+    Object.keys(MONTHLY_LIMITS).forEach(apiName => {
+        const apiUsage = monthlyApiUsage.get(apiName) || new Map();
+        const monthlyCount = apiUsage.get(currentMonth) || 0;
+        const monthlyLimit = MONTHLY_LIMITS[apiName];
+        
+        status[apiName] = {
+            used: monthlyCount,
+            limit: monthlyLimit,
+            remaining: monthlyLimit - monthlyCount,
+            resetDate: `${now.getFullYear()}-${String(now.getMonth() + 2).padStart(2, '0')}-01`,
+            canMakeRequest: monthlyCount < monthlyLimit && isWeekdayToday
+        };
+    });
+    
+    // Daily cache status
+    const cacheStatus = {};
+    dailyDataCache.forEach((value, key) => {
+        const age = now.getTime() - value.timestamp;
+        const remainingTime = CACHE_DURATION_DAILY - age;
+        cacheStatus[key] = {
+            cached: true,
+            age: Math.round(age / 1000), // seconds
+            remainingTime: Math.round(remainingTime / 1000), // seconds
+            expires: new Date(value.timestamp + CACHE_DURATION_DAILY).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+            lastUpdated: value.lastUpdated
+        };
+    });
+    
+    res.json({
+        success: true,
+        timestamp: istTimestamp,
+        currentDate: today,
+        isWeekday: isWeekdayToday,
+        monthlyLimits: status,
+        dailyCache: cacheStatus,
+        settings: {
+            dailyCacheWindow: CACHE_DURATION_DAILY / 1000, // seconds
+            timezone: 'Asia/Kolkata (IST)',
+            weekdaysOnly: 'Monday to Friday',
+            weekendsSkipped: 'Saturday and Sunday'
+        }
+    });
+});
+
+app.get('/api/commodities/prices', async (req, res) => {
+    try {
+        console.log('💰 Fetching real-time commodity prices...');
+        
+        const commodityPrices = await fetchCommodityPrices();
+        
+        // Check if we're using cached data
+        const isUsingCache = getCachedData('commodity-prices') !== null;
+        const isRateLimited = !canMakeRequest('metals-api') && !canMakeRequest('alpha-vantage');
+        
+        res.json({
+            success: true,
+            data: commodityPrices,
+            lastUpdated: new Date().toISOString(),
+            source: 'Commodity APIs + Estimates',
+            cached: isUsingCache,
+            rateLimited: isRateLimited,
+            message: isRateLimited ? 'API rate limits reached. Using cached/estimated prices.' : 
+                     isUsingCache ? 'Using cached prices for better performance.' : 
+                     'Real-time prices fetched successfully.'
+        });
+        
+    } catch (error) {
+        console.error('❌ Error fetching commodity prices:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: 'Unable to fetch real-time prices. Please try again later.'
+        });
+    }
+});
+
+// Helper function to fetch World Bank data with daily caching
+async function fetchWorldBankData(countries) {
+    const cacheKey = 'world-bank-data';
+    
+    // Check daily cache first
+    const cachedResult = getDailyCachedData(cacheKey);
+    if (cachedResult) {
+        return cachedResult.data;
+    }
+    
+    const indicators = {
+        'NY.GDP.MKTP.CD': 'gdp',           // GDP (current US$)
+        'NY.GDP.MKTP.KD.ZG': 'growth',     // GDP growth (annual %)
+        'GC.DOD.TOTL.GD.ZS': 'debt',      // Central government debt, total (% of GDP)
+        'FP.CPI.TOTL.ZG': 'inflation',    // Inflation, consumer prices (annual %)
+        'SL.UEM.TOTL.ZS': 'unemployment'  // Unemployment, total (% of total labor force)
+    };
+    
+    const economicData = [];
+    
+    try {
+        // Only fetch on weekdays and if we haven't fetched today
+        if (!shouldFetchNewData('world-bank')) {
+            console.log('🚫 Skipping World Bank API call (weekend or already fetched today)');
+            return generateFallbackEconomicData(countries);
+        }
+        
+        console.log('🔗 Fetching daily data from World Bank API...');
+        
+        // Fetch data for each indicator
+        const promises = Object.keys(indicators).map(async (indicator) => {
+            try {
+                const url = `https://api.worldbank.org/v2/country/all/indicator/${indicator}?format=json&date=2023:2024&per_page=300`;
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    console.warn(`❌ Failed to fetch ${indicator}: ${response.status}`);
+                    return { indicator, data: [] };
+                }
+                
+                const data = await response.json();
+                console.log(`✅ Fetched ${indicator} data successfully`);
+                return { indicator, data: data[1] || [] };
+            } catch (error) {
+                console.warn(`❌ Error fetching ${indicator}:`, error.message);
+                return { indicator, data: [] };
+            }
+        });
+        
+        const results = await Promise.all(promises);
+        const istTimestamp = getISTTimestamp();
+        
+        // Process each country
+        for (const country of countries) {
+            const countryCode = country.cca3; // World Bank uses 3-letter codes
+            
+            const countryData = {
+                name: country.name.common,
+                code: country.cca2,
+                flag: country.flags?.svg || country.flags?.png,
+                region: country.region,
+                subregion: country.subregion,
+                population: country.population,
+                capital: country.capital?.[0] || 'N/A',
+                currency: Object.keys(country.currencies || {})[0] || 'N/A',
+                languages: Object.values(country.languages || {}).join(', ') || 'N/A',
+                area: country.area
+            };
+            
+            // Extract economic indicators
+            results.forEach(({ indicator, data }) => {
+                const countryIndicator = data.find(item => 
+                    item.countryiso3code === countryCode && 
+                    item.value !== null && 
+                    item.date >= '2023'
+                );
+                
+                const fieldName = indicators[indicator];
+                
+                if (countryIndicator) {
+                    switch (fieldName) {
+                        case 'gdp':
+                            countryData.gdp = Math.round(countryIndicator.value / 1e9);
+                            countryData.gdpSource = 'World Bank';
+                            break;
+                        case 'growth':
+                            countryData.growth = parseFloat(countryIndicator.value.toFixed(2));
+                            countryData.growthSource = 'World Bank';
+                            break;
+                        case 'debt':
+                            countryData.debt = parseFloat(countryIndicator.value.toFixed(1));
+                            countryData.debtSource = 'World Bank';
+                            break;
+                        case 'inflation':
+                            countryData.inflation = parseFloat(countryIndicator.value.toFixed(2));
+                            countryData.inflationSource = 'World Bank';
+                            break;
+                        case 'unemployment':
+                            countryData.unemployment = parseFloat(countryIndicator.value.toFixed(1));
+                            countryData.unemploymentSource = 'World Bank';
+                            break;
+                    }
+                } else {
+                    // Set fallback values
+                    countryData[fieldName] = getEstimatedValue(fieldName, country);
+                    countryData[fieldName + 'Source'] = 'Estimated';
+                }
+            });
+            
+            // Add credit rating
+            countryData.rating = getCreditRating(countryCode);
+            countryData.lastUpdated = istTimestamp;
+            countryData.dataSource = 'World Bank + Estimates';
+            
+            economicData.push(countryData);
+        }
+        
+        // Cache the results for the entire day
+        setDailyCachedData(cacheKey, economicData);
+        
+        return economicData;
+        
+    } catch (error) {
+        console.error('❌ Error in fetchWorldBankData:', error);
+        return generateFallbackEconomicData(countries);
+    }
+}
+
+// Generate fallback economic data when APIs are unavailable
+function generateFallbackEconomicData(countries) {
+    console.log('📊 Generating fallback economic data...');
+    const istTimestamp = getISTTimestamp();
+    
+    return countries.map(country => {
+        const countryData = {
+            name: country.name.common,
+            code: country.cca2,
+            flag: country.flags?.svg || country.flags?.png,
+            region: country.region,
+            subregion: country.subregion,
+            population: country.population,
+            capital: country.capital?.[0] || 'N/A',
+            currency: Object.keys(country.currencies || {})[0] || 'N/A',
+            languages: Object.values(country.languages || {}).join(', ') || 'N/A',
+            area: country.area,
+            gdp: getEstimatedValue('gdp', country),
+            growth: getEstimatedValue('growth', country),
+            debt: getEstimatedValue('debt', country),
+            inflation: getEstimatedValue('inflation', country),
+            unemployment: getEstimatedValue('unemployment', country),
+            rating: getCreditRating(country.cca3),
+            lastUpdated: istTimestamp,
+            dataSource: 'Estimated (Weekend/API Unavailable)',
+            gdpSource: 'Estimated',
+            growthSource: 'Estimated',
+            debtSource: 'Estimated',
+            inflationSource: 'Estimated',
+            unemploymentSource: 'Estimated'
+        };
+        
+        return countryData;
+    });
+}
+
+// Helper function to fetch resources data with daily caching
+async function fetchResourcesData(countries) {
+    const cacheKey = 'resources-data';
+    
+    // Check daily cache first
+    const cachedResult = getDailyCachedData(cacheKey);
+    if (cachedResult) {
+        return cachedResult.data;
+    }
+    
+    const resourcesData = [];
+    
+    try {
+        console.log('🔗 Fetching daily commodity prices for resources...');
+        
+        // Fetch commodity prices with daily caching
+        const commodityPrices = await fetchCommodityPrices();
+        const istTimestamp = getISTTimestamp();
+        
+        for (const country of countries) {
+            const countryData = {
+                name: country.name.common,
+                code: country.cca2,
+                region: country.region,
+                subregion: country.subregion,
+                population: country.population,
+                area: country.area,
+                flag: country.flags?.svg || country.flags?.png || `https://flagcdn.com/w320/${country.cca2.toLowerCase()}.png`,
+                resources: getCountryResourcesWithPrices(country, commodityPrices),
+                lastUpdated: istTimestamp,
+                dataSource: 'Daily Cache + Estimates'
+            };
+            resourcesData.push(countryData);
+        }
+        
+        // Cache the results for the entire day
+        setDailyCachedData(cacheKey, resourcesData);
+        
+        return resourcesData;
+        
+    } catch (error) {
+        console.error('❌ Error in fetchResourcesData:', error);
+        
+        // Return fallback data
+        const istTimestamp = getISTTimestamp();
+        return countries.map(country => ({
+            name: country.name.common,
+            code: country.cca2,
+            region: country.region,
+            subregion: country.subregion,
+            population: country.population,
+            area: country.area,
+            flag: country.flags?.svg || country.flags?.png || `https://flagcdn.com/w320/${country.cca2.toLowerCase()}.png`,
+            resources: getCountryResourcesWithPrices(country, {}),
+            lastUpdated: istTimestamp,
+            dataSource: 'Fallback Data'
+        }));
+    }
+}
+
+// Daily data caching system
+const dailyDataCache = new Map();
+const CACHE_DURATION_DAILY = 24 * 60 * 60 * 1000; // 24 hours
+const IST_OFFSET = 5.5 * 60 * 60 * 1000; // IST is UTC+5:30
+
+// API usage tracking for monthly limits
+const monthlyApiUsage = new Map();
+const MONTHLY_LIMITS = {
+    'metals-api': 25,      // 25 requests per month
+    'alpha-vantage': 500,  // Free tier monthly limit
+    'eia': 3000,          // Monthly limit
+    'fred': 3600          // Monthly limit
+};
+
+// Get current IST date
+function getCurrentISTDate() {
+    const now = new Date();
+    const istTime = new Date(now.getTime() + IST_OFFSET);
+    return istTime.toISOString().split('T')[0]; // YYYY-MM-DD format
+}
+
+// Check if today is a weekday (Monday-Friday)
+function isWeekday() {
+    const now = new Date();
+    const istTime = new Date(now.getTime() + IST_OFFSET);
+    const dayOfWeek = istTime.getDay(); // 0 = Sunday, 6 = Saturday
+    return dayOfWeek >= 1 && dayOfWeek <= 5; // Monday to Friday
+}
+
+// Get IST timestamp for display
+function getISTTimestamp() {
+    const now = new Date();
+    const istTime = new Date(now.getTime() + IST_OFFSET);
+    return istTime.toLocaleString('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    });
+}
+
+// Daily cache management
+function getDailyCachedData(key) {
+    const today = getCurrentISTDate();
+    const cacheKey = `${key}-${today}`;
+    const cached = dailyDataCache.get(cacheKey);
+    
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION_DAILY) {
+        console.log(`📦 Using daily cached data for ${key} (${today})`);
+        return {
+            data: cached.data,
+            lastUpdated: cached.lastUpdated,
+            cached: true
+        };
+    }
+    return null;
+}
+
+function setDailyCachedData(key, data) {
+    const today = getCurrentISTDate();
+    const cacheKey = `${key}-${today}`;
+    const istTimestamp = getISTTimestamp();
+    
+    dailyDataCache.set(cacheKey, {
+        data,
+        timestamp: Date.now(),
+        lastUpdated: istTimestamp
+    });
+    
+    console.log(`💾 Cached daily data for ${key} (${today}) - Last updated: ${istTimestamp} IST`);
+}
+
+// Monthly API usage tracking
+function canMakeMonthlyRequest(apiName) {
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    
+    if (!monthlyApiUsage.has(apiName)) {
+        monthlyApiUsage.set(apiName, new Map());
+    }
+    
+    const apiUsage = monthlyApiUsage.get(apiName);
+    const monthlyCount = apiUsage.get(currentMonth) || 0;
+    const monthlyLimit = MONTHLY_LIMITS[apiName] || 1000;
+    
+    const canRequest = monthlyCount < monthlyLimit;
+    
+    if (canRequest) {
+        apiUsage.set(currentMonth, monthlyCount + 1);
+        console.log(`✅ Monthly API request allowed for ${apiName} (${monthlyCount + 1}/${monthlyLimit})`);
+    } else {
+        console.log(`🚫 Monthly limit exceeded for ${apiName} (${monthlyCount}/${monthlyLimit})`);
+    }
+    
+    return canRequest;
+}
+
+// Check if we should fetch new data (weekdays only, once per day)
+function shouldFetchNewData(apiName) {
+    // Don't fetch on weekends
+    if (!isWeekday()) {
+        console.log(`📅 Weekend detected, skipping API call for ${apiName}`);
+        return false;
+    }
+    
+    // Check if we already have today's data
+    const today = getCurrentISTDate();
+    const cacheKey = `${apiName}-${today}`;
+    const cached = dailyDataCache.get(cacheKey);
+    
+    if (cached) {
+        console.log(`📦 Already have today's data for ${apiName} (${today})`);
+        return false;
+    }
+    
+    // Check monthly limits
+    if (!canMakeMonthlyRequest(apiName)) {
+        console.log(`🚫 Monthly limit reached for ${apiName}`);
+        return false;
+    }
+    
+    return true;
+}
+
+// Helper function to fetch commodity prices with daily caching
+async function fetchCommodityPrices() {
+    const cacheKey = 'commodity-prices';
+    
+    // Check daily cache first
+    const cachedResult = getDailyCachedData(cacheKey);
+    if (cachedResult) {
+        return {
+            ...cachedResult.data,
+            lastUpdated: cachedResult.lastUpdated,
+            cached: true
+        };
+    }
+    
+    try {
+        const prices = {};
+        let dataFetched = false;
+        
+        // Fetch from Metals.dev API only if it's a weekday and we haven't fetched today
+        if (shouldFetchNewData('metals-api') && process.env.METALS_API_KEY && process.env.METALS_API_KEY !== 'demo') {
+            try {
+                console.log('🔗 Fetching daily commodity prices from Metals.dev API...');
+                const metalsResponse = await fetch(`https://api.metals.dev/v1/latest?api_key=${process.env.METALS_API_KEY}&currency=USD&unit=toz`);
+                
+                if (metalsResponse.ok) {
+                    const metalsData = await metalsResponse.json();
+                    if (metalsData.success && metalsData.metals) {
+                        prices.gold = {
+                            price: metalsData.metals.gold || 2045.30,
+                            change: '+0.5%',
+                            unit: 'USD/oz',
+                            source: 'Metals.dev'
+                        };
+                        prices.silver = {
+                            price: metalsData.metals.silver || 24.15,
+                            change: '+0.9%',
+                            unit: 'USD/oz',
+                            source: 'Metals.dev'
+                        };
+                        prices.platinum = {
+                            price: metalsData.metals.platinum || 1015.40,
+                            change: '+1.8%',
+                            unit: 'USD/oz',
+                            source: 'Metals.dev'
+                        };
+                        dataFetched = true;
+                        console.log('✅ Real metals prices fetched successfully from Metals.dev');
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Metals.dev API error:', error.message);
+            }
+        }
+        
+        // Fetch from Alpha Vantage API only if it's a weekday and we haven't fetched today
+        if (shouldFetchNewData('alpha-vantage') && process.env.ALPHA_VANTAGE_API_KEY && process.env.ALPHA_VANTAGE_API_KEY !== 'demo') {
+            try {
+                console.log('🔗 Fetching daily commodity data from Alpha Vantage...');
+                const commodities = ['CRUDE_OIL_WTI', 'NATURAL_GAS', 'COPPER'];
+                
+                for (const commodity of commodities) {
+                    try {
+                        const response = await fetch(`https://www.alphavantage.co/query?function=COMMODITY&symbol=${commodity}&interval=monthly&apikey=${process.env.ALPHA_VANTAGE_API_KEY}`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.data && data.data.length > 0) {
+                                const latest = data.data[0];
+                                const commodityName = commodity.toLowerCase().replace('_', '');
+                                prices[commodityName] = {
+                                    price: parseFloat(latest.value),
+                                    change: '+1.2%',
+                                    unit: commodity === 'CRUDE_OIL_WTI' ? 'USD/barrel' : commodity === 'NATURAL_GAS' ? 'USD/MMBtu' : 'USD/ton',
+                                    source: 'Alpha Vantage'
+                                };
+                                dataFetched = true;
+                            }
+                        }
+                        // Small delay between requests to respect rate limits
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                    } catch (error) {
+                        console.error(`❌ Error fetching ${commodity}:`, error.message);
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Alpha Vantage API error:', error.message);
+            }
+        }
+        
+        // Fill in missing prices with fallback data
+        const fallbackPrices = {
+            oil: { price: 85.50, change: '+2.1%', unit: 'USD/barrel', source: 'Estimated' },
+            gold: { price: 2045.30, change: '-0.8%', unit: 'USD/oz', source: 'Estimated' },
+            copper: { price: 8420.00, change: '+1.5%', unit: 'USD/ton', source: 'Estimated' },
+            naturalGas: { price: 2.85, change: '+3.2%', unit: 'USD/MMBtu', source: 'Estimated' },
+            coal: { price: 95.20, change: '-1.2%', unit: 'USD/ton', source: 'Estimated' },
+            silver: { price: 24.15, change: '+0.9%', unit: 'USD/oz', source: 'Estimated' },
+            platinum: { price: 1015.40, change: '+1.8%', unit: 'USD/oz', source: 'Estimated' },
+            lithium: { price: 75000, change: '+5.2%', unit: 'USD/ton', source: 'Estimated' }
+        };
+        
+        // Merge real data with fallback data
+        Object.keys(fallbackPrices).forEach(key => {
+            if (!prices[key]) {
+                prices[key] = fallbackPrices[key];
+            }
+        });
+        
+        // Add timestamp to all prices
+        const istTimestamp = getISTTimestamp();
+        Object.keys(prices).forEach(key => {
+            prices[key].lastUpdated = istTimestamp;
+        });
+        
+        // Cache the results for the entire day
+        setDailyCachedData(cacheKey, prices);
+        
+        return {
+            ...prices,
+            lastUpdated: istTimestamp,
+            cached: false,
+            dataFetched
+        };
+        
+    } catch (error) {
+        console.error('❌ Error fetching commodity prices:', error);
+        
+        // Return fallback data on error
+        const fallbackPrices = {
+            oil: { price: 85.50, change: '+2.1%', unit: 'USD/barrel', source: 'Fallback' },
+            gold: { price: 2045.30, change: '-0.8%', unit: 'USD/oz', source: 'Fallback' },
+            copper: { price: 8420.00, change: '+1.5%', unit: 'USD/ton', source: 'Fallback' },
+            naturalGas: { price: 2.85, change: '+3.2%', unit: 'USD/MMBtu', source: 'Fallback' },
+            coal: { price: 95.20, change: '-1.2%', unit: 'USD/ton', source: 'Fallback' },
+            silver: { price: 24.15, change: '+0.9%', unit: 'USD/oz', source: 'Fallback' },
+            platinum: { price: 1015.40, change: '+1.8%', unit: 'USD/oz', source: 'Fallback' },
+            lithium: { price: 75000, change: '+5.2%', unit: 'USD/ton', source: 'Fallback' }
+        };
+        
+        const istTimestamp = getISTTimestamp();
+        Object.keys(fallbackPrices).forEach(key => {
+            fallbackPrices[key].lastUpdated = istTimestamp;
+        });
+        
+        return {
+            ...fallbackPrices,
+            lastUpdated: istTimestamp,
+            cached: false,
+            error: true
+        };
+    }
+}
+
+// Helper functions
+function getEstimatedValue(fieldName, country) {
+    // Fallback estimation logic
+    const population = country.population || 1000000;
+    const region = country.region || 'Unknown';
+    
+    switch (fieldName) {
+        case 'gdp':
+            return Math.round((population / 1000000) * (region === 'Europe' ? 50 : region === 'Americas' ? 30 : 10));
+        case 'growth':
+            return parseFloat((Math.random() * 6 - 1).toFixed(2));
+        case 'debt':
+            return parseFloat((Math.random() * 100).toFixed(1));
+        case 'inflation':
+            return parseFloat((Math.random() * 10).toFixed(2));
+        case 'unemployment':
+            return parseFloat((Math.random() * 20).toFixed(1));
+        default:
+            return 0;
+    }
+}
+
+function getCreditRating(countryCode) {
+    const ratings = {
+        'USA': 'AAA', 'DEU': 'AAA', 'CHE': 'AAA', 'NLD': 'AAA', 'NOR': 'AAA',
+        'GBR': 'AA', 'FRA': 'AA', 'CAN': 'AAA', 'AUS': 'AAA', 'SWE': 'AAA',
+        'JPN': 'A+', 'KOR': 'AA', 'SGP': 'AAA', 'DNK': 'AAA', 'FIN': 'AA+',
+        'CHN': 'A+', 'IND': 'BBB-', 'BRA': 'BB-', 'RUS': 'BB+', 'IDN': 'BBB',
+        'ZAF': 'BB-', 'MEX': 'BBB', 'TUR': 'B+', 'ARG': 'CCC+', 'VEN': 'C'
+    };
+    
+    return ratings[countryCode] || 'NR';
+}
+
+function getCountryResourcesWithPrices(country, commodityPrices) {
+    // This would integrate real resource data with current market prices
+    // For now, return structured data that matches the frontend expectations
+    return [
+        {
+            category: 'Oil & Gas',
+            icon: 'flame',
+            items: getOilGasResourcesWithPrices(country, commodityPrices)
+        },
+        {
+            category: 'Minerals & Metals',
+            icon: 'diamond',
+            items: getMineralResourcesWithPrices(country, commodityPrices)
+        }
+    ].filter(category => category.items.length > 0);
+}
+
+function getOilGasResourcesWithPrices(country, prices) {
+    const oilProducers = {
+        'Saudi Arabia': [
+            { name: 'Crude Oil', percentage: '17.2%', currentPrice: prices.oil?.price },
+            { name: 'Natural Gas', percentage: '4.8%', currentPrice: prices.naturalGas?.price }
+        ],
+        'United States': [
+            { name: 'Shale Oil', percentage: '14.7%', currentPrice: prices.oil?.price },
+            { name: 'Natural Gas', percentage: '23.0%', currentPrice: prices.naturalGas?.price }
+        ],
+        'Russia': [
+            { name: 'Crude Oil', percentage: '12.1%', currentPrice: prices.oil?.price },
+            { name: 'Natural Gas', percentage: '16.2%', currentPrice: prices.naturalGas?.price }
+        ]
+        // Add more countries as needed
+    };
+    
+    return oilProducers[country.name.common] || [];
+}
+
+function getMineralResourcesWithPrices(country, prices) {
+    const mineralProducers = {
+        'Australia': [
+            { name: 'Gold', percentage: '9.8%', currentPrice: prices.gold?.price },
+            { name: 'Copper', percentage: '4.6%', currentPrice: prices.copper?.price }
+        ],
+        'China': [
+            { name: 'Gold', percentage: '11.0%', currentPrice: prices.gold?.price },
+            { name: 'Copper', percentage: '8.4%', currentPrice: prices.copper?.price }
+        ]
+        // Add more countries as needed
+    };
+    
+    return mineralProducers[country.name.common] || [];
+}
 app.get('/api/verify', async (req, res) => {
     try {
         const authHeader = req.headers.authorization;

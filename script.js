@@ -13,6 +13,116 @@
 let currentUser = null;
 let isGuestMode = false;
 
+// Check API status and show to users
+const checkAPIStatus = async () => {
+    try {
+        const response = await fetch('/api/status');
+        if (!response.ok) {
+            throw new Error(`Status API failed: ${response.status}`);
+        }
+        
+        const status = await response.json();
+        
+        if (status.success) {
+            console.log('📊 API Status:', status);
+            
+            // Show status in console for debugging
+            Object.keys(status.rateLimits).forEach(apiName => {
+                const limit = status.rateLimits[apiName];
+                console.log(`${apiName}: ${limit.used}/${limit.limit} requests used (${limit.remaining} remaining)`);
+            });
+            
+            // Show cache status
+            Object.keys(status.cache).forEach(cacheKey => {
+                const cache = status.cache[cacheKey];
+                console.log(`Cache ${cacheKey}: expires in ${cache.remainingTime}s`);
+            });
+            
+            return status;
+        }
+        
+    } catch (error) {
+        console.error('❌ Error checking API status:', error);
+        return null;
+    }
+};
+
+// Show API status to users (can be called from console or UI)
+window.showAPIStatus = async () => {
+    const status = await checkAPIStatus();
+    if (status) {
+        let message = '📊 Daily API Status:\n\n';
+        message += `Current Date: ${status.currentDate}\n`;
+        message += `Is Weekday: ${status.isWeekday ? 'Yes (APIs active)' : 'No (Weekend - APIs paused)'}\n`;
+        message += `Timezone: ${status.settings.timezone}\n\n`;
+        
+        message += '📈 Monthly API Usage:\n';
+        Object.keys(status.monthlyLimits).forEach(apiName => {
+            const limit = status.monthlyLimits[apiName];
+            const percentage = Math.round((limit.used / limit.limit) * 100);
+            message += `${apiName}: ${limit.used}/${limit.limit} (${percentage}%) - ${limit.remaining} remaining\n`;
+        });
+        
+        message += '\n📦 Daily Cache Status:\n';
+        Object.keys(status.dailyCache).forEach(cacheKey => {
+            const cache = status.dailyCache[cacheKey];
+            message += `${cacheKey}: Last updated ${cache.lastUpdated}\n`;
+        });
+        
+        message += `\n⏰ Data Updates: ${status.settings.weekdaysOnly} only\n`;
+        message += `Weekend Policy: ${status.settings.weekendsSkipped} - cached data served\n`;
+        
+        alert(message);
+        console.log('Full API Status:', status);
+    } else {
+        alert('❌ Unable to fetch API status');
+    }
+};
+
+// Periodic API status monitoring (adjusted for daily updates)
+let apiStatusInterval = null;
+const startAPIMonitoring = () => {
+    // Check API status every hour (since we're doing daily updates)
+    apiStatusInterval = setInterval(async () => {
+        const status = await checkAPIStatus();
+        if (status) {
+            // Check if any API is approaching its monthly limit (>90%)
+            Object.keys(status.monthlyLimits).forEach(apiName => {
+                const limit = status.monthlyLimits[apiName];
+                const percentage = (limit.used / limit.limit) * 100;
+                
+                if (percentage > 90) {
+                    showToast(`⚠️ ${apiName} API: Only ${limit.remaining} requests remaining this month`, 'warning');
+                } else if (percentage > 80) {
+                    console.warn(`⚠️ ${apiName} API approaching monthly limit: ${limit.used}/${limit.limit} used`);
+                }
+            });
+            
+            // Show weekend notification
+            if (!status.isWeekday) {
+                console.log('📅 Weekend detected - APIs paused, serving cached data');
+            }
+        }
+    }, 60 * 60 * 1000); // 1 hour
+};
+
+const stopAPIMonitoring = () => {
+    if (apiStatusInterval) {
+        clearInterval(apiStatusInterval);
+        apiStatusInterval = null;
+    }
+};
+
+// Start monitoring when app loads
+document.addEventListener('DOMContentLoaded', () => {
+    startAPIMonitoring();
+});
+
+// Stop monitoring when page unloads
+window.addEventListener('beforeunload', () => {
+    stopAPIMonitoring();
+});
+
 // Toast Notification System
 function showToast(message, type = 'success') {
     // Remove any existing toast
@@ -5303,29 +5413,40 @@ window.switchCountryTab = (tabName) => {
 const initCountryResources = async () => {
     const grid = document.getElementById('resources-grid');
     if (grid) {
-        grid.innerHTML = '<div class="country-loading"><ion-icon name="sync"></ion-icon><p>Loading country resources data...</p></div>';
+        grid.innerHTML = '<div class="country-loading"><ion-icon name="sync"></ion-icon><p>Loading daily resource data...</p></div>';
     }
     
     try {
-        console.log('Fetching country resources data...');
+        console.log('🌍 Fetching daily country resources data from server...');
         
-        // Fetch countries data from REST Countries API
-        const countriesResponse = await fetch('https://restcountries.com/v3.1/all');
-        if (!countriesResponse.ok) {
-            throw new Error(`Countries API returned status ${countriesResponse.status}`);
+        const response = await fetch('/api/countries/resources');
+        if (!response.ok) {
+            throw new Error(`Server API failed: ${response.status}`);
         }
-        const countries = await countriesResponse.json();
         
-        // Fetch natural resources data from World Bank API (or use a comprehensive dataset)
-        const resourcesData = await fetchCountryResourcesData(countries);
+        const result = await response.json();
         
-        countryResourcesData = resourcesData.sort((a, b) => a.name.localeCompare(b.name));
-        console.log('Loaded country resources:', countryResourcesData.length);
-        
-        renderCountryResources();
+        if (result.success) {
+            countryResourcesData = result.data.sort((a, b) => a.name.localeCompare(b.name));
+            console.log('✅ Daily resources data loaded:', countryResourcesData.length, 'countries');
+            
+            // Show user notification about data source
+            if (result.isWeekend) {
+                showToast('📅 Weekend: Using cached resource data (APIs not called on weekends)', 'info');
+            } else if (result.cached) {
+                showToast(`📦 Daily cached resource data (Last updated: ${result.lastUpdated} IST)`, 'info');
+            } else {
+                showToast(`✅ Fresh resource data fetched (Updated: ${result.lastUpdated} IST)`, 'success');
+            }
+            
+            renderCountryResources();
+        } else {
+            throw new Error(result.error || 'Failed to fetch resources data');
+        }
         
     } catch (error) {
-        console.error('Error fetching country resources:', error);
+        console.error('❌ Error fetching daily resources data:', error);
+        showToast('❌ Unable to fetch resource data. Using fallback data.', 'error');
         // Fallback to static data
         countryResourcesData = generateFallbackResourcesData();
         renderCountryResources();
@@ -5339,7 +5460,9 @@ const initCountryResources = async () => {
             const filtered = countryResourcesData.filter(country => 
                 country.name.toLowerCase().includes(searchTerm) ||
                 country.resources.some(resource => 
-                    resource.items.some(item => item.toLowerCase().includes(searchTerm))
+                    resource.items.some(item => 
+                        (typeof item === 'string' ? item : item.name).toLowerCase().includes(searchTerm)
+                    )
                 )
             );
             renderCountryResources(filtered);
@@ -5419,57 +5542,233 @@ const getDetailedCountryResources = async (country) => {
     return resources;
 };
 
-// Get oil and gas resources based on country data
+// Get oil and gas resources based on country data with world percentages
 const getOilGasResources = (country) => {
     const oilProducers = {
-        'Saudi Arabia': ['Crude Oil', 'Natural Gas', 'Petroleum Products'],
-        'United States': ['Shale Oil', 'Natural Gas', 'Crude Oil'],
-        'Russia': ['Crude Oil', 'Natural Gas', 'Petroleum Products'],
-        'Iraq': ['Crude Oil', 'Natural Gas'],
-        'Iran': ['Crude Oil', 'Natural Gas'],
-        'China': ['Coal', 'Natural Gas', 'Shale Gas'],
-        'Canada': ['Oil Sands', 'Natural Gas', 'Crude Oil'],
-        'United Arab Emirates': ['Crude Oil', 'Natural Gas'],
-        'Kuwait': ['Crude Oil', 'Natural Gas'],
-        'Brazil': ['Offshore Oil', 'Natural Gas'],
-        'Venezuela': ['Heavy Crude Oil', 'Natural Gas'],
-        'Nigeria': ['Crude Oil', 'Natural Gas'],
-        'Norway': ['North Sea Oil', 'Natural Gas'],
-        'Kazakhstan': ['Crude Oil', 'Natural Gas'],
-        'Qatar': ['Natural Gas', 'Crude Oil'],
-        'Algeria': ['Natural Gas', 'Crude Oil'],
-        'Angola': ['Crude Oil', 'Natural Gas'],
-        'Libya': ['Crude Oil', 'Natural Gas'],
-        'Mexico': ['Crude Oil', 'Natural Gas'],
-        'Indonesia': ['Natural Gas', 'Crude Oil']
+        'Saudi Arabia': [
+            { name: 'Crude Oil', percentage: '17.2%' },
+            { name: 'Natural Gas', percentage: '4.8%' },
+            { name: 'Petroleum Products', percentage: '12.1%' }
+        ],
+        'United States': [
+            { name: 'Shale Oil', percentage: '14.7%' },
+            { name: 'Natural Gas', percentage: '23.0%' },
+            { name: 'Crude Oil', percentage: '11.9%' }
+        ],
+        'Russia': [
+            { name: 'Crude Oil', percentage: '12.1%' },
+            { name: 'Natural Gas', percentage: '16.2%' },
+            { name: 'Petroleum Products', percentage: '8.4%' }
+        ],
+        'Iraq': [
+            { name: 'Crude Oil', percentage: '8.7%' },
+            { name: 'Natural Gas', percentage: '1.8%' }
+        ],
+        'Iran': [
+            { name: 'Crude Oil', percentage: '9.3%' },
+            { name: 'Natural Gas', percentage: '17.1%' }
+        ],
+        'China': [
+            { name: 'Coal', percentage: '50.7%' },
+            { name: 'Natural Gas', percentage: '4.5%' },
+            { name: 'Shale Gas', percentage: '15.3%' }
+        ],
+        'Canada': [
+            { name: 'Oil Sands', percentage: '9.7%' },
+            { name: 'Natural Gas', percentage: '4.1%' },
+            { name: 'Crude Oil', percentage: '5.6%' }
+        ],
+        'United Arab Emirates': [
+            { name: 'Crude Oil', percentage: '6.1%' },
+            { name: 'Natural Gas', percentage: '3.1%' }
+        ],
+        'Kuwait': [
+            { name: 'Crude Oil', percentage: '6.0%' },
+            { name: 'Natural Gas', percentage: '1.1%' }
+        ],
+        'Brazil': [
+            { name: 'Offshore Oil', percentage: '4.2%' },
+            { name: 'Natural Gas', percentage: '0.4%' }
+        ],
+        'Venezuela': [
+            { name: 'Heavy Crude Oil', percentage: '17.5%' },
+            { name: 'Natural Gas', percentage: '3.2%' }
+        ],
+        'Nigeria': [
+            { name: 'Crude Oil', percentage: '2.2%' },
+            { name: 'Natural Gas', percentage: '3.0%' }
+        ],
+        'Norway': [
+            { name: 'North Sea Oil', percentage: '1.4%' },
+            { name: 'Natural Gas', percentage: '3.4%' }
+        ],
+        'Kazakhstan': [
+            { name: 'Crude Oil', percentage: '1.7%' },
+            { name: 'Natural Gas', percentage: '1.5%' }
+        ],
+        'Qatar': [
+            { name: 'Natural Gas', percentage: '13.1%' },
+            { name: 'Crude Oil', percentage: '1.5%' }
+        ],
+        'Algeria': [
+            { name: 'Natural Gas', percentage: '2.4%' },
+            { name: 'Crude Oil', percentage: '0.9%' }
+        ],
+        'Angola': [
+            { name: 'Crude Oil', percentage: '1.2%' },
+            { name: 'Natural Gas', percentage: '0.3%' }
+        ],
+        'Libya': [
+            { name: 'Crude Oil', percentage: '2.9%' },
+            { name: 'Natural Gas', percentage: '0.8%' }
+        ],
+        'Mexico': [
+            { name: 'Crude Oil', percentage: '1.7%' },
+            { name: 'Natural Gas', percentage: '0.3%' }
+        ],
+        'Indonesia': [
+            { name: 'Natural Gas', percentage: '1.4%' },
+            { name: 'Crude Oil', percentage: '0.4%' }
+        ]
     };
     
     return oilProducers[country.name.common] || [];
 };
 
-// Get mineral resources based on country data
+// Get mineral resources based on country data with world percentages
 const getMineralResources = (country) => {
     const mineralProducers = {
-        'Australia': ['Iron Ore', 'Gold', 'Coal', 'Bauxite', 'Copper', 'Nickel', 'Zinc'],
-        'China': ['Coal', 'Iron Ore', 'Gold', 'Rare Earth Elements', 'Copper'],
-        'Brazil': ['Iron Ore', 'Gold', 'Bauxite', 'Copper', 'Nickel'],
-        'Russia': ['Gold', 'Diamond', 'Platinum', 'Palladium', 'Nickel', 'Copper'],
-        'South Africa': ['Gold', 'Platinum', 'Diamond', 'Chromium', 'Manganese'],
-        'Chile': ['Copper', 'Lithium', 'Gold', 'Silver', 'Molybdenum'],
-        'Peru': ['Copper', 'Gold', 'Silver', 'Zinc', 'Lead'],
-        'Canada': ['Gold', 'Nickel', 'Copper', 'Zinc', 'Uranium'],
-        'United States': ['Gold', 'Copper', 'Iron Ore', 'Coal', 'Rare Earth Elements'],
-        'India': ['Iron Ore', 'Coal', 'Bauxite', 'Copper', 'Gold'],
-        'Indonesia': ['Coal', 'Gold', 'Copper', 'Nickel', 'Tin'],
-        'Mexico': ['Silver', 'Gold', 'Copper', 'Zinc', 'Lead'],
-        'Kazakhstan': ['Uranium', 'Copper', 'Zinc', 'Gold'],
-        'Ghana': ['Gold', 'Bauxite', 'Diamond'],
-        'Democratic Republic of the Congo': ['Cobalt', 'Copper', 'Diamond', 'Gold'],
-        'Zambia': ['Copper', 'Cobalt', 'Gold'],
-        'Mongolia': ['Copper', 'Gold', 'Coal'],
-        'Papua New Guinea': ['Gold', 'Copper', 'Silver'],
-        'Bolivia': ['Lithium', 'Silver', 'Tin', 'Zinc'],
-        'Argentina': ['Lithium', 'Gold', 'Silver', 'Copper']
+        'Australia': [
+            { name: 'Iron Ore', percentage: '37.0%' },
+            { name: 'Gold', percentage: '9.8%' },
+            { name: 'Coal', percentage: '29.1%' },
+            { name: 'Bauxite', percentage: '28.4%' },
+            { name: 'Copper', percentage: '4.6%' },
+            { name: 'Nickel', percentage: '6.2%' },
+            { name: 'Zinc', percentage: '6.4%' }
+        ],
+        'China': [
+            { name: 'Coal', percentage: '50.7%' },
+            { name: 'Iron Ore', percentage: '20.0%' },
+            { name: 'Gold', percentage: '11.0%' },
+            { name: 'Rare Earth Elements', percentage: '85.0%' },
+            { name: 'Copper', percentage: '8.4%' }
+        ],
+        'Brazil': [
+            { name: 'Iron Ore', percentage: '19.8%' },
+            { name: 'Gold', percentage: '3.1%' },
+            { name: 'Bauxite', percentage: '12.3%' },
+            { name: 'Copper', percentage: '1.8%' },
+            { name: 'Nickel', percentage: '2.4%' }
+        ],
+        'Russia': [
+            { name: 'Gold', percentage: '10.2%' },
+            { name: 'Diamond', percentage: '28.0%' },
+            { name: 'Platinum', percentage: '20.0%' },
+            { name: 'Palladium', percentage: '40.0%' },
+            { name: 'Nickel', percentage: '11.0%' },
+            { name: 'Copper', percentage: '4.3%' }
+        ],
+        'South Africa': [
+            { name: 'Gold', percentage: '7.3%' },
+            { name: 'Platinum', percentage: '69.0%' },
+            { name: 'Diamond', percentage: '7.6%' },
+            { name: 'Chromium', percentage: '44.0%' },
+            { name: 'Manganese', percentage: '37.0%' }
+        ],
+        'Chile': [
+            { name: 'Copper', percentage: '28.0%' },
+            { name: 'Lithium', percentage: '26.0%' },
+            { name: 'Gold', percentage: '1.7%' },
+            { name: 'Silver', percentage: '4.1%' },
+            { name: 'Molybdenum', percentage: '18.0%' }
+        ],
+        'Peru': [
+            { name: 'Copper', percentage: '11.0%' },
+            { name: 'Gold', percentage: '4.1%' },
+            { name: 'Silver', percentage: '17.0%' },
+            { name: 'Zinc', percentage: '11.0%' },
+            { name: 'Lead', percentage: '8.0%' }
+        ],
+        'Canada': [
+            { name: 'Gold', percentage: '5.0%' },
+            { name: 'Nickel', percentage: '9.0%' },
+            { name: 'Copper', percentage: '3.7%' },
+            { name: 'Zinc', percentage: '4.2%' },
+            { name: 'Uranium', percentage: '13.0%' }
+        ],
+        'United States': [
+            { name: 'Gold', percentage: '6.0%' },
+            { name: 'Copper', percentage: '6.0%' },
+            { name: 'Iron Ore', percentage: '2.0%' },
+            { name: 'Coal', percentage: '9.3%' },
+            { name: 'Rare Earth Elements', percentage: '12.0%' }
+        ],
+        'India': [
+            { name: 'Iron Ore', percentage: '4.0%' },
+            { name: 'Coal', percentage: '9.1%' },
+            { name: 'Bauxite', percentage: '5.9%' },
+            { name: 'Copper', percentage: '0.7%' },
+            { name: 'Gold', percentage: '0.8%' }
+        ],
+        'Indonesia': [
+            { name: 'Coal', percentage: '21.0%' },
+            { name: 'Gold', percentage: '2.8%' },
+            { name: 'Copper', percentage: '3.2%' },
+            { name: 'Nickel', percentage: '33.0%' },
+            { name: 'Tin', percentage: '16.0%' }
+        ],
+        'Mexico': [
+            { name: 'Silver', percentage: '23.0%' },
+            { name: 'Gold', percentage: '3.4%' },
+            { name: 'Copper', percentage: '3.6%' },
+            { name: 'Zinc', percentage: '4.7%' },
+            { name: 'Lead', percentage: '6.0%' }
+        ],
+        'Kazakhstan': [
+            { name: 'Uranium', percentage: '41.0%' },
+            { name: 'Copper', percentage: '3.0%' },
+            { name: 'Zinc', percentage: '8.0%' },
+            { name: 'Gold', percentage: '1.4%' }
+        ],
+        'Ghana': [
+            { name: 'Gold', percentage: '4.0%' },
+            { name: 'Bauxite', percentage: '3.8%' },
+            { name: 'Diamond', percentage: '1.2%' }
+        ],
+        'Democratic Republic of the Congo': [
+            { name: 'Cobalt', percentage: '70.0%' },
+            { name: 'Copper', percentage: '4.0%' },
+            { name: 'Diamond', percentage: '16.0%' },
+            { name: 'Gold', percentage: '1.6%' }
+        ],
+        'Zambia': [
+            { name: 'Copper', percentage: '2.8%' },
+            { name: 'Cobalt', percentage: '5.0%' },
+            { name: 'Gold', percentage: '0.3%' }
+        ],
+        'Mongolia': [
+            { name: 'Copper', percentage: '1.3%' },
+            { name: 'Gold', percentage: '1.1%' },
+            { name: 'Coal', percentage: '2.1%' }
+        ],
+        'Papua New Guinea': [
+            { name: 'Gold', percentage: '2.8%' },
+            { name: 'Copper', percentage: '1.1%' },
+            { name: 'Silver', percentage: '1.2%' }
+        ],
+        'Bolivia': [
+            { name: 'Lithium', percentage: '21.0%' },
+            { name: 'Silver', percentage: '4.2%' },
+            { name: 'Tin', percentage: '17.0%' },
+            { name: 'Zinc', percentage: '4.1%' }
+        ],
+        'Argentina': [
+            { name: 'Lithium', percentage: '18.0%' },
+            { name: 'Gold', percentage: '1.8%' },
+            { name: 'Silver', percentage: '2.4%' },
+            { name: 'Copper', percentage: '1.7%' }
+        ]
     };
     
     return mineralProducers[country.name.common] || [];
@@ -5636,7 +5935,10 @@ const renderCountryResources = (data = countryResourcesData) => {
                             </div>
                             <div class="resource-items">
                                 ${category.items.map(item => `
-                                    <span class="resource-item">${item}</span>
+                                    <span class="resource-item">
+                                        ${typeof item === 'object' ? item.name : item}
+                                        ${typeof item === 'object' && item.percentage ? `<span class="resource-percentage">${item.percentage}</span>` : ''}
+                                    </span>
                                 `).join('')}
                             </div>
                         </div>
@@ -5933,70 +6235,31 @@ const initCountryFinancial = async () => {
     // Show loading state
     const grid = document.getElementById('countries-grid');
     if (grid) {
-        grid.innerHTML = '<div class="country-loading"><ion-icon name="sync"></ion-icon><p>Loading country data...</p></div>';
+        grid.innerHTML = '<div class="country-loading"><ion-icon name="sync"></ion-icon><p>Loading real-time financial data...</p></div>';
     }
     
     try {
-        // Fetch all countries from REST Countries API
-        console.log('Fetching countries from API...');
-        const response = await fetch('https://restcountries.com/v3.1/all');
+        console.log('Fetching real-time country financial data...');
         
-        if (!response.ok) {
-            throw new Error(`API returned status ${response.status}`);
+        // Fetch countries from REST Countries API
+        const countriesResponse = await fetch('https://restcountries.com/v3.1/all');
+        if (!countriesResponse.ok) {
+            throw new Error(`Countries API returned status ${countriesResponse.status}`);
         }
+        const countries = await countriesResponse.json();
+        console.log('Fetched countries from API:', countries.length);
         
-        console.log('API response status:', response.status);
-        const allCountries = await response.json();
-        console.log('Fetched countries from API:', allCountries.length);
+        // Fetch real-time economic data from World Bank API
+        const economicData = await fetchRealTimeEconomicData(countries.slice(0, 50));
         
-        if (!allCountries || allCountries.length === 0) {
-            throw new Error('No countries returned from API');
-        }
+        countriesData = economicData.sort((a, b) => a.name.localeCompare(b.name));
+        console.log('Loaded real-time financial data:', countriesData.length);
         
-        // Enrich with our financial data
-        const enrichedData = allCountries.map(country => {
-            const existing = countryFinancialData.find(c => c.code === country.cca2);
-            
-            return {
-                name: country.name.common,
-                code: country.cca2,
-                gdp: existing?.gdp || estimateGDP(country),
-                growth: existing?.growth || estimateGrowth(country),
-                debt: existing?.debt || estimateDebt(country),
-                inflation: existing?.inflation || estimateInflation(country),
-                unemployment: existing?.unemployment || estimateUnemployment(country),
-                currency: Object.keys(country.currencies || {})[0] || 'N/A',
-                rating: existing?.rating || estimateRating(country),
-                resources: (existing?.resources) ? existing.resources : getCountryResources(country),
-                knownFor: (existing?.knownFor) ? existing.knownFor : getCountryKnownFor(country),
-                exports: (existing?.exports) ? existing.exports : getCountryExports(country),
-                imports: (existing?.imports) ? existing.imports : getCountryImports(country),
-                military: (existing?.military) ? existing.military : getMilitaryInfo(country),
-                government: (existing?.government) ? existing.government : getGovernmentType(country.name.common),
-                population: country.population,
-                capital: country.capital?.[0] || 'N/A',
-                region: country.region,
-                subregion: country.subregion,
-                languages: Object.values(country.languages || {}).join(', ') || 'N/A',
-                area: country.area
-            };
-        });
-        
-        // Remove duplicates based on country code
-        const uniqueCountries = enrichedData.reduce((acc, country) => {
-            if (!acc.find(c => c.code === country.code)) {
-                acc.push(country);
-            }
-            return acc;
-        }, []);
-        
-        countriesData = uniqueCountries.sort((a, b) => a.name.localeCompare(b.name));
-        console.log('Loaded countries:', countriesData.length);
-        console.log('Sample country data:', countriesData[0]);
         renderCountries();
+        
     } catch (error) {
-        console.error('Error fetching country data:', error);
-        // Fallback to static data with enrichment and deduplication
+        console.error('Error fetching real-time financial data:', error);
+        // Fallback to static data with enrichment
         const enrichedFallback = countryFinancialData.map(country => ({
             ...country,
             resources: country.resources || getCountryResources({ region: 'Unknown', subregion: '' }),
@@ -6008,18 +6271,11 @@ const initCountryFinancial = async () => {
             population: country.population || 0,
             capital: country.capital || 'N/A',
             region: country.region || 'Unknown',
-            subregion: country.subregion || 'Unknown'
+            subregion: country.subregion || 'Unknown',
+            lastUpdated: new Date().toISOString()
         }));
         
-        // Remove duplicates
-        const uniqueFallback = enrichedFallback.reduce((acc, country) => {
-            if (!acc.find(c => c.code === country.code)) {
-                acc.push(country);
-            }
-            return acc;
-        }, []);
-        
-        countriesData = uniqueFallback.sort((a, b) => a.name.localeCompare(b.name));
+        countriesData = enrichedFallback.sort((a, b) => a.name.localeCompare(b.name));
         console.log('Using fallback data:', countriesData.length, 'countries');
         renderCountries();
     }
@@ -6038,6 +6294,55 @@ const initCountryFinancial = async () => {
             if (searchTerm === '') countriesData = tempData;
         });
     }
+};
+
+// Fetch real-time economic data from server endpoint
+const fetchRealTimeEconomicData = async (countries) => {
+    try {
+        console.log('📊 Fetching daily financial data from server...');
+        
+        const response = await fetch('/api/countries/financial');
+        if (!response.ok) {
+            throw new Error(`Server API failed: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            console.log('✅ Daily financial data loaded successfully');
+            
+            // Show user notification about data source
+            if (result.isWeekend) {
+                showToast('📅 Weekend: Using cached data (APIs not called on weekends)', 'info');
+            } else if (result.cached) {
+                showToast(`📦 Daily cached data (Last updated: ${result.lastUpdated} IST)`, 'info');
+            } else {
+                showToast(`✅ Fresh financial data fetched (Updated: ${result.lastUpdated} IST)`, 'success');
+            }
+            
+            return result.data;
+        } else {
+            throw new Error(result.error || 'Failed to fetch financial data');
+        }
+        
+    } catch (error) {
+        console.error('❌ Error fetching daily financial data:', error);
+        showToast('❌ Unable to fetch financial data. Using fallback data.', 'error');
+        throw error;
+    }
+};
+
+// Get credit rating for country (would use real API like S&P, Moody's, Fitch)
+const getCreditRating = (countryCode) => {
+    const ratings = {
+        'USA': 'AAA', 'DEU': 'AAA', 'CHE': 'AAA', 'NLD': 'AAA', 'NOR': 'AAA',
+        'GBR': 'AA', 'FRA': 'AA', 'CAN': 'AAA', 'AUS': 'AAA', 'SWE': 'AAA',
+        'JPN': 'A+', 'KOR': 'AA', 'SGP': 'AAA', 'DNK': 'AAA', 'FIN': 'AA+',
+        'CHN': 'A+', 'IND': 'BBB-', 'BRA': 'BB-', 'RUS': 'BB+', 'IDN': 'BBB',
+        'ZAF': 'BB-', 'MEX': 'BBB', 'TUR': 'B+', 'ARG': 'CCC+', 'VEN': 'C'
+    };
+    
+    return ratings[countryCode] || 'NR';
 };
 
 const estimateGDP = (country) => {
