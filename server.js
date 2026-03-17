@@ -711,7 +711,7 @@ async function fetchResourcesData(countries) {
             // Check each resource type
             for (const { type, data } of resourceResults) {
                 const countryData = data.find(item => 
-                    item.country.id === countryCode && 
+                    item.countryiso3code === countryCode && 
                     item.value !== null && 
                     item.value > 0.5  // Only include if > 0.5% of GDP
                 );
