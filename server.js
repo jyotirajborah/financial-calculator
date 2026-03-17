@@ -29,6 +29,134 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// Daily data caching system
+const dailyDataCache = new Map();
+const CACHE_DURATION_DAILY = 24 * 60 * 60 * 1000; // 24 hours
+const IST_OFFSET = 5.5 * 60 * 60 * 1000; // IST is UTC+5:30
+
+// API usage tracking for monthly limits
+const monthlyApiUsage = new Map();
+const MONTHLY_LIMITS = {
+    'metals-api': 25,      // 25 requests per month
+    'alpha-vantage': 500,  // Free tier monthly limit
+    'eia': 3000,          // Monthly limit
+    'fred': 3600          // Monthly limit
+};
+
+// Get current IST date
+function getCurrentISTDate() {
+    const now = new Date();
+    const istTime = new Date(now.getTime() + IST_OFFSET);
+    return istTime.toISOString().split('T')[0]; // YYYY-MM-DD format
+}
+
+// Check if today is a weekday (Monday-Friday)
+function isWeekday() {
+    const now = new Date();
+    const istTime = new Date(now.getTime() + IST_OFFSET);
+    const dayOfWeek = istTime.getDay(); // 0 = Sunday, 6 = Saturday
+    return dayOfWeek >= 1 && dayOfWeek <= 5; // Monday to Friday
+}
+
+// Get IST timestamp for display
+function getISTTimestamp() {
+    const now = new Date();
+    const istTime = new Date(now.getTime() + IST_OFFSET);
+    return istTime.toLocaleString('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    });
+}
+
+// Daily cache management
+function getDailyCachedData(key) {
+    const today = getCurrentISTDate();
+    const cacheKey = `${key}-${today}`;
+    const cached = dailyDataCache.get(cacheKey);
+    
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION_DAILY) {
+        console.log(`📦 Using daily cached data for ${key} (${today})`);
+        return {
+            data: cached.data,
+            lastUpdated: cached.lastUpdated,
+            cached: true
+        };
+    }
+    return null;
+}
+
+function setDailyCachedData(key, data) {
+    const today = getCurrentISTDate();
+    const cacheKey = `${key}-${today}`;
+    const istTimestamp = getISTTimestamp();
+    
+    dailyDataCache.set(cacheKey, {
+        data,
+        timestamp: Date.now(),
+        lastUpdated: istTimestamp
+    });
+    
+    console.log(`💾 Cached daily data for ${key} (${today}) - Last updated: ${istTimestamp} IST`);
+}
+
+// Monthly API usage tracking
+function canMakeMonthlyRequest(apiName) {
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    
+    if (!monthlyApiUsage.has(apiName)) {
+        monthlyApiUsage.set(apiName, new Map());
+    }
+    
+    const apiUsage = monthlyApiUsage.get(apiName);
+    const monthlyCount = apiUsage.get(currentMonth) || 0;
+    const monthlyLimit = MONTHLY_LIMITS[apiName] || 1000;
+    
+    const canRequest = monthlyCount < monthlyLimit;
+    
+    if (canRequest) {
+        apiUsage.set(currentMonth, monthlyCount + 1);
+        console.log(`✅ Monthly API request allowed for ${apiName} (${monthlyCount + 1}/${monthlyLimit})`);
+    } else {
+        console.log(`🚫 Monthly limit exceeded for ${apiName} (${monthlyCount}/${monthlyLimit})`);
+    }
+    
+    return canRequest;
+}
+
+// Check if we should fetch new data (weekdays only, once per day)
+function shouldFetchNewData(apiName) {
+    // Don't fetch on weekends
+    if (!isWeekday()) {
+        console.log(`📅 Weekend detected, skipping API call for ${apiName}`);
+        return false;
+    }
+    
+    // Check if we already have today's data
+    const today = getCurrentISTDate();
+    const cacheKey = `${apiName}-${today}`;
+    const cached = dailyDataCache.get(cacheKey);
+    
+    if (cached) {
+        console.log(`📦 Already have today's data for ${apiName} (${today})`);
+        return false;
+    }
+    
+    // Check monthly limits
+    if (!canMakeMonthlyRequest(apiName)) {
+        console.log(`🚫 Monthly limit reached for ${apiName}`);
+        return false;
+    }
+    
+    return true;
+}
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -514,134 +642,6 @@ async function fetchResourcesData(countries) {
             dataSource: 'Fallback Data'
         }));
     }
-}
-
-// Daily data caching system
-const dailyDataCache = new Map();
-const CACHE_DURATION_DAILY = 24 * 60 * 60 * 1000; // 24 hours
-const IST_OFFSET = 5.5 * 60 * 60 * 1000; // IST is UTC+5:30
-
-// API usage tracking for monthly limits
-const monthlyApiUsage = new Map();
-const MONTHLY_LIMITS = {
-    'metals-api': 25,      // 25 requests per month
-    'alpha-vantage': 500,  // Free tier monthly limit
-    'eia': 3000,          // Monthly limit
-    'fred': 3600          // Monthly limit
-};
-
-// Get current IST date
-function getCurrentISTDate() {
-    const now = new Date();
-    const istTime = new Date(now.getTime() + IST_OFFSET);
-    return istTime.toISOString().split('T')[0]; // YYYY-MM-DD format
-}
-
-// Check if today is a weekday (Monday-Friday)
-function isWeekday() {
-    const now = new Date();
-    const istTime = new Date(now.getTime() + IST_OFFSET);
-    const dayOfWeek = istTime.getDay(); // 0 = Sunday, 6 = Saturday
-    return dayOfWeek >= 1 && dayOfWeek <= 5; // Monday to Friday
-}
-
-// Get IST timestamp for display
-function getISTTimestamp() {
-    const now = new Date();
-    const istTime = new Date(now.getTime() + IST_OFFSET);
-    return istTime.toLocaleString('en-IN', {
-        timeZone: 'Asia/Kolkata',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-    });
-}
-
-// Daily cache management
-function getDailyCachedData(key) {
-    const today = getCurrentISTDate();
-    const cacheKey = `${key}-${today}`;
-    const cached = dailyDataCache.get(cacheKey);
-    
-    if (cached && Date.now() - cached.timestamp < CACHE_DURATION_DAILY) {
-        console.log(`📦 Using daily cached data for ${key} (${today})`);
-        return {
-            data: cached.data,
-            lastUpdated: cached.lastUpdated,
-            cached: true
-        };
-    }
-    return null;
-}
-
-function setDailyCachedData(key, data) {
-    const today = getCurrentISTDate();
-    const cacheKey = `${key}-${today}`;
-    const istTimestamp = getISTTimestamp();
-    
-    dailyDataCache.set(cacheKey, {
-        data,
-        timestamp: Date.now(),
-        lastUpdated: istTimestamp
-    });
-    
-    console.log(`💾 Cached daily data for ${key} (${today}) - Last updated: ${istTimestamp} IST`);
-}
-
-// Monthly API usage tracking
-function canMakeMonthlyRequest(apiName) {
-    const now = new Date();
-    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    
-    if (!monthlyApiUsage.has(apiName)) {
-        monthlyApiUsage.set(apiName, new Map());
-    }
-    
-    const apiUsage = monthlyApiUsage.get(apiName);
-    const monthlyCount = apiUsage.get(currentMonth) || 0;
-    const monthlyLimit = MONTHLY_LIMITS[apiName] || 1000;
-    
-    const canRequest = monthlyCount < monthlyLimit;
-    
-    if (canRequest) {
-        apiUsage.set(currentMonth, monthlyCount + 1);
-        console.log(`✅ Monthly API request allowed for ${apiName} (${monthlyCount + 1}/${monthlyLimit})`);
-    } else {
-        console.log(`🚫 Monthly limit exceeded for ${apiName} (${monthlyCount}/${monthlyLimit})`);
-    }
-    
-    return canRequest;
-}
-
-// Check if we should fetch new data (weekdays only, once per day)
-function shouldFetchNewData(apiName) {
-    // Don't fetch on weekends
-    if (!isWeekday()) {
-        console.log(`📅 Weekend detected, skipping API call for ${apiName}`);
-        return false;
-    }
-    
-    // Check if we already have today's data
-    const today = getCurrentISTDate();
-    const cacheKey = `${apiName}-${today}`;
-    const cached = dailyDataCache.get(cacheKey);
-    
-    if (cached) {
-        console.log(`📦 Already have today's data for ${apiName} (${today})`);
-        return false;
-    }
-    
-    // Check monthly limits
-    if (!canMakeMonthlyRequest(apiName)) {
-        console.log(`🚫 Monthly limit reached for ${apiName}`);
-        return false;
-    }
-    
-    return true;
 }
 
 // Helper function to fetch commodity prices with daily caching
