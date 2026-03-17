@@ -1413,6 +1413,20 @@ body, html {
     pointer-events: auto !important;
 }
 
+/* App Container */
+.app-container {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    background: var(--bg-main);
+    opacity: 1;
+    transition: opacity 0.5s ease;
+}
+
+.app-container[style*="display: none"] {
+    display: none !important;
+}
+
 /* Auth overlay - ensure it's always on top and clickable */
 .auth-overlay {
     position: fixed;

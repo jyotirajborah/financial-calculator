@@ -1,4 +1,4 @@
-// VERSION: 2.1.1 - Fixed authentication issues
+// VERSION: 2.1.2 - Enhanced login UI transition debugging
 // Last Updated: 2024-03-16
 
 // [DEPRECATED] PDF export functions removed - use Excel export only
@@ -2313,23 +2313,30 @@ const login = (user, token) => {
         if (userInitials) userInitials.style.display = 'block';
     }
     
-    // Hide auth overlay and show app
-    if (overlay) {
-        overlay.classList.remove('active');
-        console.log('✅ REMOVED ACTIVE CLASS FROM OVERLAY');
+    // Hide auth overlay and show app - DIRECT APPROACH
+    console.log('🔍 STARTING UI TRANSITION');
+    
+    const overlay = document.getElementById('auth-overlay');
+    const appContainer = document.getElementById('app-container');
+    
+    console.log('Elements found:', { overlay: !!overlay, appContainer: !!appContainer });
+    
+    if (!overlay || !appContainer) {
+        console.error('❌ Critical elements missing!');
+        return;
     }
     
-    if (appContainer) {
-        appContainer.style.display = 'flex';
-        appContainer.style.opacity = '0';
-        console.log('✅ SET APP CONTAINER TO FLEX');
-        
-        setTimeout(() => {
-            appContainer.style.transition = 'opacity 0.5s ease';
-            appContainer.style.opacity = '1';
-            console.log('✅ SET APP CONTAINER OPACITY TO 1');
-        }, 50);
-    }
+    // Step 1: Hide overlay immediately
+    overlay.classList.remove('active');
+    overlay.style.display = 'none';
+    console.log('✅ Hidden auth overlay');
+    
+    // Step 2: Show app container immediately
+    appContainer.style.display = 'flex';
+    appContainer.style.opacity = '1';
+    console.log('✅ Showed app container');
+    
+    console.log('🎉 UI TRANSITION COMPLETE');
     
     // Unlock history section
     const historySection = document.getElementById('calc-history');
