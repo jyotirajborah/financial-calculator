@@ -2287,6 +2287,11 @@ const login = (user, token) => {
         appContainerDisplay: appContainer?.style.display
     });
     
+    if (!overlay || !appContainer) {
+        console.error('❌ Critical elements missing!');
+        return;
+    }
+    
     // Update profile avatar for logged-in user
     const guestIcon = document.getElementById('guest-icon');
     const userInitials = document.getElementById('user-initials');
@@ -2313,28 +2318,25 @@ const login = (user, token) => {
         if (userInitials) userInitials.style.display = 'block';
     }
     
-    // Hide auth overlay and show app - DIRECT APPROACH
+    // CRITICAL UI TRANSITION - Force immediate display changes
     console.log('🔍 STARTING UI TRANSITION');
     
-    const overlay = document.getElementById('auth-overlay');
-    const appContainer = document.getElementById('app-container');
-    
-    console.log('Elements found:', { overlay: !!overlay, appContainer: !!appContainer });
-    
-    if (!overlay || !appContainer) {
-        console.error('❌ Critical elements missing!');
-        return;
-    }
-    
-    // Step 1: Hide overlay immediately
+    // Step 1: Force hide overlay with multiple methods
     overlay.classList.remove('active');
-    overlay.style.display = 'none';
+    overlay.style.display = 'none !important';
+    overlay.style.visibility = 'hidden';
+    overlay.style.opacity = '0';
     console.log('✅ Hidden auth overlay');
     
-    // Step 2: Show app container immediately
-    appContainer.style.display = 'flex';
+    // Step 2: Force show app container with multiple methods
+    appContainer.style.display = 'flex !important';
+    appContainer.style.visibility = 'visible';
     appContainer.style.opacity = '1';
+    appContainer.classList.add('active'); // Add active class if needed
     console.log('✅ Showed app container');
+    
+    // Step 3: Force a reflow to ensure changes are applied
+    appContainer.offsetHeight; // Trigger reflow
     
     console.log('🎉 UI TRANSITION COMPLETE');
     
@@ -2363,11 +2365,13 @@ const login = (user, token) => {
     }, 500);
     
     // Refresh charts now that container is visible
-    calculateSIP();
-    calculateEMI();
-    calculateCI();
-    calculateBudget();
-    calculateTax();
+    setTimeout(() => {
+        calculateSIP();
+        calculateEMI();
+        calculateCI();
+        calculateBudget();
+        calculateTax();
+    }, 100);
 };
 
 const logout = () => {
@@ -2395,13 +2399,20 @@ const showAuthOverlay = () => {
         return;
     }
     
-    // Hide app container
-    appContainer.style.display = 'none';
+    // Force hide app container with multiple methods
+    appContainer.style.display = 'none !important';
+    appContainer.style.visibility = 'hidden';
     appContainer.style.opacity = '0';
+    appContainer.classList.remove('active');
     
-    // Show auth overlay
+    // Force show auth overlay with multiple methods
     overlay.classList.add('active');
-    overlay.style.display = 'flex';
+    overlay.style.display = 'flex !important';
+    overlay.style.visibility = 'visible';
+    overlay.style.opacity = '1';
+    
+    // Force a reflow to ensure changes are applied
+    overlay.offsetHeight; // Trigger reflow
     
     console.log('✅ Showed auth overlay');
     
@@ -3228,12 +3239,9 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     
     console.log('Initializing components...');
-    try {
-        initAuth();
-        console.log('Auth initialized');
-    } catch (err) {
-        console.error('Auth initialization failed:', err);
-    }
+    
+    console.log('Initializing authentication...');
+    initAuth();
     
     try {
         initProjection();

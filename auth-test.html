@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        button { padding: 10px 15px; margin: 5px; }
+        .result { margin: 10px 0; padding: 10px; background: #f5f5f5; }
+    </style>
+</head>
+<body>
+    <h1>Authentication Test</h1>
+    
+    <div class="test-section">
+        <h3>Element Check</h3>
+        <button onclick="checkElements()">Check Auth Elements</button>
+        <div id="element-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Login Test</h3>
+        <input type="email" id="test-email" placeholder="Email" value="test@example.com">
+        <input type="password" id="test-password" placeholder="Password" value="password123">
+        <button onclick="testLogin()">Test Login</button>
+        <div id="login-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Guest Login Test</h3>
+        <button onclick="testGuestLogin()">Test Guest Login</button>
+        <div id="guest-result" class="result"></div>
+    </div>
+
+    <script>
+        function checkElements() {
+            const overlay = document.getElementById('auth-overlay');
+            const appContainer = document.getElementById('app-container');
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+            
+            const result = document.getElementById('element-result');
+            result.innerHTML = `
+                <strong>Element Check Results:</strong><br>
+                auth-overlay: ${!!overlay}<br>
+                app-container: ${!!appContainer}<br>
+                login-form: ${!!loginForm}<br>
+                signup-form: ${!!signupForm}<br>
+            `;
+        }
+        
+        async function testLogin() {
+            const email = document.getElementById('test-email').value;
+            const password = document.getElementById('test-password').value;
+            const result = document.getElementById('login-result');
+            
+            try {
+                result.innerHTML = 'Testing login...';
+                
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                result.innerHTML = `
+                    <strong>Login Test Results:</strong><br>
+                    Status: ${response.status}<br>
+                    Response: ${JSON.stringify(data, null, 2)}<br>
+                `;
+            } catch (error) {
+                result.innerHTML = `<strong>Login Error:</strong><br>${error.message}`;
+            }
+        }
+        
+        function testGuestLogin() {
+            const result = document.getElementById('guest-result');
+            result.innerHTML = 'Guest login functionality would be tested here...';
+        }
+    </script>
+</body>
+</html>
