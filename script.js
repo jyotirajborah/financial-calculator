@@ -6561,14 +6561,29 @@ const sortCountries = () => {
 };
 
 const toggleCountry = (countryName) => {
+    console.log('Toggling country:', countryName);
+    console.log('Currently expanded countries:', Array.from(expandedCountries));
+    
     if (expandedCountries.has(countryName)) {
         expandedCountries.delete(countryName);
+        console.log('Closed country:', countryName);
     } else {
         // Close all other countries (accordion behavior)
         expandedCountries.clear();
         expandedCountries.add(countryName);
+        console.log('Opened country:', countryName, 'Closed all others');
     }
+    
+    console.log('New expanded countries:', Array.from(expandedCountries));
     renderCountries();
+};
+
+// Helper function to toggle country using element's data attribute
+const toggleCountryByElement = (element) => {
+    const countryName = element.getAttribute('data-country-name');
+    if (countryName) {
+        toggleCountry(countryName);
+    }
 };
 
 const renderCountries = () => {
@@ -6581,7 +6596,7 @@ const renderCountries = () => {
         const debtLevel = country.debt > 100 ? 'high' : country.debt > 60 ? 'medium' : 'low';
 
         return `
-            <div class="country-item ${isExpanded ? 'expanded' : ''}" onclick="toggleCountry('${country.name}')">
+            <div class="country-item ${isExpanded ? 'expanded' : ''}" data-country-name="${country.name.replace(/"/g, '&quot;')}" onclick="toggleCountryByElement(this)">
                 <div class="country-item-header">
                     <div class="country-basic-info">
                         <span class="country-number">${index + 1}.</span>
