@@ -897,19 +897,30 @@ function getCountryResourcesWithPrices(country, commodityPrices) {
 
 function getOilGasResourcesWithPrices(country, prices) {
     const oilProducers = {
-        'Saudi Arabia': [
-            { name: 'Crude Oil', percentage: '17.2%', currentPrice: prices.oil?.price },
-            { name: 'Natural Gas', percentage: '4.8%', currentPrice: prices.naturalGas?.price }
-        ],
-        'United States': [
-            { name: 'Shale Oil', percentage: '14.7%', currentPrice: prices.oil?.price },
-            { name: 'Natural Gas', percentage: '23.0%', currentPrice: prices.naturalGas?.price }
-        ],
-        'Russia': [
-            { name: 'Crude Oil', percentage: '12.1%', currentPrice: prices.oil?.price },
-            { name: 'Natural Gas', percentage: '16.2%', currentPrice: prices.naturalGas?.price }
-        ]
-        // Add more countries as needed
+        'Saudi Arabia': [{ name: 'Crude Oil', percentage: '17.2%' }, { name: 'Natural Gas', percentage: '4.8%' }],
+        'United States': [{ name: 'Shale Oil', percentage: '14.7%' }, { name: 'Natural Gas', percentage: '23.0%' }],
+        'Russia': [{ name: 'Crude Oil', percentage: '12.1%' }, { name: 'Natural Gas', percentage: '16.2%' }],
+        'Canada': [{ name: 'Oil Sands', percentage: '5.6%' }, { name: 'Natural Gas', percentage: '4.3%' }],
+        'Iraq': [{ name: 'Crude Oil', percentage: '5.5%' }],
+        'Iran': [{ name: 'Crude Oil', percentage: '4.5%' }, { name: 'Natural Gas', percentage: '17.1%' }],
+        'United Arab Emirates': [{ name: 'Crude Oil', percentage: '3.8%' }, { name: 'Natural Gas', percentage: '2.1%' }],
+        'Kuwait': [{ name: 'Crude Oil', percentage: '3.2%' }],
+        'Brazil': [{ name: 'Crude Oil', percentage: '3.7%' }],
+        'Nigeria': [{ name: 'Crude Oil', percentage: '2.4%' }],
+        'Kazakhstan': [{ name: 'Crude Oil', percentage: '2.1%' }],
+        'Qatar': [{ name: 'Natural Gas', percentage: '3.8%' }, { name: 'Crude Oil', percentage: '1.9%' }],
+        'Norway': [{ name: 'Crude Oil', percentage: '2.0%' }, { name: 'Natural Gas', percentage: '2.5%' }],
+        'Angola': [{ name: 'Crude Oil', percentage: '1.7%' }],
+        'Algeria': [{ name: 'Natural Gas', percentage: '2.4%' }, { name: 'Crude Oil', percentage: '1.5%' }],
+        'Venezuela': [{ name: 'Crude Oil', percentage: '1.4%' }],
+        'Mexico': [{ name: 'Crude Oil', percentage: '2.1%' }],
+        'Libya': [{ name: 'Crude Oil', percentage: '1.2%' }],
+        'Oman': [{ name: 'Crude Oil', percentage: '1.1%' }],
+        'Indonesia': [{ name: 'Natural Gas', percentage: '2.1%' }],
+        'Malaysia': [{ name: 'Natural Gas', percentage: '1.8%' }],
+        'Egypt': [{ name: 'Natural Gas', percentage: '1.9%' }],
+        'Turkmenistan': [{ name: 'Natural Gas', percentage: '1.7%' }],
+        'Azerbaijan': [{ name: 'Natural Gas', percentage: '1.5%' }]
     };
     
     return oilProducers[country.name.common] || [];
@@ -917,15 +928,37 @@ function getOilGasResourcesWithPrices(country, prices) {
 
 function getMineralResourcesWithPrices(country, prices) {
     const mineralProducers = {
-        'Australia': [
-            { name: 'Gold', percentage: '9.8%', currentPrice: prices.gold?.price },
-            { name: 'Copper', percentage: '4.6%', currentPrice: prices.copper?.price }
-        ],
-        'China': [
-            { name: 'Gold', percentage: '11.0%', currentPrice: prices.gold?.price },
-            { name: 'Copper', percentage: '8.4%', currentPrice: prices.copper?.price }
-        ]
-        // Add more countries as needed
+        'China': [{ name: 'Gold', percentage: '11.0%', currentPrice: prices.gold?.price }, { name: 'Copper', percentage: '8.4%' }, { name: 'Rare Earth', percentage: '60%' }],
+        'Australia': [{ name: 'Gold', percentage: '9.8%', currentPrice: prices.gold?.price }, { name: 'Iron Ore', percentage: '37%' }, { name: 'Copper', percentage: '4.6%' }],
+        'Russia': [{ name: 'Gold', percentage: '9.5%', currentPrice: prices.gold?.price }, { name: 'Platinum', percentage: '12%', currentPrice: prices.platinum?.price }, { name: 'Palladium', percentage: '40%' }],
+        'United States': [{ name: 'Gold', percentage: '5.9%', currentPrice: prices.gold?.price }, { name: 'Copper', percentage: '6.2%' }],
+        'Canada': [{ name: 'Gold', percentage: '5.1%', currentPrice: prices.gold?.price }, { name: 'Uranium', percentage: '13%' }],
+        'Peru': [{ name: 'Gold', percentage: '4.8%', currentPrice: prices.gold?.price }, { name: 'Copper', percentage: '12%' }, { name: 'Silver', percentage: '18%', currentPrice: prices.silver?.price }],
+        'South Africa': [{ name: 'Gold', percentage: '3.2%', currentPrice: prices.gold?.price }, { name: 'Platinum', percentage: '70%', currentPrice: prices.platinum?.price }],
+        'Mexico': [{ name: 'Silver', percentage: '23%', currentPrice: prices.silver?.price }, { name: 'Gold', percentage: '3.1%', currentPrice: prices.gold?.price }],
+        'Indonesia': [{ name: 'Gold', percentage: '3.0%', currentPrice: prices.gold?.price }, { name: 'Copper', percentage: '3.8%' }],
+        'Ghana': [{ name: 'Gold', percentage: '2.8%', currentPrice: prices.gold?.price }],
+        'Brazil': [{ name: 'Iron Ore', percentage: '20%' }, { name: 'Gold', percentage: '2.5%', currentPrice: prices.gold?.price }],
+        'Chile': [{ name: 'Copper', percentage: '28%' }, { name: 'Lithium', percentage: '26%' }],
+        'Argentina': [{ name: 'Lithium', percentage: '21%' }, { name: 'Silver', percentage: '3.5%', currentPrice: prices.silver?.price }],
+        'Bolivia': [{ name: 'Lithium', percentage: '23%' }, { name: 'Silver', percentage: '4.2%', currentPrice: prices.silver?.price }],
+        'India': [{ name: 'Iron Ore', percentage: '7%' }, { name: 'Coal', percentage: '9%' }],
+        'Kazakhstan': [{ name: 'Uranium', percentage: '43%' }, { name: 'Copper', percentage: '2.1%' }],
+        'Zambia': [{ name: 'Copper', percentage: '5.8%' }],
+        'Poland': [{ name: 'Copper', percentage: '4.2%' }, { name: 'Silver', percentage: '5.1%', currentPrice: prices.silver?.price }],
+        'Mongolia': [{ name: 'Copper', percentage: '3.5%' }, { name: 'Coal', percentage: '7%' }],
+        'Democratic Republic of the Congo': [{ name: 'Copper', percentage: '4.5%' }, { name: 'Cobalt', percentage: '70%' }],
+        'Zimbabwe': [{ name: 'Platinum', percentage: '8%', currentPrice: prices.platinum?.price }, { name: 'Gold', percentage: '1.2%', currentPrice: prices.gold?.price }],
+        'Uzbekistan': [{ name: 'Gold', percentage: '2.3%', currentPrice: prices.gold?.price }, { name: 'Uranium', percentage: '3.5%' }],
+        'Papua New Guinea': [{ name: 'Gold', percentage: '2.1%', currentPrice: prices.gold?.price }, { name: 'Copper', percentage: '2.8%' }],
+        'Turkey': [{ name: 'Gold', percentage: '1.8%', currentPrice: prices.gold?.price }],
+        'Mali': [{ name: 'Gold', percentage: '1.7%', currentPrice: prices.gold?.price }],
+        'Burkina Faso': [{ name: 'Gold', percentage: '1.5%', currentPrice: prices.gold?.price }],
+        'Tanzania': [{ name: 'Gold', percentage: '1.4%', currentPrice: prices.gold?.price }],
+        'Colombia': [{ name: 'Gold', percentage: '1.3%', currentPrice: prices.gold?.price }, { name: 'Coal', percentage: '1.2%' }],
+        'Philippines': [{ name: 'Gold', percentage: '1.2%', currentPrice: prices.gold?.price }, { name: 'Copper', percentage: '1.8%' }],
+        'Saudi Arabia': [{ name: 'Gold', percentage: '1.1%', currentPrice: prices.gold?.price }],
+        'Finland': [{ name: 'Gold', percentage: '1.0%', currentPrice: prices.gold?.price }]
     };
     
     return mineralProducers[country.name.common] || [];
