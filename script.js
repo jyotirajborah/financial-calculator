@@ -5409,8 +5409,8 @@ window.switchCountryTab = (tabName) => {
     document.getElementById(`country-${tabName}-content`).classList.add('active');
     
     // Initialize content based on tab
-    if (tabName === 'financial' && countriesData.length > 0) {
-        // Render financial data if already loaded
+    if (tabName === 'overview' && countriesData.length > 0) {
+        // Render financial data if already loaded (overview tab shows financial data)
         console.log('📊 Rendering cached financial data');
         renderCountries();
     } else if (tabName === 'resources' && countryResourcesData.length === 0) {
@@ -6586,10 +6586,10 @@ const renderCountries = () => {
         return;
     }
 
-    // Ensure we're only rendering when the financial tab is active
-    const financialTab = document.getElementById('country-financial-content');
-    if (!financialTab || !financialTab.classList.contains('active')) {
-        console.log('⚠️ Financial tab not active, skipping render (data is cached and will render when tab is activated)');
+    // Ensure we're only rendering when the overview tab is active (overview tab shows financial data)
+    const overviewTab = document.getElementById('country-overview-content');
+    if (!overviewTab || !overviewTab.classList.contains('active')) {
+        console.log('⚠️ Overview tab not active, skipping render (data is cached and will render when tab is activated)');
         return;
     }
 
