@@ -414,6 +414,29 @@ app.get('/api/countries/resources', async (req, res) => {
     }
 });
 
+// Cache clear endpoint for debugging
+app.get('/api/clear-cache', (req, res) => {
+    try {
+        const clearedKeys = [];
+        dailyDataCache.forEach((value, key) => {
+            clearedKeys.push(key);
+        });
+        dailyDataCache.clear();
+        console.log('🗑️ Cache cleared:', clearedKeys);
+        res.json({
+            success: true,
+            message: 'Cache cleared successfully',
+            clearedKeys: clearedKeys
+        });
+    } catch (error) {
+        console.error('❌ Error clearing cache:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 // API Status endpoint to show current usage and limits
 app.get('/api/status', (req, res) => {
     const now = new Date();

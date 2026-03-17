@@ -5409,8 +5409,16 @@ window.switchCountryTab = (tabName) => {
     document.getElementById(`country-${tabName}-content`).classList.add('active');
     
     // Initialize content based on tab
-    if (tabName === 'resources' && countryResourcesData.length === 0) {
+    if (tabName === 'financial' && countriesData.length > 0) {
+        // Render financial data if already loaded
+        console.log('📊 Rendering cached financial data');
+        renderCountries();
+    } else if (tabName === 'resources' && countryResourcesData.length === 0) {
         initCountryResources();
+    } else if (tabName === 'resources' && countryResourcesData.length > 0) {
+        // Render resources data if already loaded
+        console.log('🌍 Rendering cached resources data');
+        renderCountryResources();
     }
     
     console.log('✅ Tab switched to:', tabName, 'Expanded countries cleared');
@@ -6572,14 +6580,20 @@ const renderCountries = () => {
     const grid = document.getElementById('countries-grid');
     if (!grid) return;
 
-    // Ensure we're only rendering when the financial tab is active
-    const financialTab = document.getElementById('country-financial-content');
-    if (!financialTab || !financialTab.classList.contains('active')) {
-        console.log('⚠️ Financial tab not active, skipping render');
+    // Check if we have data to render
+    if (!countriesData || countriesData.length === 0) {
+        console.log('⚠️ No countries data available to render');
         return;
     }
 
-    console.log('🎨 Rendering countries, expanded:', Array.from(expandedCountries));
+    // Ensure we're only rendering when the financial tab is active
+    const financialTab = document.getElementById('country-financial-content');
+    if (!financialTab || !financialTab.classList.contains('active')) {
+        console.log('⚠️ Financial tab not active, skipping render (data is cached and will render when tab is activated)');
+        return;
+    }
+
+    console.log('🎨 Rendering', countriesData.length, 'countries, expanded:', Array.from(expandedCountries));
 
     grid.innerHTML = countriesData.map((country, index) => {
         const isExpanded = expandedCountries.has(country.name);
