@@ -694,7 +694,7 @@ async function fetchResourcesData(countries) {
     try {
         // Fetch all resource rent indicators
         const resourcePromises = Object.entries(resourceIndicators).map(async ([indicator, type]) => {
-            const url = `https://api.worldbank.org/v2/country/all/indicator/${indicator}?format=json&date=2022:2023&per_page=300`;
+            const url = `https://api.worldbank.org/v2/country/all/indicator/${indicator}?format=json&date=2020:2021&per_page=300`;
             const response = await fetch(url);
             if (!response.ok) return { type, data: [] };
             const data = await response.json();
