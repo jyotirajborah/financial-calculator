@@ -5395,6 +5395,11 @@ let expandedCountries = new Set();
 
 // Tab switching function
 window.switchCountryTab = (tabName) => {
+    console.log('🔄 Switching to country tab:', tabName);
+    
+    // Clear expanded countries when switching tabs to prevent interference
+    expandedCountries.clear();
+    
     // Remove active class from all tabs and content
     document.querySelectorAll('.country-tab').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.country-tab-content').forEach(content => content.classList.remove('active'));
@@ -5407,6 +5412,8 @@ window.switchCountryTab = (tabName) => {
     if (tabName === 'resources' && countryResourcesData.length === 0) {
         initCountryResources();
     }
+    
+    console.log('✅ Tab switched to:', tabName, 'Expanded countries cleared');
 };
 
 // Initialize country resources with real API data
@@ -6553,13 +6560,22 @@ const sortCountries = () => {
 };
 
 const toggleCountry = (countryName) => {
+    console.log('🔍 Before toggle - Expanded countries:', Array.from(expandedCountries));
+    
+    // Pure accordion behavior: Only one country open at a time
+    // Clicking the same country again will close it
     if (expandedCountries.has(countryName)) {
+        // Close the currently open country
         expandedCountries.delete(countryName);
+        console.log('❌ Closed country:', countryName);
     } else {
-        // Close all other countries (accordion behavior)
+        // Close all other countries and open this one
         expandedCountries.clear();
         expandedCountries.add(countryName);
+        console.log('✅ Opened country:', countryName, '(closed all others)');
     }
+    
+    console.log('🔍 After toggle - Expanded countries:', Array.from(expandedCountries));
     renderCountries();
 };
 
@@ -6574,6 +6590,15 @@ const toggleCountryByElement = (element) => {
 const renderCountries = () => {
     const grid = document.getElementById('countries-grid');
     if (!grid) return;
+
+    // Ensure we're only rendering when the financial tab is active
+    const financialTab = document.getElementById('country-financial-content');
+    if (!financialTab || !financialTab.classList.contains('active')) {
+        console.log('⚠️ Financial tab not active, skipping render');
+        return;
+    }
+
+    console.log('🎨 Rendering countries, expanded:', Array.from(expandedCountries));
 
     grid.innerHTML = countriesData.map((country, index) => {
         const isExpanded = expandedCountries.has(country.name);
