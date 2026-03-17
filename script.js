@@ -2974,41 +2974,13 @@ initAuth = () => {
         logout();
     });
 
-    // Check existing session via token verification
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-        console.log('Found existing token, verifying...'); // Debug log
-        fetch('/api/verify', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        })
-        .then(res => {
-            console.log('Token verification response status:', res.status); // Debug log
-            if (!res.ok) {
-                throw new Error(`Token verification failed: ${res.status}`);
-            }
-            return res.json();
-        })
-        .then(data => {
-            console.log('Token verification data:', data); // Debug log
-            if (data.user) {
-                console.log('Token valid, logging in user'); // Debug log
-                // Pass the existing token since it's valid
-                login(data.user, token);
-            } else {
-                console.log('Token invalid, clearing auth state'); // Debug log
-                localStorage.removeItem('auth_token');
-                showAuthOverlay();
-            }
-        })
-        .catch((error) => {
-            console.error('Token verification error:', error); // Debug log
-            localStorage.removeItem('auth_token');
-            showAuthOverlay();
-        });
-    } else {
-        console.log('No existing token found, showing auth overlay'); // Debug log
-        showAuthOverlay();
-    }
+    // Always show auth overlay on page load (auto-login disabled)
+    console.log('Auto-login disabled, showing auth overlay'); // Debug log
+    
+    // Clear any existing tokens to ensure fresh login
+    localStorage.removeItem('auth_token');
+    
+    showAuthOverlay();
     
     // Test server connectivity
     fetch('/api/verify', { method: 'GET' })
