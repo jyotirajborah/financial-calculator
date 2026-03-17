@@ -288,9 +288,9 @@ app.get('/api/countries/financial', async (req, res) => {
             .filter(country => country.region && country.region.value !== 'Aggregates')
             .map(country => ({
                 name: { common: country.name },
-                cca2: country.id,
-                cca3: country.id, // World Bank uses 3-letter codes
-                flags: { svg: `https://flagcdn.com/w320/${country.id.toLowerCase()}.png` },
+                cca2: country.iso2Code || country.id.substring(0, 2), // Use iso2Code if available
+                cca3: country.id, // World Bank uses 3-letter ISO codes as ID
+                flags: { svg: `https://flagcdn.com/w320/${(country.iso2Code || country.id).toLowerCase()}.png` },
                 region: country.region?.value || 'Unknown',
                 subregion: country.adminregion?.value || '',
                 population: 0, // Will be filled by economic data
@@ -574,6 +574,8 @@ async function fetchWorldBankData(countries) {
     const results = await Promise.all(promises);
     const istTimestamp = getISTTimestamp();
     
+    console.log('📊 Processing economic data for', countries.length, 'countries');
+    
     // Process each country
     for (const country of countries) {
         const countryCode = country.cca3; // World Bank uses 3-letter codes
@@ -591,6 +593,8 @@ async function fetchWorldBankData(countries) {
             area: country.area
         };
         
+        let dataFound = false;
+        
         // Extract economic indicators
         results.forEach(({ indicator, data }) => {
             const countryIndicator = data.find(item => 
@@ -602,6 +606,7 @@ async function fetchWorldBankData(countries) {
             const fieldName = indicators[indicator];
             
             if (countryIndicator) {
+                dataFound = true;
                 switch (fieldName) {
                     case 'gdp':
                         countryData.gdp = Math.round(countryIndicator.value / 1e9);
@@ -626,10 +631,16 @@ async function fetchWorldBankData(countries) {
                 }
             } else {
                 // Set N/A for missing data
-                countryData[fieldName] = 'N/A';
-                countryData[fieldName + 'Source'] = 'Not Available';
+                if (!countryData[fieldName]) {
+                    countryData[fieldName] = 'N/A';
+                    countryData[fieldName + 'Source'] = 'Not Available';
+                }
             }
         });
+        
+        if (!dataFound) {
+            console.log(`⚠️ No economic data found for ${country.name.common} (${countryCode})`);
+        }
         
         // Add credit rating
         countryData.rating = getCreditRating(countryCode);
@@ -638,6 +649,8 @@ async function fetchWorldBankData(countries) {
         
         economicData.push(countryData);
     }
+    
+    console.log(`✅ Processed ${economicData.length} countries with economic data`);
     
     // Cache the results for the entire day
     setDailyCachedData(cacheKey, economicData);
