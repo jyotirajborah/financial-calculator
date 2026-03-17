@@ -2375,12 +2375,42 @@ const login = (user, token) => {
     
     console.log('🎉 UI TRANSITION COMPLETE');
     
+    // Ensure sidebar is visible
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+        sidebar.style.display = 'block';
+        sidebar.style.visibility = 'visible';
+        sidebar.style.opacity = '1';
+        console.log('✅ Sidebar made visible');
+    }
+    
+    // Ensure view container is visible
+    const viewContainer = document.querySelector('.view-container');
+    if (viewContainer) {
+        viewContainer.style.display = 'block';
+        viewContainer.style.visibility = 'visible';
+        viewContainer.style.opacity = '1';
+        console.log('✅ View container made visible');
+    }
+    
     // Initialize the app UI after successful login
     console.log('🔧 INITIALIZING APP UI');
+    
+    // Force show the app container with debugging
+    console.log('App container display before:', appContainer.style.display);
+    console.log('App container visibility before:', appContainer.style.visibility);
+    console.log('App container opacity before:', appContainer.style.opacity);
     
     // Ensure dashboard is active by default
     const dashboardNavItem = document.querySelector('.nav-item[data-target="dashboard"]');
     const dashboardView = document.getElementById('dashboard');
+    
+    console.log('Dashboard elements found:', { 
+        navItem: !!dashboardNavItem, 
+        view: !!dashboardView,
+        viewDisplay: dashboardView?.style.display,
+        viewClasses: dashboardView?.className
+    });
     
     if (dashboardNavItem && dashboardView) {
         // Clear all active states
@@ -2391,6 +2421,19 @@ const login = (user, token) => {
         dashboardNavItem.classList.add('active');
         dashboardView.classList.add('active');
         
+        // Force dashboard to be visible with multiple approaches
+        dashboardView.style.display = 'block !important';
+        dashboardView.style.visibility = 'visible !important';
+        dashboardView.style.opacity = '1 !important';
+        
+        // Also ensure the view container is visible
+        const viewContainer = document.querySelector('.view-container');
+        if (viewContainer) {
+            viewContainer.style.display = 'block';
+            viewContainer.style.visibility = 'visible';
+            viewContainer.style.opacity = '1';
+        }
+        
         // Update page title
         const pageTitle = document.getElementById('page-title');
         if (pageTitle) {
@@ -2398,9 +2441,64 @@ const login = (user, token) => {
         }
         
         console.log('✅ Dashboard activated');
+        console.log('Dashboard final state:', {
+            navActive: dashboardNavItem.classList.contains('active'),
+            viewActive: dashboardView.classList.contains('active'),
+            viewDisplay: dashboardView.style.display,
+            viewClasses: dashboardView.className
+        });
     } else {
         console.error('❌ Dashboard elements not found');
     }
+    
+    // Force a complete reflow
+    document.body.offsetHeight;
+    
+    // Add diagnostic information
+    setTimeout(() => {
+        console.log('🔍 POST-LOGIN DIAGNOSTIC:');
+        console.log('App container:', {
+            element: !!appContainer,
+            display: appContainer?.style.display,
+            visibility: appContainer?.style.visibility,
+            opacity: appContainer?.style.opacity,
+            classList: appContainer?.className
+        });
+        
+        const sidebar = document.getElementById('sidebar');
+        console.log('Sidebar:', {
+            element: !!sidebar,
+            display: sidebar?.style.display,
+            visibility: sidebar?.style.visibility,
+            opacity: sidebar?.style.opacity
+        });
+        
+        const dashboard = document.getElementById('dashboard');
+        console.log('Dashboard:', {
+            element: !!dashboard,
+            display: dashboard?.style.display,
+            visibility: dashboard?.style.visibility,
+            opacity: dashboard?.style.opacity,
+            classList: dashboard?.className,
+            hasActiveClass: dashboard?.classList.contains('active')
+        });
+        
+        const viewContainer = document.querySelector('.view-container');
+        console.log('View container:', {
+            element: !!viewContainer,
+            display: viewContainer?.style.display,
+            visibility: viewContainer?.style.visibility,
+            opacity: viewContainer?.style.opacity
+        });
+        
+        // Check if elements are actually visible in the DOM
+        const appRect = appContainer?.getBoundingClientRect();
+        const dashRect = dashboard?.getBoundingClientRect();
+        console.log('Element dimensions:', {
+            appContainer: appRect ? `${appRect.width}x${appRect.height}` : 'none',
+            dashboard: dashRect ? `${dashRect.width}x${dashRect.height}` : 'none'
+        });
+    }, 1000);
     
     // Trigger dashboard update to populate data
     try {

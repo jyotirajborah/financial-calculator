@@ -271,7 +271,14 @@ h1 {
 }
 
 .calculator-view.active {
-    display: block;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Force active views to be visible */
+.calculator-view.active[style*="display: block"] {
+    display: block !important;
 }
 
 @keyframes fadeIn {
