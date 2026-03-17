@@ -669,6 +669,7 @@ async function fetchCommodityPrices() {
     // Check daily cache first
     const cachedResult = getDailyCachedData(cacheKey);
     if (cachedResult) {
+        console.log('✅ Returning cached commodity prices');
         return {
             ...cachedResult.data,
             lastUpdated: cachedResult.lastUpdated,
@@ -680,12 +681,18 @@ async function fetchCommodityPrices() {
     const hasMetalsKey = process.env.METALS_API_KEY && process.env.METALS_API_KEY !== 'demo';
     const hasAlphaKey = process.env.ALPHA_VANTAGE_API_KEY && process.env.ALPHA_VANTAGE_API_KEY !== 'demo';
     
+    console.log('🔑 API Keys status:', {
+        metals: hasMetalsKey ? 'Configured' : 'Missing',
+        alpha: hasAlphaKey ? 'Configured' : 'Missing'
+    });
+    
     if (!hasMetalsKey && !hasAlphaKey) {
         throw new Error('Commodity API keys not configured. Please add METALS_API_KEY and/or ALPHA_VANTAGE_API_KEY to environment variables.');
     }
     
     const prices = {};
     let dataFetched = false;
+    const errors = [];
     
     // Fetch from Metals.dev API only if it's a weekday and we haven't fetched today
     if (shouldFetchNewData('metals-api') && hasMetalsKey) {
@@ -693,8 +700,12 @@ async function fetchCommodityPrices() {
             console.log('🔗 Fetching daily commodity prices from Metals.dev API...');
             const metalsResponse = await fetch(`https://api.metals.dev/v1/latest?api_key=${process.env.METALS_API_KEY}&currency=USD&unit=toz`);
             
+            console.log('📊 Metals.dev response status:', metalsResponse.status);
+            
             if (metalsResponse.ok) {
                 const metalsData = await metalsResponse.json();
+                console.log('📊 Metals.dev response:', metalsData);
+                
                 if (metalsData.success && metalsData.metals) {
                     prices.gold = {
                         price: metalsData.metals.gold || 2045.30,
@@ -716,13 +727,20 @@ async function fetchCommodityPrices() {
                     };
                     dataFetched = true;
                     console.log('✅ Real metals prices fetched successfully from Metals.dev');
+                } else {
+                    errors.push(`Metals.dev: Invalid response format - ${JSON.stringify(metalsData)}`);
                 }
             } else {
-                console.warn(`⚠️ Metals.dev API returned status: ${metalsResponse.status}`);
+                const errorText = await metalsResponse.text();
+                errors.push(`Metals.dev: HTTP ${metalsResponse.status} - ${errorText}`);
+                console.warn(`⚠️ Metals.dev API returned status: ${metalsResponse.status}`, errorText);
             }
         } catch (error) {
+            errors.push(`Metals.dev: ${error.message}`);
             console.error('❌ Metals.dev API error:', error.message);
         }
+    } else {
+        console.log('⏭️ Skipping Metals.dev API (weekend or already fetched today)');
     }
     
     // Fetch from Alpha Vantage API only if it's a weekday and we haven't fetched today
@@ -734,8 +752,12 @@ async function fetchCommodityPrices() {
             for (const commodity of commodities) {
                 try {
                     const response = await fetch(`https://www.alphavantage.co/query?function=COMMODITY&symbol=${commodity}&interval=monthly&apikey=${process.env.ALPHA_VANTAGE_API_KEY}`);
+                    console.log(`📊 Alpha Vantage ${commodity} response status:`, response.status);
+                    
                     if (response.ok) {
                         const data = await response.json();
+                        console.log(`📊 Alpha Vantage ${commodity} response:`, data);
+                        
                         if (data.data && data.data.length > 0) {
                             const latest = data.data[0];
                             const commodityName = commodity.toLowerCase().replace('_', '');
@@ -746,21 +768,32 @@ async function fetchCommodityPrices() {
                                 source: 'Alpha Vantage'
                             };
                             dataFetched = true;
+                        } else if (data.Note) {
+                            errors.push(`Alpha Vantage ${commodity}: Rate limit - ${data.Note}`);
+                            console.warn(`⚠️ Alpha Vantage rate limit:`, data.Note);
+                        } else {
+                            errors.push(`Alpha Vantage ${commodity}: Invalid response - ${JSON.stringify(data)}`);
                         }
                     }
                     // Small delay between requests to respect rate limits
                     await new Promise(resolve => setTimeout(resolve, 200));
                 } catch (error) {
+                    errors.push(`Alpha Vantage ${commodity}: ${error.message}`);
                     console.error(`❌ Error fetching ${commodity}:`, error.message);
                 }
             }
         } catch (error) {
+            errors.push(`Alpha Vantage: ${error.message}`);
             console.error('❌ Alpha Vantage API error:', error.message);
         }
+    } else {
+        console.log('⏭️ Skipping Alpha Vantage API (weekend or already fetched today)');
     }
     
     if (!dataFetched) {
-        throw new Error('Failed to fetch commodity prices from APIs. Please check API keys and try again.');
+        const errorMessage = `Failed to fetch commodity prices. Errors: ${errors.join('; ')}`;
+        console.error('❌', errorMessage);
+        throw new Error(errorMessage);
     }
     
     // Add timestamp to all prices
@@ -771,6 +804,7 @@ async function fetchCommodityPrices() {
     
     // Cache the results for the entire day
     setDailyCachedData(cacheKey, prices);
+    console.log('💾 Cached commodity prices for the day');
     
     return {
         ...prices,
