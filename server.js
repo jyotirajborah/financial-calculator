@@ -53,7 +53,9 @@ app.post('/api/signup', async (req, res) => {
             email,
             password,
             options: {
-                data: { name }
+                data: { name },
+                // Disable email confirmation for immediate login (optional)
+                // emailRedirectTo: `${req.protocol}://${req.get('host')}/`
             }
         });
 
@@ -62,10 +64,25 @@ app.post('/api/signup', async (req, res) => {
             return res.status(400).json({ error: error.message });
         }
 
-        res.json({ 
-            message: 'User created successfully. Please check your email for verification.',
-            user: data.user 
-        });
+        // Check if user needs email confirmation
+        if (data.user && !data.session) {
+            // Email confirmation required
+            res.json({ 
+                message: 'User created successfully. Please check your email for verification.',
+                user: data.user,
+                needsConfirmation: true
+            });
+        } else if (data.user && data.session) {
+            // User is immediately confirmed (email confirmation disabled)
+            res.json({ 
+                message: 'User created and logged in successfully',
+                user: data.user,
+                session: data.session
+            });
+        } else {
+            // Unexpected response
+            res.status(500).json({ error: 'Unexpected signup response from Supabase' });
+        }
     } catch (error) {
         console.error('Signup error:', error);
         res.status(500).json({ error: 'Internal server error' });

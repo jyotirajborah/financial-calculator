@@ -3005,19 +3005,41 @@ initAuth = () => {
                 console.log('Signup response data:', data); // Debug log
                 
                 if (response.ok) {
-                    if (data.user) {
-                        console.log('Signup successful with auto-login'); // Debug log
-                        // Extract token from session
-                        const token = data.session?.access_token;
+                    if (data.user && data.session) {
+                        console.log('Signup successful with immediate login (email confirmation disabled)'); // Debug log
+                        // User is immediately confirmed and logged in
+                        const token = data.session.access_token;
                         login(data.user, token);
-                    } else {
+                    } else if (data.user && data.needsConfirmation) {
                         console.log('Signup successful, email verification required'); // Debug log
-                        // Email confirmation is pending
+                        // Email confirmation is required
                         if (signupError) {
                             signupError.style.color = "#10b981"; // Success green
-                            signupError.textContent = "Account created! Please check your email to verify.";
+                            signupError.textContent = "Account created! Please check your email to verify, then login.";
                         }
                         signupForm.reset();
+                        
+                        // Switch to login tab after successful signup
+                        setTimeout(() => {
+                            const loginTab = document.querySelector('.auth-tab[data-form="login"]');
+                            if (loginTab) {
+                                loginTab.click();
+                            }
+                        }, 3000);
+                    } else if (data.user) {
+                        console.log('Signup successful, but unclear confirmation status'); // Debug log
+                        // Fallback case
+                        if (signupError) {
+                            signupError.style.color = "#10b981"; // Success green
+                            signupError.textContent = "Account created! You may need to verify your email before logging in.";
+                        }
+                        signupForm.reset();
+                    } else {
+                        console.error('Unexpected signup response:', data);
+                        if (signupError) {
+                            signupError.style.color = "#ef4444"; // Error red
+                            signupError.textContent = "Signup completed but with unexpected response. Please try logging in.";
+                        }
                     }
                 } else {
                     console.error('Signup failed:', data.error); // Debug log
