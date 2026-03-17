@@ -599,8 +599,9 @@ async function fetchWorldBankData(countries) {
         results.forEach(({ indicator, data }) => {
             const countryIndicator = data.find(item => 
                 item.countryiso3code === countryCode && 
-                item.value !== null && 
-                item.date >= '2023'
+                item.value !== null &&
+                item.value !== undefined &&
+                parseInt(item.date) >= 2022  // Changed from string comparison to number, and 2022 instead of 2023
             );
             
             const fieldName = indicators[indicator];
