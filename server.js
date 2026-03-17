@@ -676,11 +676,19 @@ async function fetchCommodityPrices() {
         };
     }
     
+    // Check if API keys are configured
+    const hasMetalsKey = process.env.METALS_API_KEY && process.env.METALS_API_KEY !== 'demo';
+    const hasAlphaKey = process.env.ALPHA_VANTAGE_API_KEY && process.env.ALPHA_VANTAGE_API_KEY !== 'demo';
+    
+    if (!hasMetalsKey && !hasAlphaKey) {
+        throw new Error('Commodity API keys not configured. Please add METALS_API_KEY and/or ALPHA_VANTAGE_API_KEY to environment variables.');
+    }
+    
     const prices = {};
     let dataFetched = false;
     
     // Fetch from Metals.dev API only if it's a weekday and we haven't fetched today
-    if (shouldFetchNewData('metals-api') && process.env.METALS_API_KEY && process.env.METALS_API_KEY !== 'demo') {
+    if (shouldFetchNewData('metals-api') && hasMetalsKey) {
         try {
             console.log('🔗 Fetching daily commodity prices from Metals.dev API...');
             const metalsResponse = await fetch(`https://api.metals.dev/v1/latest?api_key=${process.env.METALS_API_KEY}&currency=USD&unit=toz`);
@@ -709,15 +717,16 @@ async function fetchCommodityPrices() {
                     dataFetched = true;
                     console.log('✅ Real metals prices fetched successfully from Metals.dev');
                 }
+            } else {
+                console.warn(`⚠️ Metals.dev API returned status: ${metalsResponse.status}`);
             }
         } catch (error) {
             console.error('❌ Metals.dev API error:', error.message);
-            throw new Error('Failed to fetch commodity prices from Metals.dev API');
         }
     }
     
     // Fetch from Alpha Vantage API only if it's a weekday and we haven't fetched today
-    if (shouldFetchNewData('alpha-vantage') && process.env.ALPHA_VANTAGE_API_KEY && process.env.ALPHA_VANTAGE_API_KEY !== 'demo') {
+    if (shouldFetchNewData('alpha-vantage') && hasAlphaKey) {
         try {
             console.log('🔗 Fetching daily commodity data from Alpha Vantage...');
             const commodities = ['CRUDE_OIL_WTI', 'NATURAL_GAS', 'COPPER'];
@@ -751,7 +760,7 @@ async function fetchCommodityPrices() {
     }
     
     if (!dataFetched) {
-        throw new Error('No commodity price data available. API calls are only made on weekdays.');
+        throw new Error('Failed to fetch commodity prices from APIs. Please check API keys and try again.');
     }
     
     // Add timestamp to all prices
