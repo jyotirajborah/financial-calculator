@@ -1,1 +1,0 @@
-{"success":false,"error":"Commodity API keys not configured. Please add METALS_API_KEY and/or ALPHA_VANTAGE_API_KEY to environment variables.","message":"Unable to fetch real-time data from external APIs. Please try again later."}

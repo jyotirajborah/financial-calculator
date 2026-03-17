@@ -5959,14 +5959,18 @@ const renderCountryResources = (data = countryResourcesData) => {
                 </div>
                 
                 <div class="resource-stats">
-                    <div class="resource-stat">
-                        <div class="resource-stat-value">${totalResources}</div>
-                        <div class="resource-stat-label">Total Resources</div>
-                    </div>
-                    <div class="resource-stat">
-                        <div class="resource-stat-value">${country.resources.length}</div>
-                        <div class="resource-stat-label">Categories</div>
-                    </div>
+                    ${totalResources > 0 ? `
+                        <div class="resource-stat">
+                            <div class="resource-stat-label">Resources:</div>
+                            <div class="resource-stat-value">${country.resources.map(cat => 
+                                cat.items.map(item => typeof item === 'object' ? item.name : item).join(', ')
+                            ).join(', ')}</div>
+                        </div>
+                    ` : `
+                        <div class="resource-stat">
+                            <div class="resource-stat-value">No resources data</div>
+                        </div>
+                    `}
                 </div>
             </div>
         `;
