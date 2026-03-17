@@ -49,10 +49,10 @@ body {
     opacity: 1 !important;
 }
 
-.app-container[style*="display: none"] {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
+.app-container.active {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 /* Sidebar */

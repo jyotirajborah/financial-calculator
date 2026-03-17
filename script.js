@@ -2358,15 +2358,15 @@ const login = (user, token) => {
     
     // Step 1: Force hide overlay with multiple methods
     overlay.classList.remove('active');
-    overlay.style.display = 'none !important';
-    overlay.style.visibility = 'hidden';
-    overlay.style.opacity = '0';
+    overlay.style.setProperty('display', 'none', 'important');
+    overlay.style.setProperty('visibility', 'hidden', 'important');
+    overlay.style.setProperty('opacity', '0', 'important');
     console.log('✅ Hidden auth overlay');
     
     // Step 2: Force show app container with multiple methods
-    appContainer.style.display = 'flex !important';
-    appContainer.style.visibility = 'visible';
-    appContainer.style.opacity = '1';
+    appContainer.style.setProperty('display', 'flex', 'important');
+    appContainer.style.setProperty('visibility', 'visible', 'important');
+    appContainer.style.setProperty('opacity', '1', 'important');
     appContainer.classList.add('active'); // Add active class if needed
     console.log('✅ Showed app container');
     
