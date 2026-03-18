@@ -5905,6 +5905,20 @@ const generateFallbackResourcesData = () => {
     }));
 };
 
+// Helper function to clean region names
+const getCleanRegionName = (region) => {
+    const regionMap = {
+        'East Asia & Pacific': 'Asia Pacific',
+        'Europe & Central Asia': 'Europe & Central Asia',
+        'Latin America & Caribbean ': 'Latin America & Caribbean',
+        'Middle East, North Africa, Afghanistan & Pakistan': 'Middle East & North Africa',
+        'North America': 'North America',
+        'South Asia': 'South Asia',
+        'Sub-Saharan Africa ': 'Sub-Saharan Africa'
+    };
+    return regionMap[region] || region.replace(/ \(.*?\)/g, '').trim();
+};
+
 // Render country resources
 const renderCountryResources = (data = countryResourcesData) => {
     const grid = document.getElementById('resources-grid');
@@ -5935,7 +5949,7 @@ const renderCountryResources = (data = countryResourcesData) => {
                          loading="lazy">
                     <div class="resource-country-info">
                         <h3>${country.name}</h3>
-                        <p>${country.region}${country.subregion ? ` • ${country.subregion}` : ''}</p>
+                        <p>${getCleanRegionName(country.region)}</p>
                     </div>
                 </div>
                 
