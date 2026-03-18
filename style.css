@@ -8246,3 +8246,12 @@ body, html {
 .power-section p:last-child {
     margin-bottom: 0;
 }
+/* Center align buttons in auth forms */
+#login-form .btn-primary,
+#signup-form .btn-primary,
+#guest-form .btn-primary {
+    display: block;
+    margin: 1rem auto 0;
+    width: 100%;
+    max-width: 300px;
+}
