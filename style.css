@@ -151,6 +151,7 @@ ion-icon[aria-hidden="true"] {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    padding-bottom: 2rem;
 }
 
 .nav-item {
