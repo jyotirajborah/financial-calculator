@@ -8041,3 +8041,208 @@ body, html {
         top: -70px;
     }
 }
+/* Global Power Structures Section */
+.power-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.power-container .power-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.power-container .power-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.power-container .power-title ion-icon {
+    font-size: 2rem;
+    color: #8b5cf6;
+    margin-right: 0.5rem;
+}
+
+.power-container .power-title h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0;
+}
+
+.power-container .power-subtitle {
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin-top: 0.5rem;
+    line-height: 1.5;
+}
+
+.power-content {
+    margin-top: 2rem;
+}
+
+.power-section {
+    margin-bottom: 2.5rem;
+}
+
+.power-section h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid rgba(139, 92, 246, 0.3);
+}
+
+.power-section h4 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin: 1.5rem 0 0.75rem 0;
+}
+
+.power-section h4:first-child {
+    margin-top: 0;
+}
+
+.power-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.power-card p {
+    margin-bottom: 1rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+}
+
+.power-card ul {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+}
+
+.power-card ul li {
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+    color: var(--text-muted);
+}
+
+.power-card ul li strong {
+    color: var(--text-main);
+    font-weight: 600;
+}
+
+.power-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    background: rgba(30, 41, 59, 0.5);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.power-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.power-table th {
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--text-main);
+    font-weight: 600;
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.power-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-muted);
+}
+
+.power-table tr:last-child td {
+    border-bottom: none;
+}
+
+.power-table tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.power-table tr:hover {
+    background: rgba(139, 92, 246, 0.05);
+}
+
+.power-section:last-child {
+    margin-bottom: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .power-container .power-title {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .power-container .power-title h2 {
+        font-size: 1.5rem;
+    }
+    
+    .power-table {
+        display: block;
+        overflow-x: auto;
+    }
+    
+    .power-table table {
+        min-width: 600px;
+    }
+}
+
+/* Power section specific styles */
+.power-section h4 {
+    color: #8b5cf6;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.power-section ul {
+    padding-left: 1.5rem;
+    margin: 1rem 0;
+}
+
+.power-section ul li {
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+}
+
+.power-section ul ul {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    padding-left: 1.5rem;
+}
+
+.power-section ul ul li {
+    margin-bottom: 0.25rem;
+}
+
+.power-section strong {
+    color: var(--text-main);
+    font-weight: 600;
+}
+
+.power-section p {
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.power-section p:last-child {
+    margin-bottom: 0;
+}

@@ -444,6 +444,11 @@ document.querySelectorAll('.nav-item').forEach(btn => {
             initMediaData();
         }
         
+        // Initialize global power structures if target is global-power-structures
+        if (targetId === 'global-power-structures') {
+            initPowerStructuresData();
+        }
+        
         // Initialize wealth transfer if target is wealth-transfer
         if (targetId === 'wealth-transfer') {
             initWealthTransferData();
@@ -7834,6 +7839,13 @@ const fetchMediaData = async () => {
 // Initialize media data when media-narrative view is opened
 const initMediaData = () => {
     fetchMediaData();
+};
+
+// Initialize global power structures data when view is opened
+const initPowerStructuresData = () => {
+    // For now, just log that the section was opened
+    console.log('Global Power Structures section opened');
+    // In the future, this could load dynamic data or analytics
 };
 
 // --- Wealth Transfer & Generational Wealth Functions ---
