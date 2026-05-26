@@ -20,14 +20,15 @@ const SUPABASE_KEY = process.env.SUPABASE_KEY;
 
 console.log('🔧 Initializing Supabase client...');
 
+let supabase = null;
 if (!SUPABASE_URL || !SUPABASE_KEY) {
-    console.error('❌ Missing Supabase configuration');
-    console.error('SUPABASE_URL:', !!SUPABASE_URL);
-    console.error('SUPABASE_KEY:', !!SUPABASE_KEY);
-    process.exit(1);
+    console.warn('⚠️ Missing Supabase configuration - auth endpoints will be disabled');
+    console.warn('SUPABASE_URL:', !!SUPABASE_URL);
+    console.warn('SUPABASE_KEY:', !!SUPABASE_KEY);
+} else {
+    supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    console.log('✅ Supabase client initialized successfully');
 }
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Daily data caching system
 const dailyDataCache = new Map();
@@ -169,7 +170,15 @@ app.get('/reset-password', (req, res) => {
 });
 
 // Authentication Endpoints
-app.post('/api/signup', async (req, res) => {
+// Guard: check if Supabase is available
+function requireSupabase(req, res, next) {
+    if (!supabase) {
+        return res.status(503).json({ error: 'Authentication service is not configured. Please set SUPABASE_URL and SUPABASE_KEY environment variables.' });
+    }
+    next();
+}
+
+app.post('/api/signup', requireSupabase, async (req, res) => {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
@@ -217,7 +226,7 @@ app.post('/api/signup', async (req, res) => {
     }
 });
 
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', requireSupabase, async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -498,8 +507,8 @@ app.get('/api/commodities/prices', async (req, res) => {
         const commodityPrices = await fetchCommodityPrices();
         
         // Check if we're using cached data
-        const isUsingCache = getCachedData('commodity-prices') !== null;
-        const isRateLimited = !canMakeRequest('metals-api') && !canMakeRequest('alpha-vantage');
+        const isUsingCache = getDailyCachedData('commodity-prices') !== null;
+        const isRateLimited = !canMakeMonthlyRequest('metals-api') && !canMakeMonthlyRequest('alpha-vantage');
         
         res.json({
             success: true,
