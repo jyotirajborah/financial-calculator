@@ -5,7 +5,7 @@ const cors = require('cors');
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = Number(process.env.PORT) || 5000;
 
 // Log environment information
 console.log('🚀 Starting FinCalc Server...');
@@ -1767,6 +1767,6 @@ app.use((req, res, next) => {
 });
 
 // Start Server
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server is running on http://0.0.0.0:${PORT}`);
+app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Server running on ${PORT}`);
 });
